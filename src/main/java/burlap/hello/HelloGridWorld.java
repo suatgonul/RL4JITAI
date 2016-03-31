@@ -1,4 +1,4 @@
-package burlap.hellogrid;
+package burlap.hello;
 
 import burlap.domain.singleagent.gridworld.GridWorldDomain;
 import burlap.domain.singleagent.gridworld.GridWorldVisualizer;

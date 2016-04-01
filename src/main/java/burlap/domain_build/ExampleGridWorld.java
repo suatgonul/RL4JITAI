@@ -1,4 +1,4 @@
-package burlap.tutorial;
+package burlap.domain_build;
 
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.*;

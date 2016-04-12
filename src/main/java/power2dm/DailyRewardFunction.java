@@ -20,7 +20,7 @@ public class DailyRewardFunction implements RewardFunction{
 
         if(sPrimeTotalInt > sTotalInt) {
             if(sPrimeReactedInt > sReactedInt) {
-                return 1;
+                return 2;
             } else {
                 return -1;
             }

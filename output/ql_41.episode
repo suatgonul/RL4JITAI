@@ -1,0 +1,40 @@
+!!burlap.behavior.singleagent.EpisodeAnalysis
+actionSequence: [!action 'no_action', !action 'no_action', !action 'intervention_delivery']
+rewardSequence: [0.0, 0.0, -1.0]
+stateSequence:
+- !!burlap.oomdp.stateserialization.simple.SimpleSerializableState
+  objects:
+  - name: state
+    object_class: state
+    values:
+    - {attribute: timing, value: '0'}
+    - {attribute: timing_interventions, value: '0'}
+    - {attribute: total_interventions, value: '0'}
+    - {attribute: timing_reacted_interventions, value: '0'}
+- !!burlap.oomdp.stateserialization.simple.SimpleSerializableState
+  objects:
+  - name: state
+    object_class: state
+    values:
+    - {attribute: timing, value: '1'}
+    - {attribute: timing_interventions, value: '0'}
+    - {attribute: total_interventions, value: '0'}
+    - {attribute: timing_reacted_interventions, value: '0'}
+- !!burlap.oomdp.stateserialization.simple.SimpleSerializableState
+  objects:
+  - name: state
+    object_class: state
+    values:
+    - {attribute: timing, value: '2'}
+    - {attribute: timing_interventions, value: '0'}
+    - {attribute: total_interventions, value: '0'}
+    - {attribute: timing_reacted_interventions, value: '0'}
+- !!burlap.oomdp.stateserialization.simple.SimpleSerializableState
+  objects:
+  - name: state
+    object_class: state
+    values:
+    - {attribute: timing, value: '3'}
+    - {attribute: timing_interventions, value: '1'}
+    - {attribute: total_interventions, value: '1'}
+    - {attribute: timing_reacted_interventions, value: '0'}

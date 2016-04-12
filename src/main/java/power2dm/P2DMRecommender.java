@@ -54,7 +54,7 @@ public class P2DMRecommender {
 
         //run learning for 50 episodes
         for(int i = 0; i < 50; i++){
-            EpisodeAnalysis ea = agent.runLearningEpisode(env);
+            EpisodeAnalysis ea = agent.runLearningEpisode(env, 100);
 
             ea.writeToFile(outputPath + "ql_" + i);
             System.out.println(i + ": " + ea.maxTimeStep());

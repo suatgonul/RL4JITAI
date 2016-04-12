@@ -50,10 +50,10 @@ public class BasicBehavior {
         String outputPath = "output/"; //directory to record results
 
         //run example
-        example.BFSExample(outputPath);
-        example.DFSExample(outputPath);
-        example.AStarExample(outputPath);
-        example.valueIterationExample(outputPath);
+//        example.BFSExample(outputPath);
+//        example.DFSExample(outputPath);
+//        example.AStarExample(outputPath);
+//        example.valueIterationExample(outputPath);
         example.QLearningExample(outputPath);
 
         //run the visualizer

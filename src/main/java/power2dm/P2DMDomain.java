@@ -15,8 +15,8 @@ import power2dm.action.NoAction;
  */
 public class P2DMDomain extends SADomain {
     public static final String ATT_TIMING = "timing";
-    public static final String ATT_TIMING_INT = "timing_interventions";
-    public static final String ATT_TOTAL_INT = "total_interventions";
+//    public static final String ATT_TIMING_INT = "timing_interventions";
+//    public static final String ATT_TOTAL_INT = "total_interventions";
     public static final String ATT_TIMING_REACTED_INT = "timing_reacted_interventions";
 
 //    public static final String CLASS_AGENT = "agent";
@@ -35,12 +35,12 @@ public class P2DMDomain extends SADomain {
     private void initializeDomain() {
         Attribute timingAtt = new Attribute(this, ATT_TIMING, Attribute.AttributeType.INT);
         timingAtt.setDiscValuesForRange(Timing.START.ordinal(), Timing.EVENING.ordinal(), 1);
-        Attribute timingIntAtt = new Attribute(this, ATT_TIMING_INT, Attribute.AttributeType.INT);
-        timingIntAtt.setDiscValuesForRange(0, 2, 1);
-        Attribute totalIntAtt = new Attribute(this, ATT_TOTAL_INT, Attribute.AttributeType.INT);
-        totalIntAtt.setDiscValuesForRange(0, 6, 1);
+//        Attribute timingIntAtt = new Attribute(this, ATT_TIMING_INT, Attribute.AttributeType.INT);
+//        timingIntAtt.setDiscValuesForRange(0, 2, 1);
+//        Attribute totalIntAtt = new Attribute(this, ATT_TOTAL_INT, Attribute.AttributeType.INT);
+//        totalIntAtt.setDiscValuesForRange(0, 6, 1);
         Attribute timingReactedIntAtt = new Attribute(this, ATT_TIMING_REACTED_INT, Attribute.AttributeType.INT);
-        totalIntAtt.setDiscValuesForRange(0, 6, 1);
+        timingReactedIntAtt.setDiscValuesForRange(0, 6, 1);
 
 //        ObjectClass agentClass = new ObjectClass(this, CLASS_AGENT);
 //        agentClass.addAttribute(timingAtt);
@@ -50,8 +50,8 @@ public class P2DMDomain extends SADomain {
 
         ObjectClass stateClass = new ObjectClass(this, CLASS_STATE);
         stateClass.addAttribute(timingAtt);
-        stateClass.addAttribute(timingIntAtt);
-        stateClass.addAttribute(totalIntAtt);
+//        stateClass.addAttribute(timingIntAtt);
+//        stateClass.addAttribute(totalIntAtt);
         stateClass.addAttribute(timingReactedIntAtt);
 
         new InterventionDeliveryAction(ACTION_INT_DELIVERY, this);
@@ -71,8 +71,8 @@ public class P2DMDomain extends SADomain {
 
         ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
         o.setValue(ATT_TIMING, Timing.START.ordinal());
-        o.setValue(ATT_TIMING_INT, 0);
-        o.setValue(ATT_TOTAL_INT, 0);
+//        o.setValue(ATT_TIMING_INT, 0);
+//        o.setValue(ATT_TOTAL_INT, 0);
         o.setValue(ATT_TIMING_REACTED_INT, 0);
 
         return s;

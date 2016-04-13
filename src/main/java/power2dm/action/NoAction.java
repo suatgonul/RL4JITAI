@@ -27,8 +27,8 @@ public class NoAction extends SimpleAction implements FullActionModel {
     protected State performActionHelper(State s, GroundedAction groundedAction) {
         ObjectInstance state = s.getFirstObjectOfClass(CLASS_STATE);
         int timing = state.getIntValForAttribute(ATT_TIMING);
-        int timingIntAmount = state.getIntValForAttribute(ATT_TIMING_INT);
-        int totalIntAmount = state.getIntValForAttribute(ATT_TOTAL_INT);
+//        int timingIntAmount = state.getIntValForAttribute(ATT_TIMING_INT);
+//        int totalIntAmount = state.getIntValForAttribute(ATT_TOTAL_INT);
         int timingReactedIntAmount = state.getIntValForAttribute(ATT_TIMING_REACTED_INT);
 
         //get random action
@@ -39,9 +39,9 @@ public class NoAction extends SimpleAction implements FullActionModel {
 
         // update the state by updating state's parameters
         s = s.setObjectsValue(state.getName(), ATT_TIMING, Timing.values()[(timing + 1) % Timing.values().length].ordinal());
-        s = s.setObjectsValue(state.getName(), ATT_TIMING_INT, 0);
-        s = s.setObjectsValue(state.getName(), ATT_TOTAL_INT, totalIntAmount);
-        s = s.setObjectsValue(state.getName(), ATT_TIMING_REACTED_INT, 0);
+//        s = s.setObjectsValue(state.getName(), ATT_TIMING_INT, 0);
+//        s = s.setObjectsValue(state.getName(), ATT_TOTAL_INT, totalIntAmount);
+        s = s.setObjectsValue(state.getName(), ATT_TIMING_REACTED_INT, timingReactedIntAmount);
 
         return s;
     }

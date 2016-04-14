@@ -3,6 +3,7 @@ package power2dm;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
+import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.auxiliary.stateconditiontest.StateConditionTest;
 import burlap.oomdp.auxiliary.stateconditiontest.TFGoalCondition;
 import burlap.oomdp.core.TerminalFunction;
@@ -13,6 +14,8 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
 import burlap.oomdp.statehashing.HashableStateFactory;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
+
+import java.util.List;
 
 /**
  * Created by suat on 08-Apr-16.
@@ -62,9 +65,16 @@ public class P2DMRecommender {
             for (int a = 0; a < ea.actionSequence.size(); a++) {
                 GroundedAction ga = ea.actionSequence.get(a);
 //                if (a >= 17 && a <= 21) {
-                if(ga.actionName().equals("intervention_delivery")) {
+                if (ga.actionName().equals("intervention_delivery")) {
 //                    System.out.print(" Hour " + a + ": " + ga.actionName());
-                    System.out.print(" Hour " + a);
+                    System.out.print("Hour " + a + ", ");
+                    State state = ea.stateSequence.get(a);
+                    List<QValue> qValues = ((QLearning) agent).getQs(state);
+                    System.out.print("State " + state.getFirstObjectOfClass(P2DMDomain.CLASS_STATE).getIntValForAttribute(P2DMDomain.ATT_REACTED_INT) + ", ");
+                    System.out.print("Rew " + ea.rewardSequence.get(a) + ", ");
+                    System.out.print("Q-Val " + qValues.get(0).a.actionName() + ": " + qValues.get(0).q + ", ");
+                    System.out.print(qValues.get(1).a.actionName() + ": " + qValues.get(1).q);
+                    System.out.println();
                 }
             }
             System.out.println();

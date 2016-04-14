@@ -21,7 +21,7 @@ public class P2DMEnvironmentSimulator {
     }
 
     private void setUserPreferences() {
-        preferences.createPreference(18, 20, Location.HOME);
+        preferences.createPreference(18, 21, Location.HOME);
     }
 
     public boolean simulateUserReactionToIntervention(int reactedTotal) {
@@ -50,8 +50,9 @@ public class P2DMEnvironmentSimulator {
             } else {
                 result = false;
             }
+//            return true;
         } else {
-            if (rInt >= 50) {
+            if (rInt >= 80) {
                 result = true;
             } else {
                 result = false;
@@ -71,6 +72,9 @@ public class P2DMEnvironmentSimulator {
             location = Location.ON_THE_WAY;
         } else {
             location = Location.WORK;
+        }
+        if(time == 24) {
+            resetEnvironment();
         }
     }
 

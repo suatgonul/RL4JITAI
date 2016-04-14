@@ -53,8 +53,8 @@ public class BasicBehavior {
 //        example.BFSExample(outputPath);
 //        example.DFSExample(outputPath);
 //        example.AStarExample(outputPath);
-//        example.valueIterationExample(outputPath);
-        example.QLearningExample(outputPath);
+        example.valueIterationExample(outputPath);
+//        example.QLearningExample(outputPath);
 
         //run the visualizer
         example.visualize(outputPath);

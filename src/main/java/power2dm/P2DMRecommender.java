@@ -7,6 +7,7 @@ import burlap.oomdp.auxiliary.stateconditiontest.StateConditionTest;
 import burlap.oomdp.auxiliary.stateconditiontest.TFGoalCondition;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
@@ -48,16 +49,25 @@ public class P2DMRecommender {
         env = new SimulatedEnvironment(domain, rf, tf, initialState);
     }
 
-    public void QLearningExample(String outputPath){
+    public void QLearningExample(String outputPath) {
 
         LearningAgent agent = new QLearning(domain, 0.99, hashingFactory, 0., 1.);
 
         //run learning for 50 episodes
-        for(int i = 0; i < 50; i++){
+        for (int i = 0; i < 50; i++) {
             EpisodeAnalysis ea = agent.runLearningEpisode(env, 100);
 
             ea.writeToFile(outputPath + "ql_" + i);
-            System.out.println(i + ": " + ea.maxTimeStep());
+            System.out.println("episode : " + i);
+            for (int a = 0; a < ea.actionSequence.size(); a++) {
+                GroundedAction ga = ea.actionSequence.get(a);
+//                if (a >= 17 && a <= 21) {
+                if(ga.actionName().equals("intervention_delivery")) {
+//                    System.out.print(" Hour " + a + ": " + ga.actionName());
+                    System.out.print(" Hour " + a);
+                }
+            }
+            System.out.println();
 
             //reset environment for next learning episode
             env.resetEnvironment();

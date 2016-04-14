@@ -1,25 +1,56 @@
 package power2dm;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by suat on 12-Apr-16.
  */
 public class UserPreference {
-    private Map<Timing, Integer> preferences = new HashMap<Timing, Integer>();
+    private List<PreferenceInstance> preferences = new ArrayList<PreferenceInstance>();
 
-    public UserPreference() {
-        for(Timing timing : Timing.values()) {
-            preferences.put(timing, 0);
+    public void createPreference(int start, int end, Location location) {
+        preferences.add(new PreferenceInstance(start, end, location));
+    }
+
+    public boolean doesUserHasPreference(int time, Location location) {
+        for(PreferenceInstance p : preferences) {
+            if(p.getTimeRange().isInRange(time) && location.equals(p.getLocation())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private class PreferenceInstance {
+        private PreferenceRange timeRange;
+        private Location location;
+
+        public PreferenceInstance(int start, int end, Location location) {
+            this.timeRange = new PreferenceRange(start, end);
+            this.location = location;
+        }
+
+        public PreferenceRange getTimeRange() {
+            return timeRange;
+        }
+
+        public Location getLocation() {
+            return location;
         }
     }
 
-    public void setPreference(Timing timing, int preference) {
-        preferences.put(timing, preference);
-    }
+    private class PreferenceRange{
+        private int start;
+        private int end;
 
-    public int getPreference(Timing timing) {
-        return preferences.get(timing);
+        public PreferenceRange(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public boolean isInRange(int time) {
+            return time >= start && time <= end;
+        }
     }
 }

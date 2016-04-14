@@ -3,7 +3,7 @@ package power2dm;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.states.State;
 
-import static power2dm.P2DMDomain.ATT_TIMING;
+import static power2dm.P2DMDomain.ATT_TIME;
 import static power2dm.P2DMDomain.CLASS_STATE;
 
 /**
@@ -11,10 +11,10 @@ import static power2dm.P2DMDomain.CLASS_STATE;
  */
 public class DailyTerminalFunction implements TerminalFunction {
     public boolean isTerminal(State s) {
-        Timing timing = Timing.values()[s.getObject(CLASS_STATE).getIntValForAttribute(ATT_TIMING)];
+        int time = s.getObject(CLASS_STATE).getIntValForAttribute(ATT_TIME);
 
         // if the timing is evening
-        if (timing.equals(Timing.EVENING)) {
+        if (time == 24) {
             return true;
         } else {
             return false;

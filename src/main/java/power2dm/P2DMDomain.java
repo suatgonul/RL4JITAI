@@ -14,10 +14,11 @@ import power2dm.action.NoAction;
  * Created by suat on 08-Apr-16.
  */
 public class P2DMDomain extends SADomain {
-    public static final String ATT_TIMING = "timing";
+    public static final String ATT_TIME = "time";
 //    public static final String ATT_TIMING_INT = "timing_interventions";
 //    public static final String ATT_TOTAL_INT = "total_interventions";
-    public static final String ATT_TIMING_REACTED_INT = "timing_reacted_interventions";
+    public static final String ATT_REACTED_INT = "reacted_interventions";
+    public static final String ATT_LOCATION = "location";
 
 //    public static final String CLASS_AGENT = "agent";
     public static final String CLASS_STATE = "state";
@@ -25,7 +26,7 @@ public class P2DMDomain extends SADomain {
     public static final String ACTION_INT_DELIVERY = "intervention_delivery";
     public static final String ACTION_NO_ACTION = "no_action";
 
-    private UserPreference preferences = new UserPreference();
+    private P2DMEnvironmentSimulator simulator;
 
     public P2DMDomain() {
         super();
@@ -33,14 +34,16 @@ public class P2DMDomain extends SADomain {
     }
 
     private void initializeDomain() {
-        Attribute timingAtt = new Attribute(this, ATT_TIMING, Attribute.AttributeType.INT);
-        timingAtt.setDiscValuesForRange(Timing.START.ordinal(), Timing.EVENING.ordinal(), 1);
+        Attribute timingAtt = new Attribute(this, ATT_TIME, Attribute.AttributeType.INT);
+        timingAtt.setDiscValuesForRange(0, 23, 1);
 //        Attribute timingIntAtt = new Attribute(this, ATT_TIMING_INT, Attribute.AttributeType.INT);
 //        timingIntAtt.setDiscValuesForRange(0, 2, 1);
 //        Attribute totalIntAtt = new Attribute(this, ATT_TOTAL_INT, Attribute.AttributeType.INT);
-//        totalIntAtt.setDiscValuesForRange(0, 6, 1);
-        Attribute timingReactedIntAtt = new Attribute(this, ATT_TIMING_REACTED_INT, Attribute.AttributeType.INT);
+//        totalIntAtt.setDiscValuesForRange(0, 24, 1);
+        Attribute timingReactedIntAtt = new Attribute(this, ATT_REACTED_INT, Attribute.AttributeType.INT);
         timingReactedIntAtt.setDiscValuesForRange(0, 6, 1);
+        Attribute locationAtt = new Attribute(this, ATT_LOCATION, Attribute.AttributeType.INT);
+        locationAtt.setDiscValuesForRange(0, 3, 1);
 
 //        ObjectClass agentClass = new ObjectClass(this, CLASS_AGENT);
 //        agentClass.addAttribute(timingAtt);
@@ -53,15 +56,12 @@ public class P2DMDomain extends SADomain {
 //        stateClass.addAttribute(timingIntAtt);
 //        stateClass.addAttribute(totalIntAtt);
         stateClass.addAttribute(timingReactedIntAtt);
+        stateClass.addAttribute(locationAtt);
 
         new InterventionDeliveryAction(ACTION_INT_DELIVERY, this);
         new NoAction(ACTION_NO_ACTION, this);
 
-        setUserPreferences();
-    }
-
-    private void setUserPreferences() {
-        preferences.setPreference(Timing.EVENING, 1);
+        simulator = new P2DMEnvironmentSimulator(this);
     }
 
     public State getInitialState() {
@@ -70,15 +70,16 @@ public class P2DMDomain extends SADomain {
 //        s.addObject(new MutableObjectInstance(getObjectClass(CLASS_AGENT), CLASS_AGENT));
 
         ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
-        o.setValue(ATT_TIMING, Timing.START.ordinal());
+        o.setValue(ATT_TIME, 0);
 //        o.setValue(ATT_TIMING_INT, 0);
 //        o.setValue(ATT_TOTAL_INT, 0);
-        o.setValue(ATT_TIMING_REACTED_INT, 0);
+        o.setValue(ATT_REACTED_INT, 0);
+        o.setValue(ATT_LOCATION, 0);
 
         return s;
     }
 
-    public UserPreference getUserPreference() {
-        return preferences;
+    public P2DMEnvironmentSimulator getSimulator() {
+        return simulator;
     }
 }

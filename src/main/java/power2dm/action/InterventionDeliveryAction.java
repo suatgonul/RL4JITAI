@@ -8,6 +8,7 @@ import burlap.oomdp.singleagent.FullActionModel;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.common.SimpleAction;
 import power2dm.P2DMDomain;
+import power2dm.P2DMEnvironmentSimulator;
 
 import java.util.List;
 
@@ -31,18 +32,21 @@ public class InterventionDeliveryAction extends SimpleAction implements FullActi
         int reactedInt = state.getIntValForAttribute(ATT_REACTED_INT);
 
         //if user reacts to intervention we should determine the next state accordingly
-        boolean userReacted = ((P2DMDomain) domain).getSimulator().simulateUserReactionToIntervention(reactedInt);
+        P2DMEnvironmentSimulator simulator = ((P2DMDomain) domain).getSimulator();
+        boolean userReacted = simulator.simulateUserReactionToIntervention(reactedInt);
         if (userReacted) {
             reactedInt++;
         }
+
+        simulator.updateEnvironment();
 
         // update the state by updating state's parameters
         s = s.setObjectsValue(state.getName(), ATT_TIME, timing + 1);
 //        s = s.setObjectsValue(state.getName(), ATT_TIMING_INT, timingIntAmount + 1);
 //        s = s.setObjectsValue(state.getName(), ATT_TOTAL_INT, totalIntAmount + 1);
         s = s.setObjectsValue(state.getName(), ATT_REACTED_INT, reactedInt);
+        s = s.setObjectsValue(state.getName(), ATT_LOCATION, simulator.getLocation().ordinal());
 
-        ((P2DMDomain) domain).getSimulator().updateEnvironment();
         return s;
     }
 

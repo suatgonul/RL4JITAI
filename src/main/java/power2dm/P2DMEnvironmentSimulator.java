@@ -21,9 +21,12 @@ public class P2DMEnvironmentSimulator {
     }
 
     private void setUserPreferences() {
-        preferences.createPreference(18, 21, Location.HOME);
+        preferences.createPreference(19, 21, Location.HOME);
     }
 
+    public Location getLocation() {
+        return location;
+    }
     public boolean simulateUserReactionToIntervention(int reactedTotal) {
         if (time < 7) {
             return false;
@@ -45,23 +48,25 @@ public class P2DMEnvironmentSimulator {
 
         boolean result;
         if (userHasPreference) {
-            if (rInt < willingnessToReact[reactedTotal > 4 ? 4 : reactedTotal]) {
-                result = true;
-            } else {
-                result = false;
-            }
-//            return true;
-        } else {
-            if (rInt >= 80) {
-                result = true;
-            } else {
-                result = false;
-            }
-        }
-        if (result == true) {
+//            if (rInt < willingnessToReact[reactedTotal > 4 ? 4 : reactedTotal]) {
+//                result = true;
+//            } else {
+//                result = false;
+//            }
             lastInterventionTime = time;
+            return true;
+        } else {
+//            if (rInt >= 80) {
+//                result = true;
+//            } else {
+//                result = false;
+//            }
+            return false;
         }
-        return result;
+//        if (result == true) {
+//            lastInterventionTime = time;
+//        }
+//        return result;
     }
 
     public void updateEnvironment() {
@@ -73,13 +78,22 @@ public class P2DMEnvironmentSimulator {
         } else {
             location = Location.WORK;
         }
-        if(time == 24) {
+        if (time == 24) {
             resetEnvironment();
+        }
+    }
+
+    public void setWillingnessToReact(int i) {
+        if (i == 1) {
+            willingnessToReact = new int[]{90, 70, 50, 30, 10};
+        } else if (i == 0) {
+            willingnessToReact = new int[]{20, 20, 20, 20, 10};
         }
     }
 
     private void resetEnvironment() {
         time = 0;
+        lastInterventionTime = 0;
         location = Location.HOME;
     }
 }

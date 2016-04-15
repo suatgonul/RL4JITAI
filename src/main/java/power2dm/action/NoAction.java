@@ -8,9 +8,9 @@ import burlap.oomdp.singleagent.FullActionModel;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.common.SimpleAction;
 import power2dm.P2DMDomain;
+import power2dm.P2DMEnvironmentSimulator;
 
 import java.util.List;
-import java.util.Random;
 
 import static power2dm.P2DMDomain.*;
 
@@ -19,7 +19,7 @@ import static power2dm.P2DMDomain.*;
  */
 public class NoAction extends SimpleAction implements FullActionModel {
 
-    public NoAction(String name, Domain domain){
+    public NoAction(String name, Domain domain) {
         super(name, domain);
     }
 
@@ -31,19 +31,16 @@ public class NoAction extends SimpleAction implements FullActionModel {
 //        int totalIntAmount = state.getIntValForAttribute(ATT_TOTAL_INT);
         int reactedIntAmount = state.getIntValForAttribute(ATT_REACTED_INT);
 
-        //get random action
-        Random r = new Random();
-        int low = 0;
-        int high = 1;
-//        r.nextInt(high - low) + low;
+        P2DMEnvironmentSimulator simulator = ((P2DMDomain) domain).getSimulator();
+        simulator.updateEnvironment();
 
         // update the state by updating state's parameters
         s = s.setObjectsValue(state.getName(), ATT_TIME, timing + 1);
 //        s = s.setObjectsValue(state.getName(), ATT_TIMING_INT, 0);
 //        s = s.setObjectsValue(state.getName(), ATT_TOTAL_INT, totalIntAmount);
         s = s.setObjectsValue(state.getName(), ATT_REACTED_INT, reactedIntAmount);
+        s = s.setObjectsValue(state.getName(), ATT_LOCATION, simulator.getLocation().ordinal());
 
-        ((P2DMDomain) domain).getSimulator().updateEnvironment();
         return s;
     }
 

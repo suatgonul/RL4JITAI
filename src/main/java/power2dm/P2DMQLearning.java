@@ -25,7 +25,7 @@ import static power2dm.P2DMDomain.*;
  */
 public class P2DMQLearning extends QLearning {
 
-    private Map<Integer, List<QValue>> episodeMaxQValues = new HashMap<Integer, List<QValue>>();
+    private Map<Integer, Map<HashableState, List<QValue>>> episodeMaxQValues = new HashMap<Integer, Map<HashableState, List<QValue>>>();
 
     public P2DMQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate) {
         super(domain, gamma, hashingFactory, qInit, learningRate);
@@ -33,8 +33,6 @@ public class P2DMQLearning extends QLearning {
 
     @Override
     public EpisodeAnalysis runLearningEpisode(Environment env, int maxSteps) {
-//        populateMaxQValues();
-
         System.out.println("\nQ-Values Before Running Episode:");
         printQValuesForPreferredRange();
 
@@ -42,26 +40,37 @@ public class P2DMQLearning extends QLearning {
 
         System.out.println("\nQ-Values After Running Episode:");
         printQValuesForPreferredRange(ea);
+
+        populateMaxQValues();
         return ea;
     }
 
-    private List<QValue> populateMaxQValues(HashableState s) {
-        List<QValue> qs = this.getQs(s);
-        List<QValue> maxQValues = new ArrayList<QValue>();
+    private void populateMaxQValues() {
+        for (int t = 0; t <= 23; t++) {
+            List<State> statesForTime = getStatesForTime(t);
+            Map<HashableState, List<QValue>> qValuesForState = new HashMap<HashableState, List<QValue>>();
 
-        maxQValues.add(qs.get(0));
-        double maxQ = qs.get(0).q;
-        for(int i = 1; i < qs.size(); i++){
-            QValue q = qs.get(i);
-            if(q.q == maxQ){
-                maxQValues.add(q);
+            for (State s : statesForTime) {
+                List<QValue> qs = this.getQs(s);
+                List<QValue> maxQValues = new ArrayList<QValue>();
+                maxQValues.add(qs.get(0));
+                double maxQ = qs.get(0).q;
+
+                for (int i = 1; i < qs.size(); i++) {
+                    QValue q = qs.get(i);
+                    if (q.q == maxQ) {
+                        maxQValues.add(q);
+                    } else if (q.q > maxQ) {
+                        maxQValues.clear();
+                        maxQValues.add(q);
+                    }
+                }
+
+                qValuesForState.put((HashableState) s, maxQValues);
             }
-            else if(q.q > maxQ){
-                maxQValues.clear();
-                maxQValues.add(q);
-            }
+
+            episodeMaxQValues.put(t, qValuesForState);
         }
-        return maxQValues;
     }
 
     private void printQValuesForPreferredRange() {

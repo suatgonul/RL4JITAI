@@ -1,5 +1,9 @@
 package power2dm;
 
+import burlap.behavior.policy.EpsilonGreedy;
+import burlap.behavior.policy.GreedyQPolicy;
+import burlap.behavior.policy.Policy;
+import burlap.behavior.policy.SolverDerivedPolicy;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.oomdp.auxiliary.stateconditiontest.StateConditionTest;
@@ -12,6 +16,12 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
 import burlap.oomdp.statehashing.HashableStateFactory;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
+import power2dm.visualization.RewardVisualizer;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by suat on 08-Apr-16.
@@ -28,12 +38,18 @@ public class P2DMRecommender {
     private HashableStateFactory hashingFactory;
     private Environment env;
 
+    private Map<String, List<Double>> totalRewardsPerPolicy;
+
     public static void main(String[] args) {
         P2DMRecommender example = new P2DMRecommender();
         String outputPath = "output/"; //directory to record results
 
         //run example
-        example.QLearningExample(outputPath);
+        example.QLearningExample(new GreedyQPolicy(), outputPath);
+        example.QLearningExample(new EpsilonGreedy(0.05), outputPath);
+
+        //visualize total rewards
+        example.drawRewardChards();
     }
 
     public P2DMRecommender() {
@@ -46,10 +62,11 @@ public class P2DMRecommender {
         hashingFactory = new SimpleHashableStateFactory();
 
         env = new SimulatedEnvironment(domain, rf, tf, initialState);
+
+        totalRewardsPerPolicy = new HashMap<String, List<Double>>();
     }
 
-    public void QLearningExample(String outputPath) {
-
+    public void QLearningExample(Policy policy, String outputPath) {
         int totalInterventionDelieveyInPreferredRange = 0;
 
         // execute 50 runs of learning
@@ -61,26 +78,38 @@ public class P2DMRecommender {
 //                System.out.println("Willingness set to: " + willingness);
 //            }
 //
-            int totalDaysOfinterventionDeliveredInPreferredRange = 0;
-            //run learning for 50 episodes
-            LearningAgent agent = new P2DMQLearning(domain, 0.99, hashingFactory, 0., 1.);
-            for (int i = 0; i < 200; i++) {
-                System.out.println("Episode : " + i);
-                EpisodeAnalysis ea = agent.runLearningEpisode(env, 100);
+        List<Double> totalRewards = new ArrayList<Double>();
+        int totalDaysOfinterventionDeliveredInPreferredRange = 0;
+        //run learning for 50 episodes
+        LearningAgent agent = new P2DMQLearning(domain, 0.99, hashingFactory, 0., 1.);
+        ((P2DMQLearning) agent).setLearningPolicy(policy);
+        ((SolverDerivedPolicy) policy).setSolver((P2DMQLearning) agent);
 
-                ea.writeToFile(outputPath + "ql_" + i);
-                if (printPreferredTimeSteps(i, ea, agent)) {
-                    totalDaysOfinterventionDeliveredInPreferredRange++;
-                }
+        for (int i = 0; i < 1000; i++) {
+            System.out.println("Episode : " + i);
+            EpisodeAnalysis ea = agent.runLearningEpisode(env, 100);
 
-                //reset environment for next learning episode
-                env.resetEnvironment();
+            ea.writeToFile(outputPath + "ql_" + i);
+            if (printPreferredTimeSteps(i, ea, agent)) {
+                totalDaysOfinterventionDeliveredInPreferredRange++;
             }
-            System.out.println("Total days of intervention delivered in prefferred range: " + totalDaysOfinterventionDeliveredInPreferredRange);
+
+            // record total reward
+            totalRewards.add(calculateTotalReward(ea));
+
+            //reset environment for next learning episode
+            env.resetEnvironment();
+        }
+        System.out.println("Total days of intervention delivered in prefferred range: " + totalDaysOfinterventionDeliveredInPreferredRange);
+        totalRewardsPerPolicy.put(policy.getClass().getName(), totalRewards);
 //            totalInterventionDelieveyInPreferredRange += totalDaysOfinterventionDeliveredInPreferredRange;
 //        }
 //        System.out.println("Total days of intervention delivery in preferred range: " + totalInterventionDelieveyInPreferredRange);
 //        System.out.println("Average days of intervention delivery in " + runNum + " run = " + (totalInterventionDelieveyInPreferredRange / runNum));
+    }
+
+    private void drawRewardChards() {
+        RewardVisualizer.createRewardGraph("Total rewards per episode", "Greedy rewards", totalRewardsPerPolicy);
     }
 
     private boolean printPreferredTimeSteps(int episode, EpisodeAnalysis ea, LearningAgent agent) {
@@ -108,5 +137,13 @@ public class P2DMRecommender {
         }
         System.out.println();
         return interventionDeliveredInPreferredRange;
+    }
+
+    private double calculateTotalReward(EpisodeAnalysis ea) {
+        double totalReward = 0;
+        for (double reward : ea.rewardSequence) {
+            totalReward += reward;
+        }
+        return totalReward;
     }
 }

@@ -1,6 +1,5 @@
 package power2dm;
 
-import burlap.behavior.policy.GreedyQPolicy;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.learning.tdmethods.QLearningStateNode;
@@ -24,10 +23,8 @@ import static power2dm.P2DMDomain.*;
  */
 public class P2DMQLearning extends QLearning {
 
-
     public P2DMQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate) {
         super(domain, gamma, hashingFactory, qInit, learningRate);
-        setLearningPolicy(new GreedyQPolicy(this));
     }
 
     @Override

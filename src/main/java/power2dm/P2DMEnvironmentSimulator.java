@@ -9,6 +9,8 @@ public class P2DMEnvironmentSimulator {
     private P2DMDomain domain;
 
     private UserPreference preferences = new UserPreference();
+    private boolean fixedReaction = true;
+
     private int time = 0;
     private Location location = Location.HOME;
     private int[] willingnessToReact = new int[]{90, 70, 50, 30, 10};
@@ -27,6 +29,7 @@ public class P2DMEnvironmentSimulator {
     public Location getLocation() {
         return location;
     }
+
     public boolean simulateUserReactionToIntervention(int reactedTotal) {
         if (time < 7) {
             return false;
@@ -48,25 +51,31 @@ public class P2DMEnvironmentSimulator {
 
         boolean result;
         if (userHasPreference) {
-//            if (rInt < willingnessToReact[reactedTotal > 4 ? 4 : reactedTotal]) {
-//                result = true;
-//            } else {
-//                result = false;
-//            }
-            lastInterventionTime = time;
-            return true;
+            if (!fixedReaction) {
+                if (rInt < willingnessToReact[reactedTotal > 4 ? 4 : reactedTotal]) {
+                    result = true;
+                } else {
+                    result = false;
+                }
+            } else {
+                result = true;
+            }
         } else {
-//            if (rInt >= 80) {
-//                result = true;
-//            } else {
-//                result = false;
-//            }
-            return false;
+            if (!fixedReaction) {
+                if (rInt >= 80) {
+                    result = true;
+                } else {
+                    result = false;
+                }
+            } else {
+                return false;
+            }
+
         }
-//        if (result == true) {
-//            lastInterventionTime = time;
-//        }
-//        return result;
+        if (result == true) {
+            lastInterventionTime = time;
+        }
+        return result;
     }
 
     public void updateEnvironment() {

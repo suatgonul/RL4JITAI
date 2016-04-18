@@ -7,11 +7,13 @@ import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,12 +25,16 @@ import static power2dm.P2DMDomain.*;
  */
 public class P2DMQLearning extends QLearning {
 
+    private Map<Integer, List<QValue>> episodeMaxQValues = new HashMap<Integer, List<QValue>>();
+
     public P2DMQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate) {
         super(domain, gamma, hashingFactory, qInit, learningRate);
     }
 
     @Override
     public EpisodeAnalysis runLearningEpisode(Environment env, int maxSteps) {
+//        populateMaxQValues();
+
         System.out.println("\nQ-Values Before Running Episode:");
         printQValuesForPreferredRange();
 
@@ -37,6 +43,25 @@ public class P2DMQLearning extends QLearning {
         System.out.println("\nQ-Values After Running Episode:");
         printQValuesForPreferredRange(ea);
         return ea;
+    }
+
+    private List<QValue> populateMaxQValues(HashableState s) {
+        List<QValue> qs = this.getQs(s);
+        List<QValue> maxQValues = new ArrayList<QValue>();
+
+        maxQValues.add(qs.get(0));
+        double maxQ = qs.get(0).q;
+        for(int i = 1; i < qs.size(); i++){
+            QValue q = qs.get(i);
+            if(q.q == maxQ){
+                maxQValues.add(q);
+            }
+            else if(q.q > maxQ){
+                maxQValues.clear();
+                maxQValues.add(q);
+            }
+        }
+        return maxQValues;
     }
 
     private void printQValuesForPreferredRange() {
@@ -56,7 +81,8 @@ public class P2DMQLearning extends QLearning {
                 }
                 if (ea != null) {
                     if (ea.stateSequence.get(i).equals(((HashableState) s).s)) {
-                        System.out.print(" (x): Act: " + ea.actionSequence.get(i).actionName().substring(0, 3) + " Rew: " + ea.rewardSequence.get(i));
+                        GroundedAction act = ea.actionSequence.get(i);
+                        System.out.print("\t(x): Act: " + act.actionName().substring(0, 3) + " Rew: " + ea.rewardSequence.get(i));
                     }
                 }
                 System.out.println();

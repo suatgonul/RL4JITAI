@@ -1,7 +1,6 @@
 package power2dm;
 
 import burlap.behavior.policy.EpsilonGreedy;
-import burlap.behavior.policy.GreedyQPolicy;
 import burlap.behavior.policy.Policy;
 import burlap.behavior.policy.SolverDerivedPolicy;
 import burlap.behavior.singleagent.EpisodeAnalysis;
@@ -45,7 +44,7 @@ public class P2DMRecommender {
         String outputPath = "output/"; //directory to record results
 
         //run example
-        example.QLearningExample(new GreedyQPolicy(), outputPath);
+//        example.QLearningExample(new GreedyQPolicy(), outputPath);
         example.QLearningExample(new EpsilonGreedy(0.05), outputPath);
 
         //visualize total rewards

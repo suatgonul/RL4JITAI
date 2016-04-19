@@ -10,6 +10,7 @@ import burlap.oomdp.singleagent.common.SimpleAction;
 import power2dm.P2DMDomain;
 import power2dm.P2DMEnvironmentSimulator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static power2dm.P2DMDomain.*;
@@ -45,6 +46,22 @@ public class NoAction extends SimpleAction implements FullActionModel {
     }
 
     public List<TransitionProbability> getTransitions(State s, GroundedAction groundedAction) {
-        return null;
+
+        List<TransitionProbability> transitions = new ArrayList<TransitionProbability>();
+
+        ObjectInstance state = s.getFirstObjectOfClass(CLASS_STATE);
+        int timing = state.getIntValForAttribute(ATT_TIME);
+        int reactedInt = state.getIntValForAttribute(ATT_REACTED_INT);
+        int nonReactedInt = state.getIntValForAttribute(ATT_NON_REACTED_INT);
+
+        State ns = s.copy();
+        ns = ns.setObjectsValue(state.getName(), ATT_TIME, timing + 1);
+        ns = ns.setObjectsValue(state.getName(), ATT_REACTED_INT, reactedInt);
+        ns = ns.setObjectsValue(state.getName(), ATT_NON_REACTED_INT, nonReactedInt);
+        ns = ns.setObjectsValue(state.getName(), ATT_LOCATION, 0);
+        TransitionProbability tp = new TransitionProbability(ns, 1);
+        transitions.add(tp);
+
+        return transitions;
     }
 }

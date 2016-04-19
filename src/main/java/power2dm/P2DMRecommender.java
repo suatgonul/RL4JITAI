@@ -1,11 +1,12 @@
 package power2dm;
 
-import burlap.behavior.policy.EpsilonGreedy;
 import burlap.behavior.policy.Policy;
 import burlap.behavior.policy.SolverDerivedPolicy;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.tdmethods.SarsaLam;
+import burlap.behavior.singleagent.planning.Planner;
+import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.oomdp.auxiliary.stateconditiontest.StateConditionTest;
 import burlap.oomdp.auxiliary.stateconditiontest.TFGoalCondition;
 import burlap.oomdp.core.TerminalFunction;
@@ -46,10 +47,11 @@ public class P2DMRecommender {
 
         //run example
 //        example.QLearningExample(new GreedyQPolicy(), outputPath);
-        example.QLearningExample(new EpsilonGreedy(0.1), outputPath);
+//        example.QLearningExample(new EpsilonGreedy(0.1), outputPath);
 //        example.sarsaExample(outputPath);
         //visualize total rewards
-        example.drawRewardChards();
+        example.valueIterationExample();
+//        example.drawRewardChards();
     }
 
     public P2DMRecommender() {
@@ -128,6 +130,13 @@ public class P2DMRecommender {
         }
 
         totalRewardsPerPolicy.put("Epsilon Greedy", totalRewards);
+    }
+
+    private void valueIterationExample() {
+        Planner planner = new ValueIteration(domain, rf, tf, 0.99, hashingFactory, -1, 500);
+        ((ValueIteration) planner).toggleReachabiltiyTerminalStatePruning(true);
+        Policy p = planner.planFromState(initialState);
+        p.evaluateBehavior(initialState, rf, tf).writeToFile("output/" + "vi");
     }
 
     private void drawRewardChards() {

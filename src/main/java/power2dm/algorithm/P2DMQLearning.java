@@ -34,7 +34,7 @@ public class P2DMQLearning extends QLearning {
     public EpisodeAnalysis runLearningEpisode(Environment env, int maxSteps, int episodeNo) {
         EpisodeAnalysis ea = super.runLearningEpisode(env, maxSteps);
 
-        if (episodeNo > 49950) printQValuesForPreferredRange(ea, episodeNo);
+        if (episodeNo >= 49500) printQValuesForPreferredRange(ea, episodeNo);
 
         populateMaxQValues(ea);
         return ea;

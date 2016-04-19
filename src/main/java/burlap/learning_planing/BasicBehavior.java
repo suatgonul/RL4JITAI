@@ -68,8 +68,8 @@ public class BasicBehavior {
         example.valueIterationExample(outputPath);
 //        example.QLearningExample(outputPath);
 
-        example.experimenterAndPlotter();
-        //example.visualize(outputPath);
+//        example.experimenterAndPlotter();
+        example.visualize(outputPath);
     }
 
     public BasicBehavior() {

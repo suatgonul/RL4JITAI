@@ -18,6 +18,7 @@ public class P2DMDomain extends SADomain {
 //    public static final String ATT_TIMING_INT = "timing_interventions";
 //    public static final String ATT_TOTAL_INT = "total_interventions";
     public static final String ATT_REACTED_INT = "reacted_interventions";
+    public static final String ATT_NON_REACTED_INT = "non_reacted_interventions";
     public static final String ATT_LOCATION = "location";
 
 //    public static final String CLASS_AGENT = "agent";
@@ -40,8 +41,10 @@ public class P2DMDomain extends SADomain {
 //        timingIntAtt.setDiscValuesForRange(0, 2, 1);
 //        Attribute totalIntAtt = new Attribute(this, ATT_TOTAL_INT, Attribute.AttributeType.INT);
 //        totalIntAtt.setDiscValuesForRange(0, 24, 1);
-        Attribute timingReactedIntAtt = new Attribute(this, ATT_REACTED_INT, Attribute.AttributeType.INT);
-        timingReactedIntAtt.setDiscValuesForRange(0, 6, 1);
+        Attribute reactedIntAtt = new Attribute(this, ATT_REACTED_INT, Attribute.AttributeType.INT);
+        reactedIntAtt.setDiscValuesForRange(0, 24, 1);
+        Attribute nonReactedIntAtt = new Attribute(this, ATT_NON_REACTED_INT, Attribute.AttributeType.INT);
+        nonReactedIntAtt.setDiscValuesForRange(0, 24, 1);
         Attribute locationAtt = new Attribute(this, ATT_LOCATION, Attribute.AttributeType.INT);
         locationAtt.setDiscValuesForRange(0, 3, 1);
 
@@ -49,13 +52,14 @@ public class P2DMDomain extends SADomain {
 //        agentClass.addAttribute(timingAtt);
 //        agentClass.addAttribute(timingIntAtt);
 //        agentClass.addAttribute(totalIntAtt);
-//        agentClass.addAttribute(timingReactedIntAtt);
+//        agentClass.addAttribute(reactedIntAtt);
 
         ObjectClass stateClass = new ObjectClass(this, CLASS_STATE);
         stateClass.addAttribute(timingAtt);
 //        stateClass.addAttribute(timingIntAtt);
 //        stateClass.addAttribute(totalIntAtt);
-        stateClass.addAttribute(timingReactedIntAtt);
+        stateClass.addAttribute(reactedIntAtt);
+        stateClass.addAttribute(nonReactedIntAtt);
         stateClass.addAttribute(locationAtt);
 
         new InterventionDeliveryAction(ACTION_INT_DELIVERY, this);
@@ -74,6 +78,7 @@ public class P2DMDomain extends SADomain {
 //        o.setValue(ATT_TIMING_INT, 0);
 //        o.setValue(ATT_TOTAL_INT, 0);
         o.setValue(ATT_REACTED_INT, 0);
+        o.setValue(ATT_NON_REACTED_INT, 0);
         o.setValue(ATT_LOCATION, 0);
 
         return s;

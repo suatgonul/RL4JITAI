@@ -30,12 +30,15 @@ public class InterventionDeliveryAction extends SimpleAction implements FullActi
 //        int timingIntAmount = state.getIntValForAttribute(ATT_TIMING_INT);
 //        int totalIntAmount = state.getIntValForAttribute(ATT_TOTAL_INT);
         int reactedInt = state.getIntValForAttribute(ATT_REACTED_INT);
+        int nonReactedInt = state.getIntValForAttribute(ATT_NON_REACTED_INT);
 
         //if user reacts to intervention we should determine the next state accordingly
         P2DMEnvironmentSimulator simulator = ((P2DMDomain) domain).getSimulator();
         boolean userReacted = simulator.simulateUserReactionToIntervention(reactedInt);
         if (userReacted) {
             reactedInt++;
+        } else {
+            nonReactedInt++;
         }
 
         simulator.updateEnvironment();
@@ -45,6 +48,7 @@ public class InterventionDeliveryAction extends SimpleAction implements FullActi
 //        s = s.setObjectsValue(state.getName(), ATT_TIMING_INT, timingIntAmount + 1);
 //        s = s.setObjectsValue(state.getName(), ATT_TOTAL_INT, totalIntAmount + 1);
         s = s.setObjectsValue(state.getName(), ATT_REACTED_INT, reactedInt);
+        s = s.setObjectsValue(state.getName(), ATT_NON_REACTED_INT, nonReactedInt);
         s = s.setObjectsValue(state.getName(), ATT_LOCATION, simulator.getLocation().ordinal());
 
         return s;

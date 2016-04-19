@@ -16,12 +16,14 @@ public class DailyRewardFunction implements RewardFunction {
 //        int sPrimeTotalInt = sPrime.getObject(CLASS_STATE).getIntValForAttribute(ATT_TOTAL_INT);
         int sReactedInt = s.getObject(CLASS_STATE).getIntValForAttribute(ATT_REACTED_INT);
         int sPrimeReactedInt = sPrime.getObject(CLASS_STATE).getIntValForAttribute(ATT_REACTED_INT);
+        int sNonReactedInt = s.getObject(CLASS_STATE).getIntValForAttribute(ATT_NON_REACTED_INT);
+        int sPrimeNonReactedInt = sPrime.getObject(CLASS_STATE).getIntValForAttribute(ATT_NON_REACTED_INT);
 
         if(a.action.getName().equals(ACTION_INT_DELIVERY)) {
             if (sPrimeReactedInt > sReactedInt) {
                 return sPrimeReactedInt * 2;
-            } else {
-                return -1;
+            } if(sPrimeNonReactedInt > sNonReactedInt) {
+                return sPrimeNonReactedInt * -2;
             }
         }
         return 0;

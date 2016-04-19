@@ -68,7 +68,7 @@ public class P2DMEnvironmentSimulator {
                     result = false;
                 }
             } else {
-                return false;
+                result = false;
             }
 
         }

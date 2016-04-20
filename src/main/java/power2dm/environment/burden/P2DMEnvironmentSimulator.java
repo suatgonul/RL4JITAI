@@ -15,7 +15,7 @@ public class P2DMEnvironmentSimulator {
     private P2DMDomain domain;
 
     private UserPreference preferences = new UserPreference();
-    private boolean fixedReaction = true;
+    private boolean fixedReaction = false;
     private double burdenCoefficient = 1;
 
     private int time = 0;
@@ -35,6 +35,10 @@ public class P2DMEnvironmentSimulator {
         return location;
     }
 
+    public double getBurdenCoefficient() {
+        return burdenCoefficient;
+    }
+
     public boolean simulateUserReactionToIntervention() {
         if (time < 7) {
             return false;
@@ -48,14 +52,12 @@ public class P2DMEnvironmentSimulator {
 
         // if we are in an AFTERNOON state we should consider user preference on EVENING
         Random r = new Random();
-        int low = 0;
-        int high = 100;
-        int rInt = r.nextInt(high - low) + low;
+        double rDouble = r.nextDouble();
 
         boolean result;
         if (userHasPreference) {
             if (!fixedReaction) {
-                if (rInt >= burdenCoefficient) {
+                if (rDouble > burdenCoefficient ) {
                     result = true;
                 } else {
                     result = false;
@@ -65,7 +67,7 @@ public class P2DMEnvironmentSimulator {
             }
         } else {
             if (!fixedReaction) {
-                if (rInt >= 80) {
+                if (rDouble > 0.75) {
                     result = true;
                 } else {
                     result = false;
@@ -107,5 +109,6 @@ public class P2DMEnvironmentSimulator {
     private void resetEnvironment() {
         time = 0;
         location = Location.HOME;
+        burdenCoefficient = 1;
     }
 }

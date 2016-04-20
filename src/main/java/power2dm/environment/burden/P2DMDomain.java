@@ -54,7 +54,7 @@ public class P2DMDomain extends SADomain {
 
         ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
         o.setValue(ATT_TIME, 0);
-        o.setValue(ATT_BURDEN_COEFF, 0);
+        o.setValue(ATT_BURDEN_COEFF, 1);
         o.setValue(ATT_LOCATION, 0);
 
         return s;

@@ -13,6 +13,9 @@ import power2dm.environment.burden.state.P2DMState;
 
 import java.util.List;
 
+import static power2dm.environment.burden.P2DMDomain.ATT_BURDEN_COEFF;
+import static power2dm.environment.burden.P2DMDomain.ATT_LOCATION;
+import static power2dm.environment.burden.P2DMDomain.ATT_TIME;
 import static power2dm.environment.reacted_non_reacted_numbers.P2DMDomain.*;
 
 /**
@@ -29,15 +32,18 @@ public class NoAction extends SimpleAction implements FullActionModel {
         P2DMState st = (P2DMState) s;
         ObjectInstance state = st.getFirstObjectOfClass(CLASS_STATE);
         int timing = state.getIntValForAttribute(ATT_TIME);
-        int reactedIntAmount = st.getReactedInt();
-        int nonReactedIntAmount = st.getNonReactedInt();
+        int reactedInt = ((P2DMState) s).getReactedInt();
+        int nonReactedInt = ((P2DMState) s).getNonReactedInt();
 
         P2DMEnvironmentSimulator simulator = ((P2DMDomain) domain).getSimulator();
         simulator.updateEnvironment(this);
 
         // update the state by updating state's parameters
         s = s.setObjectsValue(state.getName(), ATT_TIME, timing + 1);
+        s = s.setObjectsValue(state.getName(), ATT_BURDEN_COEFF, simulator.getBurdenCoefficient());
         s = s.setObjectsValue(state.getName(), ATT_LOCATION, simulator.getLocation().ordinal());
+        ((P2DMState) s).setReactedInt(reactedInt);
+        ((P2DMState) s).setNonReactedInt(nonReactedInt);
 
         return s;
     }

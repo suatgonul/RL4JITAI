@@ -135,8 +135,8 @@ public class P2DMQLearning extends QLearning {
                     P2DMState curP2DMState = (P2DMState) statesForTime.get(i).s;
                     ObjectInstance currentStateInstance = statesForTime.get(i).getObject(CLASS_STATE);
 
-                    int newStateCoeff = newStateInstance.getIntValForAttribute(ATT_BURDEN_COEFF);
-                    int currentStateCoeff = currentStateInstance.getIntValForAttribute(ATT_BURDEN_COEFF);
+                    double newStateCoeff = newStateInstance.getRealValForAttribute(ATT_BURDEN_COEFF);
+                    double currentStateCoeff = currentStateInstance.getRealValForAttribute(ATT_BURDEN_COEFF);
 
                     if (newStateCoeff < currentStateCoeff) {
                         break;

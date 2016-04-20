@@ -77,8 +77,7 @@ public class P2DMRecommender {
         agent.setLearningPolicy(policy);
         ((SolverDerivedPolicy) policy).setSolver(agent);
 
-        for (int i = 0; i < 10000; i++) {
-            if (i % 1000 == 0) System.out.println("Episode : " + i);
+        for (int i = 0; i < 500; i++) {
             EpisodeAnalysis ea = agent.runLearningEpisode(env, 100, i);
 
 //            ea.writeToFile(outputPath + "ql_" + i);

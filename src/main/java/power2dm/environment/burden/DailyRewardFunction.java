@@ -19,9 +19,9 @@ public class DailyRewardFunction implements RewardFunction {
         if(a.action.getName().equals(ACTION_INT_DELIVERY)) {
 
             if (nextState.getReactedInt() > curState.getReactedInt()) {
-                return curState.getReactedInt();
+                return nextState.getReactedInt();
             } else {
-                return -1 * curState.getNonReactedInt();
+                return -1 * nextState.getNonReactedInt();
             }
         }
         return 0;

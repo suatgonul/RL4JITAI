@@ -29,7 +29,6 @@ public class InterventionDeliveryAction extends SimpleAction implements FullActi
 
         ObjectInstance state = s.getFirstObjectOfClass(CLASS_STATE);
         int timing = state.getIntValForAttribute(ATT_TIME);
-        double burdenCoefficient = state.getRealValForAttribute(ATT_BURDEN_COEFF);
         int reactedInt = ((P2DMState) s).getReactedInt();
         int nonReactedInt = ((P2DMState) s).getNonReactedInt();
 
@@ -46,7 +45,7 @@ public class InterventionDeliveryAction extends SimpleAction implements FullActi
 
         // update the state by updating state's parameters
         s = s.setObjectsValue(state.getName(), ATT_TIME, timing + 1);
-        s = s.setObjectsValue(state.getName(), ATT_BURDEN_COEFF, burdenCoefficient * 0.5);
+        s = s.setObjectsValue(state.getName(), ATT_BURDEN_COEFF, simulator.getBurdenCoefficient());
         s = s.setObjectsValue(state.getName(), ATT_LOCATION, simulator.getLocation().ordinal());
         ((P2DMState) s).setReactedInt(reactedInt);
         ((P2DMState) s).setNonReactedInt(nonReactedInt);

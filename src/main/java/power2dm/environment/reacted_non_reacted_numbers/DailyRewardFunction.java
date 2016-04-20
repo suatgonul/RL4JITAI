@@ -1,10 +1,10 @@
-package power2dm;
+package power2dm.environment.reacted_non_reacted_numbers;
 
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 
-import static power2dm.P2DMDomain.*;
+import static power2dm.environment.reacted_non_reacted_numbers.P2DMDomain.*;
 
 /**
  * Created by suat on 08-Apr-16.

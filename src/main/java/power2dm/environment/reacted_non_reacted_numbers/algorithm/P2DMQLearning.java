@@ -1,4 +1,4 @@
-package power2dm.algorithm;
+package power2dm.environment.reacted_non_reacted_numbers.algorithm;
 
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static power2dm.P2DMDomain.*;
+import static power2dm.environment.reacted_non_reacted_numbers.P2DMDomain.*;
 
 
 /**
@@ -34,7 +34,7 @@ public class P2DMQLearning extends QLearning {
     public EpisodeAnalysis runLearningEpisode(Environment env, int maxSteps, int episodeNo) {
         EpisodeAnalysis ea = super.runLearningEpisode(env, maxSteps);
 
-        if (episodeNo >= 49500) printQValuesForPreferredRange(ea, episodeNo);
+        printQValuesForPreferredRange(ea, episodeNo);
 
         populateMaxQValues(ea);
         return ea;
@@ -109,11 +109,11 @@ public class P2DMQLearning extends QLearning {
                         return "   (Max-Random)";
                     }
                 }
+                return "   (Random)";
             }
         } else {
             return "   (Blind-Random)";
         }
-        return "   (????????)";
     }
 
     private List<State> getStatesForTime(int time) {

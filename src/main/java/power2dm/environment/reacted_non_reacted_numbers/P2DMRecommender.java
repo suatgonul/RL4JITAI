@@ -1,12 +1,11 @@
-package power2dm;
+package power2dm.environment.reacted_non_reacted_numbers;
 
+import burlap.behavior.policy.EpsilonGreedy;
 import burlap.behavior.policy.Policy;
 import burlap.behavior.policy.SolverDerivedPolicy;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.tdmethods.SarsaLam;
-import burlap.behavior.singleagent.planning.Planner;
-import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.oomdp.auxiliary.stateconditiontest.StateConditionTest;
 import burlap.oomdp.auxiliary.stateconditiontest.TFGoalCondition;
 import burlap.oomdp.core.TerminalFunction;
@@ -16,7 +15,7 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
 import burlap.oomdp.statehashing.HashableStateFactory;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
-import power2dm.algorithm.P2DMQLearning;
+import power2dm.environment.reacted_non_reacted_numbers.algorithm.P2DMQLearning;
 import power2dm.visualization.RewardVisualizer;
 
 import java.util.ArrayList;
@@ -47,14 +46,14 @@ public class P2DMRecommender {
 
         //run example
 //        example.QLearningExample(new GreedyQPolicy(), outputPath);
-//        example.QLearningExample(new EpsilonGreedy(0.1), outputPath);
+        example.QLearningExample(new EpsilonGreedy(0.01), outputPath);
 //        example.sarsaExample(outputPath);
         //visualize total rewards
-        example.valueIterationExample();
-//        example.drawRewardChards();
+        example.drawRewardChards();
     }
 
     public P2DMRecommender() {
+        ///// reacted & non-reacted numbers
         domain = new P2DMDomain();
         rf = new DailyRewardFunction();
         tf = new DailyTerminalFunction();
@@ -66,20 +65,13 @@ public class P2DMRecommender {
         env = new SimulatedEnvironment(domain, rf, tf, initialState);
 
         totalRewardsPerPolicy = new HashMap<String, List<Double>>();
+
+        ///// burden coefficient
     }
 
     public void QLearningExample(Policy policy, String outputPath) {
         int totalInterventionDelieveyInPreferredRange = 0;
 
-        // execute 50 runs of learning
-//        int runNum = 50;
-//        for (int r = 0; r < runNum; r++) {
-//            if (r % 5 == 0) {
-//                int willingness = (r / 5) % 2 == 0 ? 1 : 0;
-//                domain.getSimulator().setWillingnessToReact(willingness);
-//                System.out.println("Willingness set to: " + willingness);
-//            }
-//
         List<Double> totalRewards = new ArrayList<Double>();
         int totalDaysOfinterventionDeliveredInPreferredRange = 0;
         //run learning for 50 episodes
@@ -87,8 +79,8 @@ public class P2DMRecommender {
         agent.setLearningPolicy(policy);
         ((SolverDerivedPolicy) policy).setSolver(agent);
 
-        for (int i = 0; i < 50000; i++) {
-            if(i%1000 == 0)System.out.println("Episode : " + i);
+        for (int i = 0; i < 1000; i++) {
+            if (i % 1000 == 0) System.out.println("Episode : " + i);
             EpisodeAnalysis ea = agent.runLearningEpisode(env, 100, i);
 
 //            ea.writeToFile(outputPath + "ql_" + i);
@@ -102,12 +94,7 @@ public class P2DMRecommender {
             //reset environment for next learning episode
             env.resetEnvironment();
         }
-//        System.out.println("Total days of intervention delivered in prefferred range: " + totalDaysOfinterventionDeliveredInPreferredRange);
         totalRewardsPerPolicy.put(policy.getClass().getName(), totalRewards);
-//            totalInterventionDelieveyInPreferredRange += totalDaysOfinterventionDeliveredInPreferredRange;
-//        }
-//        System.out.println("Total days of intervention delivery in preferred range: " + totalInterventionDelieveyInPreferredRange);
-//        System.out.println("Average days of intervention delivery in " + runNum + " run = " + (totalInterventionDelieveyInPreferredRange / runNum));
     }
 
     private void sarsaExample(String outputPath) {
@@ -115,12 +102,8 @@ public class P2DMRecommender {
 
         List<Double> totalRewards = new ArrayList<Double>();
 
-        //run learning for 50 episodes
-        for(int i = 0; i < 100000; i++){
+        for (int i = 0; i < 100000; i++) {
             EpisodeAnalysis ea = agent.runLearningEpisode(env);
-
-//            ea.writeToFile(outputPath + "sarsa_" + i);
-//            System.out.println(i + ": " + ea.maxTimeStep());
 
             // record total reward
             totalRewards.add(calculateTotalReward(ea));
@@ -130,13 +113,6 @@ public class P2DMRecommender {
         }
 
         totalRewardsPerPolicy.put("Epsilon Greedy", totalRewards);
-    }
-
-    private void valueIterationExample() {
-        Planner planner = new ValueIteration(domain, rf, tf, 0.99, hashingFactory, -1, 500);
-        ((ValueIteration) planner).toggleReachabiltiyTerminalStatePruning(true);
-        Policy p = planner.planFromState(initialState);
-        p.evaluateBehavior(initialState, rf, tf).writeToFile("output/" + "vi");
     }
 
     private void drawRewardChards() {
@@ -163,4 +139,11 @@ public class P2DMRecommender {
         }
         return totalReward;
     }
+
+    //    private void valueIterationExample() {
+//        Planner planner = new ValueIteration(domain, rf, tf, 0.99, hashingFactory, -1, 5);
+//        ((ValueIteration) planner).toggleReachabiltiyTerminalStatePruning(true);
+//        Policy p = planner.planFromState(initialState);
+//        p.evaluateBehavior(initialState, rf, tf).writeToFile("output/" + "vi");
+//    }
 }

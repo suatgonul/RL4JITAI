@@ -1,4 +1,4 @@
-package power2dm;
+package power2dm.environment.reacted_non_reacted_numbers;
 
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.ObjectClass;
@@ -7,8 +7,8 @@ import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.SADomain;
-import power2dm.action.InterventionDeliveryAction;
-import power2dm.action.NoAction;
+import power2dm.environment.reacted_non_reacted_numbers.action.InterventionDeliveryAction;
+import power2dm.environment.reacted_non_reacted_numbers.action.NoAction;
 
 /**
  * Created by suat on 08-Apr-16.

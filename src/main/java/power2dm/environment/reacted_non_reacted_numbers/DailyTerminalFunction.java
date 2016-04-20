@@ -1,10 +1,10 @@
-package power2dm;
+package power2dm.environment.reacted_non_reacted_numbers;
 
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.states.State;
 
-import static power2dm.P2DMDomain.ATT_TIME;
-import static power2dm.P2DMDomain.CLASS_STATE;
+import static power2dm.environment.reacted_non_reacted_numbers.P2DMDomain.ATT_TIME;
+import static power2dm.environment.reacted_non_reacted_numbers.P2DMDomain.CLASS_STATE;
 
 /**
  * Created by suat on 08-Apr-16.

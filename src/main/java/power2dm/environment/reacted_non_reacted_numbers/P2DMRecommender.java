@@ -46,7 +46,7 @@ public class P2DMRecommender {
 
         //run example
 //        example.QLearningExample(new GreedyQPolicy(), outputPath);
-        example.QLearningExample(new EpsilonGreedy(0.01), outputPath);
+        example.QLearningExample(new EpsilonGreedy(0.1), outputPath);
 //        example.sarsaExample(outputPath);
         //visualize total rewards
         example.drawRewardChards();
@@ -119,7 +119,7 @@ public class P2DMRecommender {
         RewardVisualizer.createRewardGraph("Total rewards per episode", "Greedy rewards", totalRewardsPerPolicy);
     }
 
-    private boolean printPreferredTimeSteps(int episode, EpisodeAnalysis ea, LearningAgent agent) {
+    private boolean printPreferredTimeSteps(int episode, EpisodeAnalysis ea) {
         boolean interventionDeliveredInPreferredRange = false;
 
         for (int a = 0; a < ea.actionSequence.size(); a++) {
@@ -140,10 +140,5 @@ public class P2DMRecommender {
         return totalReward;
     }
 
-    //    private void valueIterationExample() {
-//        Planner planner = new ValueIteration(domain, rf, tf, 0.99, hashingFactory, -1, 5);
-//        ((ValueIteration) planner).toggleReachabiltiyTerminalStatePruning(true);
-//        Policy p = planner.planFromState(initialState);
-//        p.evaluateBehavior(initialState, rf, tf).writeToFile("output/" + "vi");
-//    }
+
 }

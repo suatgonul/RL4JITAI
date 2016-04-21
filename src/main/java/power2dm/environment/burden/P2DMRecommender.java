@@ -73,11 +73,11 @@ public class P2DMRecommender {
         List<Double> totalRewards = new ArrayList<Double>();
         int totalDaysOfinterventionDeliveredInPreferredRange = 0;
         //run learning for 50 episodes
-        P2DMQLearning agent = new P2DMQLearning(domain, 0.99, hashingFactory, 0., 1.);
+        P2DMQLearning agent = new P2DMQLearning(domain, 0.5, hashingFactory, 0., 0.1);
         agent.setLearningPolicy(policy);
         ((SolverDerivedPolicy) policy).setSolver(agent);
 
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 50000; i++) {
             EpisodeAnalysis ea = agent.runLearningEpisode(env, 100, i);
 
 //            ea.writeToFile(outputPath + "ql_" + i);
@@ -136,11 +136,4 @@ public class P2DMRecommender {
         }
         return totalReward;
     }
-
-    //    private void valueIterationExample() {
-//        Planner planner = new ValueIteration(domain, rf, tf, 0.99, hashingFactory, -1, 5);
-//        ((ValueIteration) planner).toggleReachabiltiyTerminalStatePruning(true);
-//        Policy p = planner.planFromState(initialState);
-//        p.evaluateBehavior(initialState, rf, tf).writeToFile("output/" + "vi");
-//    }
 }

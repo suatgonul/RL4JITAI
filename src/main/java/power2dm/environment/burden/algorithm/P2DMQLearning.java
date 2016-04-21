@@ -35,9 +35,9 @@ public class P2DMQLearning extends QLearning {
     public EpisodeAnalysis runLearningEpisode(Environment env, int maxSteps, int episodeNo) {
         EpisodeAnalysis ea = super.runLearningEpisode(env, maxSteps);
 
-        printQValuesForPreferredRange(ea, episodeNo);
-
-        populateMaxQValues(ea);
+//        printQValuesForPreferredRange(ea, episodeNo);
+//
+//        populateMaxQValues(ea);
         return ea;
     }
 
@@ -75,10 +75,10 @@ public class P2DMQLearning extends QLearning {
 
                 System.out.print("qVals:");
                 for (QValue qVal : getQs(s)) {
-                    System.out.printf("\tAct: " + qVal.a.actionName().substring(0, 3) + " %.2f", qVal.q);
+                    System.out.printf("\tAct: " + qVal.a.actionName().substring(0, 3) + " %f", qVal.q);
                 }
                 if (ea != null) {
-                    if (ea.stateSequence.get(i).equals(((HashableState) s).s)) {
+                    if (((P2DMState) ea.stateSequence.get(i)).equals(s.s)) {
                         GroundedAction act = ea.actionSequence.get(i);
                         System.out.print("\t(x): Act: " + act.actionName().substring(0, 3) + " Rew: " + ea.rewardSequence.get(i));
                         String selectionMechanism = isRandomActionSelected(ea.stateSequence.get(i), ea.actionSequence.get(i));

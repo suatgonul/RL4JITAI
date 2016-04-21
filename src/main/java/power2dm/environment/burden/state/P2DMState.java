@@ -40,4 +40,25 @@ public class P2DMState extends MutableState {
         s.nonReactedInt = this.nonReactedInt;
         return s;
     }
+
+    public boolean specialEquals(Object other) {
+        if(!super.equals(other)) {
+           return false;
+        }
+
+        if(!(other instanceof P2DMState)){
+            return false;
+        }
+
+        P2DMState otherState = (P2DMState) other;
+        if(reactedInt != otherState.reactedInt) {
+            return false;
+        }
+
+        if(nonReactedInt != otherState.nonReactedInt) {
+            return false;
+        }
+
+        return true;
+    }
 }

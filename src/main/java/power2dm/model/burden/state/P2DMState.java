@@ -1,4 +1,4 @@
-package power2dm.environment.burden.state;
+package power2dm.model.burden.state;
 
 import burlap.oomdp.core.states.MutableState;
 

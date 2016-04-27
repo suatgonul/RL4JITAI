@@ -1,4 +1,4 @@
-package power2dm;
+package power2dm.model;
 
 import java.util.ArrayList;
 import java.util.List;

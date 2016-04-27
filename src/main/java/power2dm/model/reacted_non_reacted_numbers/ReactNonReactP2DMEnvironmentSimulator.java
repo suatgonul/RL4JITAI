@@ -1,25 +1,28 @@
-package power2dm.environment.reacted_non_reacted_numbers;
+package power2dm.model.reacted_non_reacted_numbers;
 
-import power2dm.Location;
-import power2dm.UserPreference;
+import burlap.oomdp.core.objects.ObjectInstance;
+import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.Action;
+import burlap.oomdp.singleagent.GroundedAction;
+import power2dm.model.EnvironmentSimulator;
+import power2dm.model.Location;
+import power2dm.model.P2DMDomain;
 
 import java.util.Random;
+
+import static power2dm.model.reacted_non_reacted_numbers.ReactNonReactP2DMDomain.ATT_REACTED_INT;
+import static power2dm.model.reacted_non_reacted_numbers.ReactNonReactP2DMDomain.CLASS_STATE;
 
 /**
  * Created by suat on 14-Apr-16.
  */
-public class P2DMEnvironmentSimulator {
-    private P2DMDomain domain;
+public class ReactNonReactP2DMEnvironmentSimulator extends EnvironmentSimulator {
 
-    private UserPreference preferences = new UserPreference();
     private boolean fixedReaction = true;
-
-    private int time = 0;
-    private Location location = Location.HOME;
     private int[] burdenCoefficient = new int[]{10, 30, 50, 70, 90};
     private int lastInterventionTime = 0;
 
-    public P2DMEnvironmentSimulator(P2DMDomain domain) {
+    public ReactNonReactP2DMEnvironmentSimulator(P2DMDomain domain) {
         this.domain = domain;
         setUserPreferences();
         resetEnvironment();
@@ -33,7 +36,7 @@ public class P2DMEnvironmentSimulator {
         return location;
     }
 
-    public boolean simulateUserReactionToIntervention(int reactedTotal) {
+    public boolean simulateUserReactionToIntervention(State s, GroundedAction groundedAction) {
         if (time < 7) {
             return false;
         }
@@ -55,6 +58,9 @@ public class P2DMEnvironmentSimulator {
         boolean result;
         if (userHasPreference) {
             if (!fixedReaction) {
+                ObjectInstance state = s.getFirstObjectOfClass(CLASS_STATE);
+                int reactedTotal = state.getIntValForAttribute(ATT_REACTED_INT);
+
                 if (rInt >= burdenCoefficient[reactedTotal > 4 ? 4 : reactedTotal]) {
                     result = true;
                 } else {
@@ -81,31 +87,9 @@ public class P2DMEnvironmentSimulator {
         return result;
     }
 
-    public void updateEnvironment() {
-        time++;
-        if (time < 8 || time > 18) {
-            location = Location.HOME;
-        } else if (time == 8 || time == 18) {
-            location = Location.ON_THE_WAY;
-        } else {
-            location = Location.WORK;
-        }
-        if (time == 24) {
-            resetEnvironment();
-        }
-    }
-
-    public void setBurdenCoefficient(int i) {
-        if (i == 1) {
-            burdenCoefficient = new int[]{10, 30, 50, 70, 90};
-        } else if (i == 0) {
-            burdenCoefficient = new int[]{20, 20, 20, 20, 10};
-        }
-    }
-
-    private void resetEnvironment() {
-        time = 0;
+    @Override
+    public void resetEnvironment() {
+        super.resetEnvironment();
         lastInterventionTime = 0;
-        location = Location.HOME;
     }
 }

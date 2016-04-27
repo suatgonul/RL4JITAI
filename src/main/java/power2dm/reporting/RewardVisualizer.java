@@ -1,4 +1,4 @@
-package power2dm.visualization;
+package power2dm.reporting;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;

@@ -1,4 +1,4 @@
-package power2dm;
+package power2dm.model;
 
 /**
  * Created by suat on 14-Apr-16.

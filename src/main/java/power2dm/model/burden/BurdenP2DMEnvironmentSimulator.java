@@ -1,19 +1,18 @@
-package power2dm.environment.burden;
+package power2dm.model.burden;
 
 import burlap.oomdp.singleagent.Action;
-import power2dm.Location;
-import power2dm.UserPreference;
+import power2dm.model.EnvironmentSimulator;
+import power2dm.model.Location;
+import power2dm.model.UserPreference;
 
 import java.util.Random;
 
-import static power2dm.environment.burden.P2DMDomain.ACTION_INT_DELIVERY;
+import static power2dm.model.burden.BurdenP2DMDomain.ACTION_INT_DELIVERY;
 
 /**
  * Created by suat on 14-Apr-16.
  */
-public class P2DMEnvironmentSimulator {
-    private P2DMDomain domain;
-
+public class BurdenP2DMEnvironmentSimulator extends EnvironmentSimulator {
     private UserPreference preferences = new UserPreference();
     private boolean fixedReaction = false;
     private double burdenCoefficient = 1;
@@ -21,7 +20,7 @@ public class P2DMEnvironmentSimulator {
     private int time = 0;
     private Location location = Location.HOME;
 
-    public P2DMEnvironmentSimulator(P2DMDomain domain) {
+    public BurdenP2DMEnvironmentSimulator(BurdenP2DMDomain domain) {
         this.domain = domain;
         setUserPreferences();
         resetEnvironment();
@@ -39,7 +38,7 @@ public class P2DMEnvironmentSimulator {
         return burdenCoefficient;
     }
 
-    public boolean simulateUserReactionToIntervention() {
+    public boolean simulateUserReactionToIntervention(Action act) {
         if (time < 7) {
             return false;
         }
@@ -80,18 +79,9 @@ public class P2DMEnvironmentSimulator {
         return result;
     }
 
+    @Override
     public void updateEnvironment(Action act) {
-        // update time
-        time++;
-
-        // update location
-        if (time < 8 || time > 18) {
-            location = Location.HOME;
-        } else if (time == 8 || time == 18) {
-            location = Location.ON_THE_WAY;
-        } else {
-            location = Location.WORK;
-        }
+        super.updateEnvironment(act);
 
         // update burden coefficient
         if(act.getName().equals(ACTION_INT_DELIVERY)) {
@@ -99,16 +89,12 @@ public class P2DMEnvironmentSimulator {
         } else {
             burdenCoefficient *= 0.5;
         }
-
-        if (time == 24) {
-            resetEnvironment();
-        }
     }
 
+    @Override
+    public void resetEnvironment() {
+        super.resetEnvironment();
 
-    private void resetEnvironment() {
-        time = 0;
-        location = Location.HOME;
         burdenCoefficient = 1;
     }
 }

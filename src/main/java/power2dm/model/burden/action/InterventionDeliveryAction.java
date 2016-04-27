@@ -1,26 +1,25 @@
-package power2dm.environment.burden.action;
+package power2dm.model.burden.action;
 
-import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TransitionProbability;
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.FullActionModel;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.common.SimpleAction;
-import power2dm.environment.burden.P2DMDomain;
-import power2dm.environment.burden.P2DMEnvironmentSimulator;
-import power2dm.environment.burden.state.P2DMState;
+import power2dm.model.P2DMDomain;
+import power2dm.model.burden.BurdenP2DMEnvironmentSimulator;
+import power2dm.model.burden.state.P2DMState;
 
 import java.util.List;
 
-import static power2dm.environment.burden.P2DMDomain.*;
+import static power2dm.model.burden.BurdenP2DMDomain.*;
 
 /**
  * Created by suat on 08-Apr-16.
  */
 public class InterventionDeliveryAction extends SimpleAction implements FullActionModel {
 
-    public InterventionDeliveryAction(String name, Domain domain) {
+    public InterventionDeliveryAction(String name, P2DMDomain domain) {
         super(name, domain);
     }
 
@@ -33,7 +32,7 @@ public class InterventionDeliveryAction extends SimpleAction implements FullActi
         int nonReactedInt = ((P2DMState) s).getNonReactedInt();
 
         //if user reacts to intervention we should determine the next state accordingly
-        P2DMEnvironmentSimulator simulator = ((P2DMDomain) domain).getSimulator();
+        BurdenP2DMEnvironmentSimulator simulator = (BurdenP2DMEnvironmentSimulator) ((P2DMDomain) domain).getSimulator();
         boolean userReacted = simulator.simulateUserReactionToIntervention();
         if (userReacted) {
             reactedInt++;
@@ -41,7 +40,7 @@ public class InterventionDeliveryAction extends SimpleAction implements FullActi
             nonReactedInt++;
         }
 
-        simulator.updateEnvironment(this);
+        simulator.updateEnvironment();
 
         // update the state by updating state's parameters
         s = s.setObjectsValue(state.getName(), ATT_TIME, timing + 1);

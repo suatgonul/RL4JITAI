@@ -4,6 +4,8 @@ import burlap.behavior.policy.EpsilonGreedy;
 import burlap.behavior.policy.Policy;
 import burlap.behavior.policy.SolverDerivedPolicy;
 import burlap.behavior.singleagent.EpisodeAnalysis;
+import burlap.behavior.singleagent.learning.LearningAgent;
+import burlap.behavior.singleagent.learning.tdmethods.SarsaLam;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -20,6 +22,9 @@ import power2dm.model.burden.BurdenP2DMDomain;
 import power2dm.model.burden.BurdenP2DMEnvironmentSimulator;
 import power2dm.reporting.EpisodeAnalyser;
 import power2dm.reporting.RunAnalyser;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by suat on 08-Apr-16.
@@ -41,7 +46,7 @@ public class AlgorithmTester {
         String outputPath = "output/react_non_react"; //directory to record results
         // example.testQLearning(new GreedyQPolicy(), outputPath);
 //        testQLearning(new EpsilonGreedy(0.01), outputPath);
-        // example.sarsaExample(outputPath);
+        // example.sarsaLambda(outputPath);
     }
 
     private void testBurdenModel() {
@@ -58,7 +63,7 @@ public class AlgorithmTester {
         String outputPath = "output/react_non_react"; //directory to record results
         // example.testQLearning(new GreedyQPolicy(), outputPath);
         testQLearning(new EpsilonGreedy(0.01), new BurdenEpisodeAnalyser(), outputPath);
-        // example.sarsaExample(outputPath);
+        sarsaLambda(outputPath);
     }
 
     public void testQLearning(Policy policy, EpisodeAnalyser episodeAnalyser, String outputPath) {
@@ -83,19 +88,19 @@ public class AlgorithmTester {
         runAnalyser.drawRewardChards();
     }
 
-//    private void sarsaExample(String outputPath) {
-//        RunAnalyser runAnalyser = new RunAnalyser();
-//        LearningAgent agent = new SarsaLam(domain, 0.99, hashingFactory, 0., 0.5, 0.3);
-//
-//        // TODO ==> total reward'lar episode analyser veya daha high-level bi şeyin altına taşınacak
-//        List<Double> totalRewards = new ArrayList<Double>();
-//
-//        for (int i = 0; i < 100000; i++) {
-//            EpisodeAnalysis ea = agent.runLearningEpisode(env);
-//            runAnalyser.recordEpisodeReward(ea);
-//            env.resetEnvironment();
-//        }
-//    }
+    private void sarsaLambda(String outputPath) {
+        RunAnalyser runAnalyser = new RunAnalyser();
+        LearningAgent agent = new SarsaLam(domain, 0.99, hashingFactory, 0., 0.5, 0.3);
+
+        // TODO ==> total reward'lar episode analyser veya daha high-level bi şeyin altına taşınacak
+        List<Double> totalRewards = new ArrayList<Double>();
+
+        for (int i = 0; i < 100000; i++) {
+            EpisodeAnalysis ea = agent.runLearningEpisode(env);
+            runAnalyser.recordEpisodeReward(ea);
+            env.resetEnvironment();
+        }
+    }
 
 //    private boolean isInterventionDeliveredInPrefferedRange(int episode, EpisodeAnalysis ea, LearningAgent agent) {
 //        boolean interventionDeliveredInPreferredRange = false;

@@ -23,6 +23,6 @@ public class BurdenDailyRewardFunction implements RewardFunction {
                 return -1;
             }
         }
-        return -0.2;
+        return 0;
     }
 }

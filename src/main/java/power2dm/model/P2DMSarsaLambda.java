@@ -4,7 +4,7 @@ import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.learning.tdmethods.QLearningStateNode;
-import burlap.behavior.valuefunction.ValueFunctionInitialization;
+import burlap.behavior.singleagent.learning.tdmethods.SarsaLam;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.HashableState;
@@ -21,12 +21,9 @@ import java.util.Map;
  * <p/>
  * Created by suat on 15-Apr-16.
  */
-public class P2DMQLearning extends QLearning {
+public class P2DMSarsaLambda extends SarsaLam {
 
-    public P2DMQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, EpisodeAnalyser episodeAnalyser) {
-        //şu constructor'u adam edip, sarsa lambdayı deneyecem, o belki saat 21'de gösterme işini çözer
-        Domain domain, double gamma, HashableStateFactory hashingFactory, ValueFunctionInitialization qInitFunction, double learningRate, Policy learningPolicy, int maxEpisodeSize
-
+    public P2DMSarsaLambda(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, EpisodeAnalyser episodeAnalyser) {
         super(domain, gamma, hashingFactory, qInit, learningRate);
         this.episodeAnalyser = episodeAnalyser;
         this.episodeAnalyser.setLearningAlgorithm(this);

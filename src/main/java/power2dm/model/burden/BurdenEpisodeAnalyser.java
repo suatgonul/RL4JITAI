@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static power2dm.model.burden.BurdenP2DMDomain.ATT_LOCATION;
 import static power2dm.model.burden.BurdenP2DMDomain.*;
 
 /**
@@ -36,8 +35,8 @@ public class BurdenEpisodeAnalyser extends EpisodeAnalyser {
                 // sort the list based on the number of reacted interventions
                 int i = 0;
                 for (; i < statesForTime.size(); i++) {
-//                    P2DMState curP2DMState = (P2DMState) statesForTime.get(i).s;
-                    P2DMState curP2DMState = (P2DMState) statesForTime.get(i);
+                    P2DMState curP2DMState = (P2DMState) ((HashableState) statesForTime.get(i)).s;
+//                    P2DMState curP2DMState = (P2DMState) statesForTime.get(i);
                     ObjectInstance currentStateInstance = statesForTime.get(i).getObject(CLASS_STATE);
 
                     double newStateCoeff = newStateInstance.getRealValForAttribute(ATT_BURDEN_COEFF);
@@ -70,7 +69,7 @@ public class BurdenEpisodeAnalyser extends EpisodeAnalyser {
                 P2DMState st = (P2DMState) ((HashableState) s).s;
                 System.out.print("Time: " + i);
                 ObjectInstance stateInstance = s.getObject(CLASS_STATE);
-                System.out.print(" Burden: " + stateInstance.getRealValForAttribute(ATT_BURDEN_COEFF) + " Loc: " + stateInstance.getIntValForAttribute(ATT_LOCATION));
+                System.out.printf(" Burden: %10f Loc:" + stateInstance.getIntValForAttribute(ATT_LOCATION), stateInstance.getRealValForAttribute(ATT_BURDEN_COEFF));
                 System.out.print(" React: " + st.getReactedInt() + ", Non-React: " + st.getNonReactedInt() + ", ");
 
                 System.out.print("qVals:");
@@ -78,8 +77,8 @@ public class BurdenEpisodeAnalyser extends EpisodeAnalyser {
                     System.out.printf("\tAct: " + qVal.a.actionName().substring(0, 3) + " %f", qVal.q);
                 }
                 if (ea != null) {
-//                    if (((P2DMState) ea.stateSequence.get(i)).equals(s.s)) {
-                    if (((P2DMState) ea.stateSequence.get(i)).equals(s)) {
+                    if (((P2DMState) ea.stateSequence.get(i)).equals(((HashableState) s).s)) {
+//                    if (((P2DMState) ea.stateSequence.get(i)).equals(s)) {
                         GroundedAction act = ea.actionSequence.get(i);
                         System.out.print("\t(x): Act: " + act.actionName().substring(0, 3) + " Rew: " + ea.rewardSequence.get(i));
                         String selectionMechanism = isRandomActionSelected(ea.stateSequence.get(i), ea.actionSequence.get(i));
@@ -97,27 +96,4 @@ public class BurdenEpisodeAnalyser extends EpisodeAnalyser {
             System.out.println("Total reward: " + totalRewardInEpisode);
         }
     }
-
-    private String isRandomActionSelected(State st, GroundedAction selectedAction) {
-        List<QValue> maxQValuesForState = episodeMaxQValues.get(qLearning.stateHash(st));
-        if (maxQValuesForState != null) {
-            if (maxQValuesForState.size() == 1) {
-                if (maxQValuesForState.get(0).a.actionName().equals(selectedAction.actionName())) {
-                    return "   (Systematic)";
-                } else {
-                    return "   (Random)";
-                }
-            } else {
-                for (QValue qVal : maxQValuesForState) {
-                    if (qVal.a.actionName().equals(selectedAction.actionName())) {
-                        return "   (Max-Random)";
-                    }
-                }
-                return "   (Random)";
-            }
-        } else {
-            return "   (Blind-Random)";
-        }
-    }
-
 }

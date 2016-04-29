@@ -1,5 +1,6 @@
 package power2dm.reporting;
 
+import burlap.behavior.policy.Policy;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -17,7 +18,7 @@ import java.util.Map;
  * Created by suatgonul on 4/15/2016.
  */
 public class RewardVisualizer extends ApplicationFrame {
-    public RewardVisualizer(String applicationTitle, String chartTitle, Map<String, List<Double>> rewards) {
+    public RewardVisualizer(String applicationTitle, String chartTitle, Map<Policy, List<Double>> rewards) {
         super(applicationTitle);
         JFreeChart xylineChart = ChartFactory.createXYLineChart(
                 chartTitle,
@@ -37,11 +38,11 @@ public class RewardVisualizer extends ApplicationFrame {
         setContentPane(chartPanel);
     }
 
-    private XYDataset createDataset(Map<String, List<Double>> rewards) {
+    private XYDataset createDataset(Map<Policy, List<Double>> rewards) {
         XYSeriesCollection dataset = new XYSeriesCollection();
 
-        for(Map.Entry<String, List<Double>> e : rewards.entrySet()) {
-            XYSeries rewardSeries = new XYSeries(e.getKey());
+        for(Map.Entry<Policy, List<Double>> e : rewards.entrySet()) {
+            XYSeries rewardSeries = new XYSeries(e.getKey().toString());
             for (int i = 0; i < e.getValue().size(); i++) {
                 rewardSeries.add(i, e.getValue().get(i));
             }
@@ -50,7 +51,7 @@ public class RewardVisualizer extends ApplicationFrame {
         return dataset;
     }
 
-    public static void createRewardGraph(String applicationTitle, String chartTitle, Map<String, List<Double>> totalRewards) {
+    public static void createRewardGraph(String applicationTitle, String chartTitle, Map<Policy, List<Double>> totalRewards) {
         RewardVisualizer chart = new RewardVisualizer(applicationTitle, chartTitle, totalRewards);
         chart.pack( );
         RefineryUtilities.centerFrameOnScreen( chart );

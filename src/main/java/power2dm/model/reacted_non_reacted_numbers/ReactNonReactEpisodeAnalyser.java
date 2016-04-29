@@ -98,27 +98,4 @@ public class ReactNonReactEpisodeAnalyser extends EpisodeAnalyser {
             System.out.println("Total reward: " + totalRewardInEpisode);
         }
     }
-
-    private String isRandomActionSelected(State st, GroundedAction selectedAction) {
-        List<QValue> maxQValuesForState = episodeMaxQValues.get(qLearning.stateHash(st));
-        if (maxQValuesForState != null) {
-            if (maxQValuesForState.size() == 1) {
-                if (maxQValuesForState.get(0).a.actionName().equals(selectedAction.actionName())) {
-                    return "   (Systematic)";
-                } else {
-                    return "   (Random)";
-                }
-            } else {
-                for (QValue qVal : maxQValuesForState) {
-                    if (qVal.a.actionName().equals(selectedAction.actionName())) {
-                        return "   (Max-Random)";
-                    }
-                }
-                return "   (Random)";
-            }
-        } else {
-            return "   (Blind-Random)";
-        }
-    }
-
 }

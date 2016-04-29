@@ -2,6 +2,7 @@ package power2dm.model;
 
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.SADomain;
+import power2dm.reporting.EpisodeAnalyser;
 
 /**
  * Created by suat on 08-Apr-16.
@@ -9,9 +10,12 @@ import burlap.oomdp.singleagent.SADomain;
 public abstract class P2DMDomain extends SADomain {
 
     private EnvironmentSimulator simulator;
+    private EpisodeAnalyser episodeAnalyser;
 
-    public P2DMDomain() {
+    public P2DMDomain(EnvironmentSimulator environmentSimulator) {
         super();
+        simulator = environmentSimulator;
+        simulator.setDomain(this);
         initializeDomain();
     }
 
@@ -28,10 +32,6 @@ public abstract class P2DMDomain extends SADomain {
      * @return
      */
     public abstract State getInitialState();
-
-    public void setSimulator(EnvironmentSimulator simulator) {
-        this.simulator = simulator;
-    }
 
     public EnvironmentSimulator getSimulator() {
         return simulator;

@@ -6,14 +6,14 @@ import burlap.oomdp.core.objects.MutableObjectInstance;
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
-import burlap.oomdp.singleagent.SADomain;
+import power2dm.model.P2DMDomain;
 import power2dm.model.reacted_non_reacted_numbers.action.InterventionDeliveryAction;
 import power2dm.model.reacted_non_reacted_numbers.action.NoAction;
 
 /**
  * Created by suat on 08-Apr-16.
  */
-public class ReactNonReactP2DMDomain extends SADomain {
+public class ReactNonReactP2DMDomain extends P2DMDomain {
     public static final String ATT_TIME = "time";
     public static final String ATT_REACTED_INT = "reacted_interventions";
     public static final String ATT_NON_REACTED_INT = "non_reacted_interventions";
@@ -26,12 +26,12 @@ public class ReactNonReactP2DMDomain extends SADomain {
 
     private ReactNonReactP2DMEnvironmentSimulator simulator;
 
-    public ReactNonReactP2DMDomain() {
-        super();
+    public ReactNonReactP2DMDomain(ReactNonReactP2DMEnvironmentSimulator environmentSimulator) {
+        super(environmentSimulator);
         initializeDomain();
     }
 
-    private void initializeDomain() {
+    protected void initializeDomain() {
         Attribute timingAtt = new Attribute(this, ATT_TIME, Attribute.AttributeType.INT);
         timingAtt.setDiscValuesForRange(0, 23, 1);
         Attribute reactedIntAtt = new Attribute(this, ATT_REACTED_INT, Attribute.AttributeType.INT);
@@ -51,7 +51,7 @@ public class ReactNonReactP2DMDomain extends SADomain {
         new InterventionDeliveryAction(ACTION_INT_DELIVERY, this);
         new NoAction(ACTION_NO_ACTION, this);
 
-        simulator = new ReactNonReactP2DMEnvironmentSimulator(this);
+        simulator = new ReactNonReactP2DMEnvironmentSimulator();
     }
 
     public State getInitialState() {

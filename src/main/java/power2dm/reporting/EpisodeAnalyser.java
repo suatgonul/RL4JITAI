@@ -3,6 +3,7 @@ package power2dm.reporting;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.GroundedAction;
 import power2dm.model.P2DMQLearning;
 
 import java.util.ArrayList;
@@ -17,6 +18,9 @@ public abstract class EpisodeAnalyser {
     protected P2DMQLearning qLearning;
     protected Map<State, List<QValue>> episodeMaxQValues = new HashMap<State, List<QValue>>();
 
+    public void setLearningAlgorithm(P2DMQLearning learning) {
+        qLearning = learning;
+    }
 
     /**
      * Extracts the maximum Q-Values for the states discovered through the given episode. Extracted (state-value) pairs
@@ -65,4 +69,26 @@ public abstract class EpisodeAnalyser {
      * @param episode The index of episode of interest
      */
     public abstract void printQValuesForPreferredRange(EpisodeAnalysis ea, int episode);
+
+    protected String isRandomActionSelected(State st, GroundedAction selectedAction) {
+        List<QValue> maxQValuesForState = episodeMaxQValues.get(qLearning.stateHash(st));
+        if (maxQValuesForState != null) {
+            if (maxQValuesForState.size() == 1) {
+                if (maxQValuesForState.get(0).a.actionName().equals(selectedAction.actionName())) {
+                    return "   (Systematic)";
+                } else {
+                    return "   (Random - Non-single)";
+                }
+            } else {
+                for (QValue qVal : maxQValuesForState) {
+                    if (qVal.a.actionName().equals(selectedAction.actionName())) {
+                        return "   (Max-Random)";
+                    }
+                }
+                return "   (Random)";
+            }
+        } else {
+            return "   (Blind-Random)";
+        }
+    }
 }

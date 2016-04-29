@@ -17,13 +17,12 @@ public class BurdenDailyRewardFunction implements RewardFunction {
         P2DMState nextState = (P2DMState) sPrime;
 
         if(a.action.getName().equals(ACTION_INT_DELIVERY)) {
-
             if (nextState.getReactedInt() > curState.getReactedInt()) {
                 return 1;
             } else {
                 return -1;
             }
         }
-        return 0;
+        return -0.2;
     }
 }

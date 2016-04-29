@@ -33,4 +33,8 @@ public abstract class EnvironmentSimulator {
         location = Location.HOME;
         time = 0;
     }
+
+    public void setDomain(P2DMDomain domain) {
+        this.domain = domain;
+    }
 }

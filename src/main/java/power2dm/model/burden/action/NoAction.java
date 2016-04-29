@@ -34,7 +34,7 @@ public class NoAction extends SimpleAction implements FullActionModel {
         int nonReactedInt = ((P2DMState) s).getNonReactedInt();
 
         BurdenP2DMEnvironmentSimulator simulator = (BurdenP2DMEnvironmentSimulator) ((P2DMDomain) domain).getSimulator();
-        simulator.updateEnvironment();
+        simulator.updateEnvironment(s, groundedAction);
 
         // update the state by updating state's parameters
         s = s.setObjectsValue(state.getName(), ATT_TIME, timing + 1);

@@ -1,5 +1,6 @@
 package power2dm.model;
 
+import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.learning.tdmethods.QLearningStateNode;
@@ -21,8 +22,10 @@ import java.util.Map;
  */
 public class P2DMQLearning extends QLearning {
 
-    protected P2DMQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate) {
+    public P2DMQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, EpisodeAnalyser episodeAnalyser) {
         super(domain, gamma, hashingFactory, qInit, learningRate);
+        this.episodeAnalyser = episodeAnalyser;
+        this.episodeAnalyser.setLearningAlgorithm(this);
     }
 
     private EpisodeAnalyser episodeAnalyser;
@@ -34,11 +37,11 @@ public class P2DMQLearning extends QLearning {
         return ea;
     }
 
-    public void setEpisodeAnalyser(EpisodeAnalyser episodeAnalyser) {
-        this.episodeAnalyser = episodeAnalyser;
-    }
-
     public Map<HashableState, QLearningStateNode> getAllQValues() {
         return qIndex;
+    }
+
+    public Policy getPolicy() {
+        return learningPolicy;
     }
 }

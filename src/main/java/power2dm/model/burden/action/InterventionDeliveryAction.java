@@ -33,14 +33,14 @@ public class InterventionDeliveryAction extends SimpleAction implements FullActi
 
         //if user reacts to intervention we should determine the next state accordingly
         BurdenP2DMEnvironmentSimulator simulator = (BurdenP2DMEnvironmentSimulator) ((P2DMDomain) domain).getSimulator();
-        boolean userReacted = simulator.simulateUserReactionToIntervention();
+        boolean userReacted = simulator.simulateUserReactionToIntervention(s, groundedAction);
         if (userReacted) {
             reactedInt++;
         } else {
             nonReactedInt++;
         }
 
-        simulator.updateEnvironment();
+        simulator.updateEnvironment(s, groundedAction);
 
         // update the state by updating state's parameters
         s = s.setObjectsValue(state.getName(), ATT_TIME, timing + 1);

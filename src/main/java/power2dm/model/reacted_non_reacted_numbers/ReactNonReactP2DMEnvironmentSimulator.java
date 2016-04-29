@@ -2,11 +2,9 @@ package power2dm.model.reacted_non_reacted_numbers;
 
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.State;
-import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import power2dm.model.EnvironmentSimulator;
 import power2dm.model.Location;
-import power2dm.model.P2DMDomain;
 
 import java.util.Random;
 
@@ -22,8 +20,7 @@ public class ReactNonReactP2DMEnvironmentSimulator extends EnvironmentSimulator 
     private int[] burdenCoefficient = new int[]{10, 30, 50, 70, 90};
     private int lastInterventionTime = 0;
 
-    public ReactNonReactP2DMEnvironmentSimulator(P2DMDomain domain) {
-        this.domain = domain;
+    public ReactNonReactP2DMEnvironmentSimulator() {
         setUserPreferences();
         resetEnvironment();
     }

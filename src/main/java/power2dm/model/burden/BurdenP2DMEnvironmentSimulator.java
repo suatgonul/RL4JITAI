@@ -1,6 +1,7 @@
 package power2dm.model.burden;
 
-import burlap.oomdp.singleagent.Action;
+import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.GroundedAction;
 import power2dm.model.EnvironmentSimulator;
 import power2dm.model.Location;
 import power2dm.model.UserPreference;
@@ -17,17 +18,14 @@ public class BurdenP2DMEnvironmentSimulator extends EnvironmentSimulator {
     private boolean fixedReaction = false;
     private double burdenCoefficient = 1;
 
-    private int time = 0;
-    private Location location = Location.HOME;
-
-    public BurdenP2DMEnvironmentSimulator(BurdenP2DMDomain domain) {
-        this.domain = domain;
+    public BurdenP2DMEnvironmentSimulator() {
         setUserPreferences();
         resetEnvironment();
     }
 
     private void setUserPreferences() {
         preferences.createPreference(19, 21, Location.HOME);
+//        preferences.createPreference(9, 17, Location.WORK);
     }
 
     public Location getLocation() {
@@ -38,7 +36,7 @@ public class BurdenP2DMEnvironmentSimulator extends EnvironmentSimulator {
         return burdenCoefficient;
     }
 
-    public boolean simulateUserReactionToIntervention(Action act) {
+    public boolean simulateUserReactionToIntervention(State s, GroundedAction groundedAction) {
         if (time < 7) {
             return false;
         }
@@ -49,17 +47,18 @@ public class BurdenP2DMEnvironmentSimulator extends EnvironmentSimulator {
 
         boolean userHasPreference = preferences.doesUserHasPreference(time, location);
 
-        // if we are in an AFTERNOON state we should consider user preference on EVENING
         Random r = new Random();
         double rDouble = r.nextDouble();
 
         boolean result;
         if (userHasPreference) {
+            System.out.printf("Random: %f", rDouble);
             if (!fixedReaction) {
                 if (rDouble > burdenCoefficient ) {
                     result = true;
                 } else {
                     result = false;
+                    System.out.printf("Random: %f Burden: %f", rDouble, burdenCoefficient);
                 }
             } else {
                 result = true;
@@ -80,14 +79,14 @@ public class BurdenP2DMEnvironmentSimulator extends EnvironmentSimulator {
     }
 
     @Override
-    public void updateEnvironment(Action act) {
-        super.updateEnvironment(act);
+    public void updateEnvironment(State s, GroundedAction groundedAction) {
+        super.updateEnvironment(s, groundedAction);
 
         // update burden coefficient
-        if(act.getName().equals(ACTION_INT_DELIVERY)) {
+        if(groundedAction.actionName().equals(ACTION_INT_DELIVERY)) {
             burdenCoefficient = 1;
         } else {
-            burdenCoefficient *= 0.5;
+            burdenCoefficient *= 0.1;
         }
     }
 

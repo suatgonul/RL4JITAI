@@ -24,8 +24,8 @@ public class BurdenP2DMDomain extends P2DMDomain {
 
     private BurdenP2DMEnvironmentSimulator simulator;
 
-    public BurdenP2DMDomain() {
-        super();
+    public BurdenP2DMDomain(BurdenP2DMEnvironmentSimulator environmentSimulator) {
+        super(environmentSimulator);
         initializeDomain();
     }
 
@@ -45,7 +45,7 @@ public class BurdenP2DMDomain extends P2DMDomain {
         new InterventionDeliveryAction(ACTION_INT_DELIVERY, this);
         new NoAction(ACTION_NO_ACTION, this);
 
-        simulator = new BurdenP2DMEnvironmentSimulator(this);
+        simulator = new BurdenP2DMEnvironmentSimulator();
     }
 
     public P2DMState getInitialState() {

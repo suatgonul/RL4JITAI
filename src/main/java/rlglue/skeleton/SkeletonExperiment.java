@@ -81,7 +81,7 @@ public class SkeletonExperiment {
         /*We could also start over and do another experiment */
         taskSpec = RLGlue.RL_init();
 
-        /*We could run one step at a time instead of one episode at a time */
+        /*We could run one step at a hourOfDay instead of one episode at a hourOfDay */
         /*Start the episode */
         Observation_action startResponse = RLGlue.RL_start();
 

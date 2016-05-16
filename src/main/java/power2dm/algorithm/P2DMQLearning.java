@@ -1,15 +1,17 @@
-package power2dm.model;
+package power2dm.algorithm;
 
+import burlap.behavior.policy.EpsilonGreedy;
+import burlap.behavior.policy.GreedyQPolicy;
 import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.learning.tdmethods.QLearningStateNode;
-import burlap.behavior.valuefunction.ValueFunctionInitialization;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
 import power2dm.reporting.EpisodeAnalyser;
+import power2dm.reporting.P2DMEpisodeAnalysis;
 
 import java.util.Map;
 
@@ -21,24 +23,24 @@ import java.util.Map;
  * <p/>
  * Created by suat on 15-Apr-16.
  */
-public class P2DMQLearning extends QLearning {
+public class P2DMQLearning extends QLearning implements LearningProvider {
 
-    public P2DMQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, EpisodeAnalyser episodeAnalyser) {
-        //şu constructor'u adam edip, sarsa lambdayı deneyecem, o belki saat 21'de gösterme işini çözer
-        Domain domain, double gamma, HashableStateFactory hashingFactory, ValueFunctionInitialization qInitFunction, double learningRate, Policy learningPolicy, int maxEpisodeSize
-
-        super(domain, gamma, hashingFactory, qInit, learningRate);
+    public P2DMQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize, EpisodeAnalyser episodeAnalyser) {
+        super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, maxEpisodeSize);
         this.episodeAnalyser = episodeAnalyser;
         this.episodeAnalyser.setLearningAlgorithm(this);
+        setPolicySolver();
     }
 
     private EpisodeAnalyser episodeAnalyser;
 
-    public EpisodeAnalysis runLearningEpisode(Environment env, int maxSteps, int episodeNo) {
+    public P2DMEpisodeAnalysis runLearningEpisode(Environment env, int maxSteps, int episodeNo) {
         EpisodeAnalysis ea = super.runLearningEpisode(env, maxSteps);
+        //TODO asagidaki sirayi duzgun bi sekilde episodeAnalyser'in icine koy
         episodeAnalyser.printQValuesForPreferredRange(ea, episodeNo);
         episodeAnalyser.populateMaxQValues(ea);
-        return ea;
+        P2DMEpisodeAnalysis p2dmEa = episodeAnalyser.appendReportData(ea,episodeNo);
+        return p2dmEa;
     }
 
     public Map<HashableState, QLearningStateNode> getAllQValues() {
@@ -47,5 +49,13 @@ public class P2DMQLearning extends QLearning {
 
     public Policy getPolicy() {
         return learningPolicy;
+    }
+
+    public void setPolicySolver() {
+        if(learningPolicy instanceof EpsilonGreedy) {
+            ((EpsilonGreedy) learningPolicy).setSolver(this);
+        } else if (learningPolicy instanceof GreedyQPolicy) {
+            ((GreedyQPolicy) learningPolicy).setSolver(this);
+        }
     }
 }

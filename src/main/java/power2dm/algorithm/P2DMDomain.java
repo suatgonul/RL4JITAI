@@ -1,4 +1,4 @@
-package power2dm.model;
+package power2dm.algorithm;
 
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.SADomain;
@@ -15,7 +15,7 @@ public abstract class P2DMDomain extends SADomain {
     public P2DMDomain(EnvironmentSimulator environmentSimulator) {
         super();
         simulator = environmentSimulator;
-        simulator.setDomain(this);
+        if(simulator !=null) simulator.setDomain(this);
         initializeDomain();
     }
 

@@ -6,15 +6,15 @@ import burlap.oomdp.core.objects.MutableObjectInstance;
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
-import power2dm.model.P2DMDomain;
-import power2dm.model.reacted_non_reacted_numbers.action.InterventionDeliveryAction;
-import power2dm.model.reacted_non_reacted_numbers.action.NoAction;
+import power2dm.algorithm.P2DMDomain;
+import power2dm.model.reacted_non_reacted_numbers.action.ReactNonReactInterventionDeliveryAction;
+import power2dm.model.reacted_non_reacted_numbers.action.ReactNonReactNoAction;
 
 /**
  * Created by suat on 08-Apr-16.
  */
 public class ReactNonReactP2DMDomain extends P2DMDomain {
-    public static final String ATT_TIME = "time";
+    public static final String ATT_TIME = "hourOfDay";
     public static final String ATT_REACTED_INT = "reacted_interventions";
     public static final String ATT_NON_REACTED_INT = "non_reacted_interventions";
     public static final String ATT_LOCATION = "location";
@@ -48,8 +48,8 @@ public class ReactNonReactP2DMDomain extends P2DMDomain {
         stateClass.addAttribute(nonReactedIntAtt);
         stateClass.addAttribute(locationAtt);
 
-        new InterventionDeliveryAction(ACTION_INT_DELIVERY, this);
-        new NoAction(ACTION_NO_ACTION, this);
+        new ReactNonReactInterventionDeliveryAction(ACTION_INT_DELIVERY, this);
+        new ReactNonReactNoAction(ACTION_NO_ACTION, this);
 
         simulator = new ReactNonReactP2DMEnvironmentSimulator();
     }

@@ -7,14 +7,13 @@ import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.FullActionModel;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.common.SimpleAction;
-import power2dm.model.P2DMDomain;
+import power2dm.algorithm.P2DMDomain;
 import power2dm.model.burden.BurdenP2DMEnvironmentSimulator;
 import power2dm.model.burden.state.P2DMState;
 
 import java.util.List;
 
 import static power2dm.model.burden.BurdenP2DMDomain.*;
-import static power2dm.model.reacted_non_reacted_numbers.ReactNonReactP2DMDomain.CLASS_STATE;
 
 /**
  * Created by suat on 08-Apr-16.

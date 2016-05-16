@@ -6,7 +6,7 @@ import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.FullActionModel;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.common.SimpleAction;
-import power2dm.model.P2DMDomain;
+import power2dm.algorithm.P2DMDomain;
 import power2dm.model.burden.BurdenP2DMEnvironmentSimulator;
 import power2dm.model.burden.state.P2DMState;
 

@@ -1,5 +1,6 @@
 package power2dm.reporting;
 
+import burlap.behavior.policy.EpsilonGreedy;
 import burlap.behavior.policy.Policy;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -18,50 +19,46 @@ import java.util.Map;
  * Created by suatgonul on 4/15/2016.
  */
 public class RewardVisualizer extends ApplicationFrame {
-    public RewardVisualizer(String applicationTitle, String chartTitle, Map<Policy, List<Double>> rewards) {
+    public RewardVisualizer(String applicationTitle, Policy policy, Map<Policy, List<P2DMEpisodeAnalysis>> rewards) {
         super(applicationTitle);
-        JFreeChart xylineChart = ChartFactory.createXYLineChart(
-                chartTitle,
-                "Episode",
-                "Reward",
-                createDataset(rewards),
-                PlotOrientation.VERTICAL,
-                false, true, false);
+        JFreeChart xylineChart = ChartFactory.createXYLineChart(getChartTitle(policy), "Episode", "Reward", createDataset(rewards), PlotOrientation.VERTICAL, false, true, false);
 
         ChartPanel chartPanel = new ChartPanel(xylineChart);
         chartPanel.setPreferredSize(new java.awt.Dimension(750, 375));
-//        final XYPlot plot = xylineChart.getXYPlot();
-//        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-//        renderer.setSeriesPaint(0, Color.RED);
-//        renderer.setSeriesStroke(0, new BasicStroke(4.0f));
-//        plot.setRenderer(renderer);
         setContentPane(chartPanel);
     }
 
-    private XYDataset createDataset(Map<Policy, List<Double>> rewards) {
+    private XYDataset createDataset(Map<Policy, List<P2DMEpisodeAnalysis>> episodeAnalysisList) {
         XYSeriesCollection dataset = new XYSeriesCollection();
 
-        for(Map.Entry<Policy, List<Double>> e : rewards.entrySet()) {
+        for (Map.Entry<Policy, List<P2DMEpisodeAnalysis>> e : episodeAnalysisList.entrySet()) {
             XYSeries rewardSeries = new XYSeries(e.getKey().toString());
             for (int i = 0; i < e.getValue().size(); i++) {
-                rewardSeries.add(i, e.getValue().get(i));
+                rewardSeries.add(i, e.getValue().get(i).getTotalReward());
             }
             dataset.addSeries(rewardSeries);
         }
         return dataset;
     }
 
-    public static void createRewardGraph(String applicationTitle, String chartTitle, Map<Policy, List<Double>> totalRewards) {
-        RewardVisualizer chart = new RewardVisualizer(applicationTitle, chartTitle, totalRewards);
-        chart.pack( );
-        RefineryUtilities.centerFrameOnScreen( chart );
-        chart.setVisible( true );
+    public void createRewardGraph() {
+        pack();
+        RefineryUtilities.centerFrameOnScreen(this);
+        this.setVisible(true);
+    }
+
+    private static String getChartTitle(Policy policy) {
+        if (policy instanceof EpsilonGreedy) {
+            double epsilon = ((EpsilonGreedy) policy).getEpsilon();
+            return "Epsilon Greedy (" + epsilon + ")";
+        }
+        return "";
     }
 
     public static void main(final String[] args) {
-        RewardVisualizer chart = new RewardVisualizer("Browser Usage Statistics", "Which Browser are you using?", null);
-        chart.pack( );
-        RefineryUtilities.centerFrameOnScreen( chart );
-        chart.setVisible( true );
+        RewardVisualizer chart = new RewardVisualizer("Browser Usage Statistics", null, null);
+        chart.pack();
+        RefineryUtilities.centerFrameOnScreen(chart);
+        chart.setVisible(true);
     }
 }

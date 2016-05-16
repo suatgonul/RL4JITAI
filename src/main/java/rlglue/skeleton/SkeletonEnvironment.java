@@ -50,7 +50,7 @@ public class SkeletonEnvironment implements EnvironmentInterface {
 	
 	//Create a task spec programatically.  This task spec encodes that state, action, and reward space for the problem.
 	//You could forgo the task spec if your agent and environment have been created specifically to work with each other
-	//ie, there is no need to share this information at run time.  You could also use your own ad-hoc task specification language,
+	//ie, there is no need to share this information at run hourOfDay.  You could also use your own ad-hoc task specification language,
 	//or use the official one but just hard code the string instead of constructing it this way.
 	    TaskSpecVRLGLUE3 theTaskSpecObject = new TaskSpecVRLGLUE3();
         theTaskSpecObject.setEpisodic();

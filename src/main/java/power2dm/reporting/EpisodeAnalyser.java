@@ -1,10 +1,10 @@
 package power2dm.reporting;
 
 import burlap.behavior.singleagent.EpisodeAnalysis;
+import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
-import power2dm.model.P2DMQLearning;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,10 +15,10 @@ import java.util.Map;
  * Created by suat on 27-Apr-16.
  */
 public abstract class EpisodeAnalyser {
-    protected P2DMQLearning qLearning;
+    protected QLearning qLearning;
     protected Map<State, List<QValue>> episodeMaxQValues = new HashMap<State, List<QValue>>();
 
-    public void setLearningAlgorithm(P2DMQLearning learning) {
+    public void setLearningAlgorithm(QLearning learning) {
         qLearning = learning;
     }
 
@@ -51,7 +51,7 @@ public abstract class EpisodeAnalyser {
     }
 
     /**
-     * Aggregates the states belonging to a particular time (hour) into a list in a sorted way. Sorting should consider
+     * Aggregates the states belonging to a particular hourOfDay (hour) into a list in a sorted way. Sorting should consider
      * the state-specific parameters.
      *
      * @param time the hour of interest during the day
@@ -70,6 +70,13 @@ public abstract class EpisodeAnalyser {
      */
     public abstract void printQValuesForPreferredRange(EpisodeAnalysis ea, int episode);
 
+    public P2DMEpisodeAnalysis appendReportData(EpisodeAnalysis ea, int episodeNo) {
+        P2DMEpisodeAnalysis p2dmEa = new P2DMEpisodeAnalysis(ea);
+        p2dmEa.setTotalReward(calculateTotalReward(ea));
+        p2dmEa.setEpisodeNo(episodeNo);
+        return p2dmEa;
+    }
+
     protected String isRandomActionSelected(State st, GroundedAction selectedAction) {
         List<QValue> maxQValuesForState = episodeMaxQValues.get(qLearning.stateHash(st));
         if (maxQValuesForState != null) {
@@ -85,10 +92,18 @@ public abstract class EpisodeAnalyser {
                         return "   (Max-Random)";
                     }
                 }
-                return "   (Random)";
+                return "   (Random - Non-multiple)";
             }
         } else {
             return "   (Blind-Random)";
         }
+    }
+
+    private double calculateTotalReward(EpisodeAnalysis ea) {
+        double totalReward = 0;
+        for (double reward : ea.rewardSequence) {
+            totalReward += reward;
+        }
+        return totalReward;
     }
 }

@@ -1,4 +1,4 @@
-package power2dm.model;
+package power2dm.algorithm;
 
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.states.State;

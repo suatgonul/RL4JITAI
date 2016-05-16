@@ -4,7 +4,7 @@ import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.objects.MutableObjectInstance;
 import burlap.oomdp.core.objects.ObjectInstance;
-import power2dm.model.P2DMDomain;
+import power2dm.algorithm.P2DMDomain;
 import power2dm.model.burden.action.InterventionDeliveryAction;
 import power2dm.model.burden.action.NoAction;
 import power2dm.model.burden.state.P2DMState;
@@ -13,7 +13,7 @@ import power2dm.model.burden.state.P2DMState;
  * Created by suat on 08-Apr-16.
  */
 public class BurdenP2DMDomain extends P2DMDomain {
-    public static final String ATT_TIME = "time";
+    public static final String ATT_TIME = "hourOfDay";
     public static final String ATT_BURDEN_COEFF = "burden_coefficient";
     public static final String ATT_LOCATION = "location";
 

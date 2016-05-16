@@ -31,7 +31,7 @@ import org.rlcommunity.rlglue.codec.EnvironmentInterface;
 /**
 *  A simple example of how can you run all components of the skeleton project from a single Java class.
 * This is strictly for the convenience of not having to run three terminal windows and start three 
-* separate processes all of the time.  In this case, all three components (agent/environment/experiment)
+* separate processes all of the hourOfDay.  In this case, all three components (agent/environment/experiment)
 * are communicating over sockets.
 *
 * You could use this same approach to run any pair of components too, so if only your agent and environment

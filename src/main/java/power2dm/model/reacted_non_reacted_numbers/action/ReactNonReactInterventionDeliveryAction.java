@@ -17,9 +17,9 @@ import static power2dm.model.reacted_non_reacted_numbers.ReactNonReactP2DMDomain
 /**
  * Created by suat on 08-Apr-16.
  */
-public class InterventionDeliveryAction extends SimpleAction implements FullActionModel {
+public class ReactNonReactInterventionDeliveryAction extends SimpleAction implements FullActionModel {
 
-    public InterventionDeliveryAction(String name, Domain domain) {
+    public ReactNonReactInterventionDeliveryAction(String name, Domain domain) {
         super(name, domain);
     }
 

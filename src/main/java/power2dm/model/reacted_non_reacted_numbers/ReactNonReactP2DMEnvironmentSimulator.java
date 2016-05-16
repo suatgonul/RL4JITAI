@@ -3,7 +3,7 @@ package power2dm.model.reacted_non_reacted_numbers;
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
-import power2dm.model.EnvironmentSimulator;
+import power2dm.algorithm.EnvironmentSimulator;
 import power2dm.model.Location;
 
 import java.util.Random;
@@ -16,35 +16,26 @@ import static power2dm.model.reacted_non_reacted_numbers.ReactNonReactP2DMDomain
  */
 public class ReactNonReactP2DMEnvironmentSimulator extends EnvironmentSimulator {
 
-    private boolean fixedReaction = true;
     private int[] burdenCoefficient = new int[]{10, 30, 50, 70, 90};
     private int lastInterventionTime = 0;
 
     public ReactNonReactP2DMEnvironmentSimulator() {
         setUserPreferences();
-        resetEnvironment();
-    }
-
-    private void setUserPreferences() {
-        preferences.createPreference(19, 21, Location.HOME);
-    }
-
-    public Location getLocation() {
-        return location;
+        resetEnvironmentForEpisode();
     }
 
     public boolean simulateUserReactionToIntervention(State s, GroundedAction groundedAction) {
-        if (time < 7) {
+        if (hourOfDay < 7) {
             return false;
         }
         if (location.equals(Location.ON_THE_WAY)) {
             return false;
         }
-        if (time - lastInterventionTime < 2) {
+        if (hourOfDay - lastInterventionTime < 2) {
             return false;
         }
 
-        boolean userHasPreference = preferences.doesUserHasPreference(time, location);
+        boolean userHasPreference = preferences.doesUserHasPreference(hourOfDay, location);
 
         // if we are in an AFTERNOON state we should consider user preference on EVENING
         Random r = new Random();
@@ -79,14 +70,14 @@ public class ReactNonReactP2DMEnvironmentSimulator extends EnvironmentSimulator 
 
         }
         if (result == true) {
-            lastInterventionTime = time;
+            lastInterventionTime = hourOfDay;
         }
         return result;
     }
 
     @Override
-    public void resetEnvironment() {
-        super.resetEnvironment();
+    public void resetEnvironmentForEpisode() {
+        super.resetEnvironmentForEpisode();
         lastInterventionTime = 0;
     }
 }

@@ -10,6 +10,10 @@ public class P2DMEpisodeAnalysis extends EpisodeAnalysis {
     protected int episodeNo;
     protected double totalReward;
 
+    public P2DMEpisodeAnalysis(int episodeNo) {
+        this.episodeNo = episodeNo;
+    }
+
     public P2DMEpisodeAnalysis(EpisodeAnalysis ea) {
         appendAndMergeEpisodeAnalysis(ea);
     }

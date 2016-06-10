@@ -1,9 +1,10 @@
 package power2dm.reporting;
 
-import burlap.behavior.policy.Policy;
+import power2dm.reporting.visualization.Visualizer;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,19 +12,32 @@ import java.util.Map;
  * Created by suat on 28-Apr-16.
  */
 public class RunAnalyser {
-    private Map<Policy, List<P2DMEpisodeAnalysis>> episodeAnalysisPerPolicy = new HashMap<Policy, List<P2DMEpisodeAnalysis>>();
+    private List<P2DMEpisodeAnalysis> episodeAnalysisList = new ArrayList<P2DMEpisodeAnalysis>();
 
-    public void recordEpisodeReward(Policy policy, P2DMEpisodeAnalysis ea) {
-        List<P2DMEpisodeAnalysis> totalRewardsPerEpisode = episodeAnalysisPerPolicy.get(policy);
-        if(totalRewardsPerEpisode == null) {
-            totalRewardsPerEpisode = new ArrayList<P2DMEpisodeAnalysis>();
-            episodeAnalysisPerPolicy.put(policy, totalRewardsPerEpisode);
-        }
-        totalRewardsPerEpisode.add(ea);
+    public void recordEpisodeReward(P2DMEpisodeAnalysis ea) {
+        episodeAnalysisList.add(ea);
     }
 
-    public void drawRewardCharts(List<Class> visualizationTypes, String applicationTitle, Policy policy) {
-        RewardVisualizer rewardVisualizer = new RewardVisualizer(applicationTitle, policy, episodeAnalysisPerPolicy);
-        rewardVisualizer.createRewardGraph();
+    public void drawRewardCharts(List<Class> visualizationClasses, Map<String, Object> visualizerMetadata) {
+        for (Class visualizerClass : visualizationClasses) {
+            Constructor<?> cons = null;
+            try {
+                cons = visualizerClass.getConstructor(Map.class);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException("Reflection exception while getting the constructor of visualizer", e);
+            }
+
+            try {
+                Visualizer visualizer = (Visualizer) cons.newInstance(visualizerMetadata);
+                visualizer.createRewardGraph(episodeAnalysisList);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Reflection exception while calling the constructor of visualizer", e);
+            } catch (InstantiationException e) {
+                throw new RuntimeException("Reflection exception while calling the constructor of visualizer", e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException("Reflection exception while calling the constructor of visualizer", e);
+            }
+
+        }
     }
 }

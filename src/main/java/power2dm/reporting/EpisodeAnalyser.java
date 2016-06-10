@@ -70,7 +70,7 @@ public abstract class EpisodeAnalyser {
      */
     public abstract void printQValuesForPreferredRange(EpisodeAnalysis ea, int episode);
 
-    public P2DMEpisodeAnalysis appendReportData(EpisodeAnalysis ea, int episodeNo) {
+    public P2DMEpisodeAnalysis appendEpisodeSummaryData(EpisodeAnalysis ea, int episodeNo) {
         P2DMEpisodeAnalysis p2dmEa = new P2DMEpisodeAnalysis(ea);
         p2dmEa.setTotalReward(calculateTotalReward(ea));
         p2dmEa.setEpisodeNo(episodeNo);

@@ -26,8 +26,8 @@ import java.util.Map;
  */
 public class P2DMSarsaLambda extends SarsaLam implements LearningProvider {
 
-    public P2DMSarsaLambda(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize, double lambda, EpisodeAnalyser episodeAnalyser) {
-        super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, maxEpisodeSize, lambda);
+    public P2DMSarsaLambda(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, Policy learningPolicy, double lambda, EpisodeAnalyser episodeAnalyser) {
+        super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, Integer.MAX_VALUE, lambda);
         this.episodeAnalyser = episodeAnalyser;
         this.episodeAnalyser.setLearningAlgorithm(this);
         setPolicySolver();
@@ -39,7 +39,7 @@ public class P2DMSarsaLambda extends SarsaLam implements LearningProvider {
         EpisodeAnalysis ea = super.runLearningEpisode(env, maxSteps);
         episodeAnalyser.printQValuesForPreferredRange(ea, episodeNo);
         episodeAnalyser.populateMaxQValues(ea);
-        P2DMEpisodeAnalysis p2dmEa = episodeAnalyser.appendReportData(ea,episodeNo);
+        P2DMEpisodeAnalysis p2dmEa = episodeAnalyser.appendEpisodeSummaryData(ea,episodeNo);
         return p2dmEa;
     }
 

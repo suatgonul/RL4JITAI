@@ -25,8 +25,8 @@ import java.util.Map;
  */
 public class P2DMQLearning extends QLearning implements LearningProvider {
 
-    public P2DMQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize, EpisodeAnalyser episodeAnalyser) {
-        super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, maxEpisodeSize);
+    public P2DMQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, Policy learningPolicy, EpisodeAnalyser episodeAnalyser) {
+        super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, Integer.MAX_VALUE);
         this.episodeAnalyser = episodeAnalyser;
         this.episodeAnalyser.setLearningAlgorithm(this);
         setPolicySolver();
@@ -39,7 +39,7 @@ public class P2DMQLearning extends QLearning implements LearningProvider {
         //TODO asagidaki sirayi duzgun bi sekilde episodeAnalyser'in icine koy
         episodeAnalyser.printQValuesForPreferredRange(ea, episodeNo);
         episodeAnalyser.populateMaxQValues(ea);
-        P2DMEpisodeAnalysis p2dmEa = episodeAnalyser.appendReportData(ea,episodeNo);
+        P2DMEpisodeAnalysis p2dmEa = episodeAnalyser.appendEpisodeSummaryData(ea,episodeNo);
         return p2dmEa;
     }
 

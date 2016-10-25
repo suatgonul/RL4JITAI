@@ -99,7 +99,7 @@ public abstract class EpisodeAnalyser {
         }
     }
 
-    private double calculateTotalReward(EpisodeAnalysis ea) {
+    protected double calculateTotalReward(EpisodeAnalysis ea) {
         double totalReward = 0;
         for (double reward : ea.rewardSequence) {
             totalReward += reward;

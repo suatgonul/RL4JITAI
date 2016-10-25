@@ -23,11 +23,11 @@ import static power2dm.model.habit.year.periodic.HabitYearPeriodicP2DMDomain.ACT
  */
 public class HabitYearPeriodicP2DMEnvironmentSimulator extends SimulatedEnvironment {
     protected UserPreference preferences = new UserPreference();
-    private TaskDifficulty difficulty = TaskDifficulty.MEDIUM;
+    private TaskDifficulty difficulty = TaskDifficulty.EASY;
 
     private int dayOfExperiment = 1;
     private int episodeOfExperiment = 0;
-    private P2DMEpisodeAnalysis p2dmea = new HabitYearPeriodicEpisodeAnalysis(0);
+    private P2DMEpisodeAnalysis p2dmea = new HabitYearPeriodicEpisodeAnalysis(0, difficulty);
 
     protected Location location = Location.HOME;
     private boolean calorieIntakeEntry = true;
@@ -35,7 +35,7 @@ public class HabitYearPeriodicP2DMEnvironmentSimulator extends SimulatedEnvironm
 
     //duration related
     private int totalCalorieIntakeAmount = 0;
-    private int periodSize = 30;
+    private int periodSize = 7;
 
     //automation related
     // 0: no entry without intervention
@@ -100,7 +100,16 @@ public class HabitYearPeriodicP2DMEnvironmentSimulator extends SimulatedEnvironm
     public void resetEnvironment() {
         super.resetEnvironment();
 
-        p2dmea = new HabitYearPeriodicEpisodeAnalysis(0);
+        int difficultyIndex = episodeOfExperiment % 3;
+        if(difficultyIndex == 1) {
+            difficulty = TaskDifficulty.EASY;
+        } else if(difficultyIndex == 2) {
+            difficulty = TaskDifficulty.MEDIUM;
+        } else {
+            difficulty = TaskDifficulty.HARD;
+        }
+
+        p2dmea = new HabitYearPeriodicEpisodeAnalysis(0, difficulty);
         dayOfExperiment = 0;
         episodeOfExperiment++;
         totalCalorieIntakeAmount = 0;
@@ -109,26 +118,6 @@ public class HabitYearPeriodicP2DMEnvironmentSimulator extends SimulatedEnvironm
         automationHistoryCache = new AutomationHistoryCache(automationHistoryPeriodSizes);
         frequencyHistoryCache.destroy();
         frequencyHistoryCache = new FrequencyHistoryCache(frequencyHistoryPeriodSizes);
-
-        if(episodeOfExperiment % 10 == 0 && episodeOfExperiment > 0) {
-            int difficultyIndex = (episodeOfExperiment % 10) % 3;
-            if(difficultyIndex == 0) {
-                difficulty = TaskDifficulty.EASY;
-            } else if(difficultyIndex == 1) {
-                difficulty = TaskDifficulty.MEDIUM;
-            } else {
-                difficulty = TaskDifficulty.HARD;
-            }
-        } else if(episodeOfExperiment >= 5000) {
-            int difficultyIndex = episodeOfExperiment % 3;
-            if(difficultyIndex == 2) {
-                difficulty = TaskDifficulty.EASY;
-            } else if(difficultyIndex == 0) {
-                difficulty = TaskDifficulty.MEDIUM;
-            } else {
-                difficulty = TaskDifficulty.HARD;
-            }
-        }
     }
 
     public int getAutomationRatioForPeriod(int periodNo) {

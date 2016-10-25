@@ -24,18 +24,18 @@ public abstract class Visualizer extends ApplicationFrame {
     public static final String METADATA_POLICY = "metadata_policy";
     public static final String METADATA_LEARNING_ALGORITHM = "metadata_learning_algorithm";
 
-    protected Map<String, Object> visualizerMetadata = new HashMap<String, Object>();
+    protected Map<String, Object> visualizationMetadata = new HashMap<String, Object>();
 
-    public Visualizer(Map<String, Object> visualizerMetadata) {
-        super((String) visualizerMetadata.get(METADATA_WINDOW_TITLE));
-        this.visualizerMetadata = visualizerMetadata;
+    public Visualizer(Map<String, Object> visualizationMetadata) {
+        super((String) visualizationMetadata.get(METADATA_WINDOW_TITLE));
+        this.visualizationMetadata = visualizationMetadata;
     }
 
     public void createRewardGraph(List<P2DMEpisodeAnalysis> episodeAnalysisList) {
         VisualizationData visualizationData = createDataset(episodeAnalysisList);
 
-        String xLabel = (String) visualizerMetadata.get(METADATA_X_LABEL);
-        String yLabel = (String) visualizerMetadata.get(METADATA_Y_LABEL);
+        String xLabel = (String) visualizationMetadata.get(METADATA_X_LABEL);
+        String yLabel = (String) visualizationMetadata.get(METADATA_Y_LABEL);
 
         JFreeChart xylineChart = ChartFactory.createXYLineChart(getChartTitle(), xLabel, yLabel, visualizationData.getDataset(), PlotOrientation.VERTICAL, true, true, false);
         ChartPanel chartPanel = new ChartPanel(xylineChart);

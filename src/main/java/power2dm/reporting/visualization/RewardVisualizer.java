@@ -40,7 +40,7 @@ public class RewardVisualizer extends Visualizer {
     }
 
     protected String getChartTitle() {
-        Policy policy = (Policy) visualizerMetadata.get(METADATA_POLICY);
+        Policy policy = (Policy) visualizationMetadata.get(METADATA_POLICY);
         if (policy instanceof EpsilonGreedy) {
             double epsilon = ((EpsilonGreedy) policy).getEpsilon();
             return "Epsilon Greedy (" + epsilon + ")";

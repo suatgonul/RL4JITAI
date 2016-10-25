@@ -22,13 +22,13 @@ public class HabitYearPeriodicDailyRewardFunction implements RewardFunction {
             if(environmentSimulator.getCalorieIntakeEntry() == false) {
                 reward = -1;
             } else {
-                reward = 10;
+                reward = 1;
             }
         } else {
             if(environmentSimulator.isHabitActive()) {
                 reward = -1;
             } else {
-                reward = 10;
+                reward = 1;
             }
         }
         return reward;

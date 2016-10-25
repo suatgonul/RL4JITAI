@@ -35,11 +35,11 @@ public class HabitYearPeriodicEpisodeAnalyser extends EpisodeAnalyser {
     @Override
     public void printQValuesForPreferredRange(EpisodeAnalysis ea, int episode) {
 //        System.out.println("Episode: " + episode + " Starting Hour: " + startingHour + " - " + (environmentSimulator.isHabitActive(episode + 1) ? " Habit" : "Non-Habit"));
-        if(episode < 20000)
-            return;
-
         Set<HashableState> states = ((LearningProvider) qLearning).getAllQValues().keySet();
         System.out.println("Episode: " + episode + " State size: " + states.size());
+
+        if(episode < 120000)
+            return;
 
         for (int i = 0; i < ea.numTimeSteps() - 1; i++) {
 
@@ -50,7 +50,8 @@ public class HabitYearPeriodicEpisodeAnalyser extends EpisodeAnalyser {
 //                        if(ea.rewardSequence.get(i) < 0 ) {
                         HabitYearPeriodicEpisodeAnalysis hyea = (HabitYearPeriodicEpisodeAnalysis) environmentSimulator.getEpisodeAnalysis();
                         ObjectInstance stateInstance = s.getObject(CLASS_STATE);
-                        System.out.print("Frequency P1: " + stateInstance.getIntValForAttribute(ATT_CALORIE_INTAKE_FREQUENCY_FIRST_PERIOD));
+                        System.out.print("Day: " + i);
+                        System.out.print(" Frequency P1: " + stateInstance.getIntValForAttribute(ATT_CALORIE_INTAKE_FREQUENCY_FIRST_PERIOD));
                         System.out.print(" P2: " + stateInstance.getIntValForAttribute(ATT_CALORIE_INTAKE_FREQUENCY_SECOND_PERIOD));
                         System.out.print(" P3: " + stateInstance.getIntValForAttribute(ATT_CALORIE_INTAKE_FREQUENCY_THIRD_PERIOD));
                         System.out.print(" P4: " + stateInstance.getIntValForAttribute(ATT_CALORIE_INTAKE_FREQUENCY_FOURTH_PERIOD));
@@ -97,6 +98,8 @@ public class HabitYearPeriodicEpisodeAnalyser extends EpisodeAnalyser {
     public P2DMEpisodeAnalysis appendEpisodeSummaryData(EpisodeAnalysis ea, int episodeNo) {
         HabitYearPeriodicEpisodeAnalysis hea = (HabitYearPeriodicEpisodeAnalysis) environmentSimulator.getEpisodeAnalysis();
         hea.appendAndMergeEpisodeAnalysis(ea);
+        hea.setTotalReward(calculateTotalReward(hea));
+        hea.setEpisodeNo(episodeNo);
         return hea;
     }
 }

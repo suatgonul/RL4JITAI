@@ -1,5 +1,6 @@
 package power2dm.model.habit.year.periodic.reporting;
 
+import power2dm.model.TaskDifficulty;
 import power2dm.reporting.P2DMEpisodeAnalysis;
 
 import java.util.ArrayList;
@@ -13,9 +14,11 @@ public class HabitYearPeriodicEpisodeAnalysis extends P2DMEpisodeAnalysis {
     private List<Integer> habitGain = new ArrayList<Integer>();
     private List<Boolean> calorieIntakeEntry = new ArrayList<Boolean>();
     private List<Integer> generatedRandom = new ArrayList<Integer>();
+    private TaskDifficulty difficulty;
 
-    public HabitYearPeriodicEpisodeAnalysis(int episodeNo) {
+    public HabitYearPeriodicEpisodeAnalysis(int episodeNo, TaskDifficulty difficulty) {
         super(episodeNo);
+        this.difficulty = difficulty;
     }
 
     public HabitYearPeriodicEpisodeAnalysis(P2DMEpisodeAnalysis ea) {
@@ -50,5 +53,9 @@ public class HabitYearPeriodicEpisodeAnalysis extends P2DMEpisodeAnalysis {
 
     public List<Integer> getGeneratedRandomList() {
         return generatedRandom;
+    }
+
+    public TaskDifficulty getTaskDifficulty() {
+        return difficulty;
     }
 }

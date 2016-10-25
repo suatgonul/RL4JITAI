@@ -1,5 +1,6 @@
 package power2dm.reporting;
 
+import power2dm.reporting.visualization.VisualizationMetadata;
 import power2dm.reporting.visualization.Visualizer;
 
 import java.lang.reflect.Constructor;
@@ -15,10 +16,11 @@ public class RunAnalyser {
     private List<P2DMEpisodeAnalysis> episodeAnalysisList = new ArrayList<P2DMEpisodeAnalysis>();
 
     public void recordEpisodeReward(P2DMEpisodeAnalysis ea) {
-        episodeAnalysisList.add(ea);
+        if(ea.episodeNo >= 100000)
+            episodeAnalysisList.add(ea);
     }
 
-    public void drawRewardCharts(List<Class> visualizationClasses, Map<String, Object> visualizerMetadata) {
+    public void drawRewardCharts(List<Class> visualizationClasses, VisualizationMetadata visualizerMetadata) {
         for (Class visualizerClass : visualizationClasses) {
             Constructor<?> cons = null;
             try {
@@ -28,7 +30,7 @@ public class RunAnalyser {
             }
 
             try {
-                Visualizer visualizer = (Visualizer) cons.newInstance(visualizerMetadata);
+                Visualizer visualizer = (Visualizer) cons.newInstance(visualizerMetadata.getVisualizerMetadata(visualizerClass));
                 visualizer.createRewardGraph(episodeAnalysisList);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException("Reflection exception while calling the constructor of visualizer", e);

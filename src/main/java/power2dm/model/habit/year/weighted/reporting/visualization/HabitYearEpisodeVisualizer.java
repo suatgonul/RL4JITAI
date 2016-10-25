@@ -19,13 +19,19 @@ import java.util.Random;
  * Created by suat on 06-Jun-16.
  */
 public class HabitYearEpisodeVisualizer extends Visualizer {
-    private static final String HABIT_GAIN = "Habit Gain";
-    private static final String INTERVENTION = "Intervention";
+    private static final String LEGEND_HABIT_GAIN = "Habit Gain";
+    private static final String LEGEND_INTERVENTION = "Intervention";
+    private static final String WINDOW_TITLE = "Habit formation trend vs intervention delivery per episode";
+    private static final String CHART_TITLE = "";
+    private static final String X_LABEL = "Days";
+    private static final String Y_LABEL = "Habit and intervention";
 
     public HabitYearEpisodeVisualizer(Map<String, Object> visualizerMetadata) {
         super(visualizerMetadata);
-        visualizerMetadata.put(METADATA_X_LABEL, "Days");
-        visualizerMetadata.put(METADATA_Y_LABEL, "");
+        visualizationMetadata.put(METADATA_WINDOW_TITLE, WINDOW_TITLE);
+        visualizationMetadata.put(METADATA_X_LABEL, X_LABEL);
+        visualizationMetadata.put(METADATA_Y_LABEL, Y_LABEL);
+        this.setTitle((String) visualizationMetadata.get(METADATA_WINDOW_TITLE));
     }
 
     @Override
@@ -39,8 +45,8 @@ public class HabitYearEpisodeVisualizer extends Visualizer {
             if (i % 250 == 0) {
                 HabitYearEpisodeAnalysis hyea = (HabitYearEpisodeAnalysis) episodeAnalysisList.get(i);
 
-                XYSeries habitGainSeries = new XYSeries(HABIT_GAIN + i);
-                XYSeries interventionSeries = new XYSeries(INTERVENTION + i);
+                XYSeries habitGainSeries = new XYSeries(LEGEND_HABIT_GAIN + i);
+                XYSeries interventionSeries = new XYSeries(LEGEND_INTERVENTION + i);
                 for (int j = 0; j < hyea.numTimeSteps(); j++) {
                     habitGainSeries.add(j, hyea.getHabitGainList().get(j));
                     if (hyea.actionSequence.get(j).actionName().equals(HabitYearP2DMDomain.ACTION_INT_DELIVERY)) {
@@ -75,6 +81,6 @@ public class HabitYearEpisodeVisualizer extends Visualizer {
 
     @Override
     protected String getChartTitle() {
-        return "Habit / Intervention";
+        return CHART_TITLE;
     }
 }

@@ -22,10 +22,18 @@ public class HabitVisualizer extends Visualizer {
     private static final String ENTRY_PROBABILITY = "Entry Probability";
     private static final String GAIN_OFFSET = "Gain Offset";
 
-    public HabitVisualizer(Map<String, Object> visualizerMetadata) {
-        super(visualizerMetadata);
-        visualizerMetadata.put(METADATA_X_LABEL, "Episode");
-        visualizerMetadata.put(METADATA_Y_LABEL, "");
+    private static final String WINDOW_TITLE = "Habit / Interventiom / Calorie Intake / Entry " +
+            "Probability / Gain Offset change during the learning process";
+    private static final String CHART_TITLE = "";
+    private static final String X_LABEL = "Episode";
+    private static final String Y_LABEL = "";
+
+    public HabitVisualizer(Map<String, Object> visualizationMetadata) {
+        super(visualizationMetadata);
+        visualizationMetadata.put(Visualizer.METADATA_WINDOW_TITLE, WINDOW_TITLE);
+        visualizationMetadata.put(Visualizer.METADATA_X_LABEL, X_LABEL);
+        visualizationMetadata.put(Visualizer.METADATA_Y_LABEL, Y_LABEL);
+        this.setTitle((String) visualizationMetadata.get(METADATA_WINDOW_TITLE));
     }
 
     @Override
@@ -68,6 +76,6 @@ public class HabitVisualizer extends Visualizer {
 
     @Override
     protected String getChartTitle() {
-        return "Intervention / Habit";
+        return CHART_TITLE;
     }
 }

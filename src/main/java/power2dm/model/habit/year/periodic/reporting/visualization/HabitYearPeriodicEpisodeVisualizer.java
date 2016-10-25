@@ -19,13 +19,18 @@ import java.util.Random;
  * Created by suat on 06-Jun-16.
  */
 public class HabitYearPeriodicEpisodeVisualizer extends Visualizer {
-    private static final String HABIT_GAIN = "Habit Gain";
-    private static final String INTERVENTION = "Intervention";
+    private static final String LEGEND_INTERVENTION = "Intervention";
+    private static final String WINDOW_TITLE = "Habit formation trend vs intervention delivery per episode";
+    private static final String CHART_TITLE = "";
+    private static final String X_LABEL = "Days";
+    private static final String Y_LABEL = "Habit and intervention";
 
-    public HabitYearPeriodicEpisodeVisualizer(Map<String, Object> visualizerMetadata) {
-        super(visualizerMetadata);
-        visualizerMetadata.put(METADATA_X_LABEL, "Days");
-        visualizerMetadata.put(METADATA_Y_LABEL, "");
+    public HabitYearPeriodicEpisodeVisualizer(Map<String, Object> visualizationMetadata) {
+        super(visualizationMetadata);
+        visualizationMetadata.put(METADATA_WINDOW_TITLE, WINDOW_TITLE);
+        visualizationMetadata.put(METADATA_X_LABEL, X_LABEL);
+        visualizationMetadata.put(METADATA_Y_LABEL, Y_LABEL);
+        this.setTitle((String) visualizationMetadata.get(METADATA_WINDOW_TITLE));
     }
 
     @Override
@@ -36,21 +41,20 @@ public class HabitYearPeriodicEpisodeVisualizer extends Visualizer {
 
         List<XYSeries> generatedData = new ArrayList<XYSeries>();
         for (int i = 0; i < episodeAnalysisList.size(); i++) {
-            if (i >= 20000) {
-                HabitYearPeriodicEpisodeAnalysis hyea = (HabitYearPeriodicEpisodeAnalysis) episodeAnalysisList.get(i);
+            HabitYearPeriodicEpisodeAnalysis hyea = (HabitYearPeriodicEpisodeAnalysis) episodeAnalysisList.get(i);
 
-                XYSeries habitGainSeries = new XYSeries(HABIT_GAIN + i);
-                XYSeries interventionSeries = new XYSeries(INTERVENTION + i);
-                for (int j = 0; j < hyea.numTimeSteps(); j++) {
-                    habitGainSeries.add(j, hyea.getHabitGainList().get(j));
-                    if (hyea.actionSequence.get(j).actionName().equals(HabitYearPeriodicP2DMDomain.ACTION_INT_DELIVERY)) {
-                        interventionSeries.add(j, hyea.getHabitGainList().get(j));
-                    }
+            XYSeries habitGainSeries = new XYSeries(" Task " + i + ": " + hyea.getTaskDifficulty().toString());
+            XYSeries interventionSeries = new XYSeries(LEGEND_INTERVENTION + " " + i);
+
+            for (int j = 0; j < hyea.numTimeSteps(); j++) {
+                habitGainSeries.add(j, hyea.getHabitGainList().get(j));
+                if (hyea.actionSequence.get(j).actionName().equals(HabitYearPeriodicP2DMDomain.ACTION_INT_DELIVERY)) {
+                    interventionSeries.add(j, hyea.getHabitGainList().get(j));
                 }
-
-                generatedData.add(habitGainSeries);
-                generatedData.add(interventionSeries);
             }
+
+            generatedData.add(habitGainSeries);
+            generatedData.add(interventionSeries);
         }
 
         for (int i = generatedData.size() - 2; i >= 0; i -= 2) {
@@ -75,6 +79,6 @@ public class HabitYearPeriodicEpisodeVisualizer extends Visualizer {
 
     @Override
     protected String getChartTitle() {
-        return "Habit / Intervention";
+        return CHART_TITLE;
     }
 }

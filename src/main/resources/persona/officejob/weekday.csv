@@ -1,0 +1,81 @@
+activity,time,time_variation,duration,duration_variation,phone_check_suitability,max_end
+
+:alternative,group=1,order=1,probability=60
+wakes up,07:15,15,0,0,0
+bathroom session about 10-20 minutes,rel,0,15,5,1
+further preparation for the day,rel,0,8,2,0
+household affairs until leaving home,rel,0,rel,0,0
+leaves home,08:00,5,2,1,0
+walks to the bus station,rel,0,rel,0,0
+travels to the office by bus,08:10,2,35,5,1
+checks daily news and social media while eating his breakfast until he starts working,rel,0,rel,0,1
+:end_alternative
+
+:alternative,group=1,order=2,probability=25
+wakes up,07:15,15,0,0,0
+bathroom session about 10-20 minutes,rel,0,15,5,1
+eats his breakfast at home,rel,0,25,5,0
+household affairs until leaving home,rel,0,rel,0,0
+leaves home,08:20,5,2,1,0
+drives to the office by car,rel,0,25,5,0
+checks daily news and social media while eating his breakfast until he starts working,rel,0,rel,0,1
+:end_alternative
+
+:alternative,group=1,order=3,probability=15,last=true
+wakes up,08:00,15,0,0,0
+bathroom session about 10-20 minutes,rel,0,15,5,1
+drives to the office by car,rel,0,25,5,0
+checks daily news and social media while eating his breakfast until he starts working,rel,0,rel,0,1
+:end_alternative
+
+works until lunch time,9:00,5,rel,0,1
+leaves the office and walks to lunch place,12:25,5,5,0,0
+eats his lunch in about 20 minutes,rel,0,20,5,0
+hangs at a coffee shop about 30 minutes with his friends,rel,0,30,5,1
+walks back to the office,13:20,2,5,0,0
+
+:alternative,group=2,probability=90
+works 1-2 hours until a 5-10 break,rel,0,90,30,1
+works until the end of business day,rel,0,rel,0,1
+:end_alternative
+
+:alternative,group=2,probability=10,last=true
+works 1-2 hours until leaving the office for a meeting,rel,0,90,30,0
+leaves office to get on the car,rel,0,5,1,0
+sits in the car until the meeting place,rel,0,30,10,1
+attends meeting,rel,0,90,30,0,17:20
+leaves the meeting place to turn back to the office,rel,0,10,5,0
+turns back to the office,rel,0,30,10,1
+works until the end of business day,rel,0,rel,0,1,18:00
+:end_alternative
+
+:alternative,group=1,order=1,continuation=yes
+leaves office to get on the bus to home,18:05,0,rel,0,0
+takes the bus to home,18:10,2,40,5,1
+:end_alternative
+
+:alternative,group=1,order=2,order=3,continuation=yes
+drives to home,18:20,10,25,5,0
+:end_alternative
+
+:alternative,group=3,probability=90
+plays with his daughter until dinner,rel,0,30,10,0
+eats dinner,rel,0,45,15,0
+takes some break sitting in the couch and watching TV,rel,0,45,15,1
+:cond,rand<0.5,puts his daughter into bed,rel,0,20,10,0
+checks news and social media,rel,0,25,5,1
+reads a book/articles; gets busy with his hobbies,rel,0,rel,0,0
+checks his phone before sleeping,00:30,30,10,5,1
+:end_alternative
+
+:alternative,group=3,probability=10,last=true
+waits his family to be ready for dining outside,rel,0,15,5,1
+drives to restaurant,rel,0,35,5,0
+orders and waits for food to be served,rel,0,25,5,1
+eats dinner,rel,0,60,20,1
+drives back to home,rel,0,35,5,0
+:cond,rand<0.5,he puts his daughter into bed,rel,0,20,10,0
+checks news and social media,rel,0,25,5,1
+reads a book/articles; gets busy with his hobbies,rel,0,rel,0,0
+checks his phone before sleeping,00:30,30,10,5,1
+:end_alternative

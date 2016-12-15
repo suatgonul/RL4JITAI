@@ -1,0 +1,17 @@
+activity,time,time_variation,duration,duration_variation,phone_check_suitability
+wakes up,09:30,15,0,0,0
+rests until leaving the house for breakfast,rel,0,60,10,1
+drives to the restaurant for breakfast,rel,0,30,5,0
+eats breakfast,rel,0,40,15,1
+drives to the countryside,rel,0,40,10,0
+walks/runs alongside the river,rel,0,135,15,0
+drives home for getting ready for the dinner outside,rel,0,40,10,0
+takes a shower,rel,0,20,5,0
+:cond,current_time<15:30, checks social media,rel,0,105,15,1
+gets ready for going shopping mall,rel,0,30,10,0
+drives to the shopping mall,rel,0,20,5,0
+wanders around and eats something,rel,0,rel,0,1
+watches a movie at the shopping mall,20:15,15,120,30,0
+drives back home,rel,0,25,5,0
+:cond,current_time<22:30,reads book/articles,rel,0,60,20,0
+checks social media before sleeping,rel,0,40,10,1

@@ -2,9 +2,6 @@ package tez.persona;
 
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by suatgonul on 12/2/2016
  * Represent an activity that is performed by a person during the day. Activities having long duration might have
@@ -18,8 +15,15 @@ public class Activity {
     // duration of activity in minutes
     private int duration;
 
-    // keeps sporadic phone checks occurring within the duration of this main activity
-    private List<Activity> phoneChecks = new ArrayList<Activity>();
+    public Activity() {
+
+    }
+
+    public Activity(String name, DateTime start, int duration) {
+        this.name = name;
+        this.start = start;
+        this.duration = duration;
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -49,10 +53,8 @@ public class Activity {
         return start.plusMinutes(duration);
     }
 
-//    public void addPhoneChecks() {
-//
-//        if(duration > ) {
-//
-//        }
-//    }
+    public Activity copy() {
+        Activity activity = new Activity(getName(), getStart(), getDuration());
+        return activity;
+    }
 }

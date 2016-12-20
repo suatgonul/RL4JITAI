@@ -1,5 +1,7 @@
-activity,time,time_variation,duration,duration_variation,phone_check_suitability,max_end
+:persona_property,midday_time=12:30
+:persona_property,evening_time=18:00
 
+#activity,time,time_variation,duration,duration_variation,phone_check_suitability
 :alternative,group=1,order=1,probability=60
 wakes up,07:15,15,0,0,0
 bathroom session about 10-20 minutes,rel,0,15,5,1

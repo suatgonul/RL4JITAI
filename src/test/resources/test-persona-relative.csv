@@ -1,0 +1,9 @@
+:persona_property,midday_time=12:30
+:persona_property,evening_time=18:00
+
+#activity,time,time_variation,duration,duration_variation,phone_check_suitability
+wakes up,09:30,0,0,0,0
+act1,9:30,0,40,20,0
+act2,rel,0,40,20,0
+act3,rel,0,rel,0,0
+act4,14:00,0,30,0,0

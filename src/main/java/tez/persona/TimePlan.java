@@ -12,6 +12,18 @@ import java.util.List;
 public class TimePlan {
     private List<Activity> activities = new ArrayList<Activity>();
 
+    public List<Activity> getActivities() {
+        return activities;
+    }
+
+    public void setActivities(List<Activity> activities) {
+        this.activities = activities;
+    }
+
+    public DateTime getStart() {
+        return activities.get(0).getStart();
+    }
+
     public void addActivity(Activity activity) {
         activities.add(activity);
     }

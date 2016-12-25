@@ -1,54 +1,55 @@
 :persona_property,midday_time=12:30
 :persona_property,evening_time=18:00
 
-#activity,time,time_variation,duration,duration_variation,phone_check_suitability
+#activity,location,physical_activity,phone_usage,state_of_mind,emotional_status,time,time_variation,duration,duration_variation,phone_check_suitability_and_context_details
 :alternative,group=1,order=1,probability=60
-wakes up,07:15,15,0,0,0
-bathroom session about 10-20 minutes,rel,0,15,5,1
-further preparation for the day,rel,0,8,2,0
-household affairs until leaving home,rel,0,rel,0,0
-leaves home,08:00,5,2,1,0
-walks to the bus station,rel,0,rel,0,0
-travels to the office by bus,08:10,2,35,5,1
-checks daily news and social media while eating his breakfast until he starts working,rel,0,rel,0,1
+wakes up,HOME,SEDENTARY,SCREEN_OFF,CALM=80|TENSE=20,CASUAL=60|HAPPY=20|STRESSED=20,07:15,15,0,0,0
+bathroom session,HOME,INDOOR_ACTIVITY,APPS_ACTIVE,CALM=50|FOCUS=50,CASUAL,rel,0,15,5,1
+further preparation for the day,HOME,INDOOR_ACTIVITY,SCREEN_OFF,FOCUS,CASUAL,rel,0,8,2,0
+household affairs until leaving home,HOME,INDOOR_ACTIVITY,SCREEN_OFF,FOCUS,CASUAL,rel,0,rel,0,0
+leaves home,HOME,INDOOR_ACTIVITY,SCREEN_OFF,CALM,CASUAL,08:00,5,2,1,0
+walks to the bus station,OUTSIDE,WALKING,SCREEN_OFF,CALM=80|FOCUS=20,CASUAL=80|STRESSED=20,rel,0,rel,0,0
+travels to the office by bus,OUTSIDE,SITTING_IN_CAR,APPS_ACTIVE,CALM=70|FOCUS=30,CASUAL=50|HAPPY=50,08:10,2,35,5,1
+checks daily news and social media while eating his breakfast until he starts working,OFFICE,SEDENTARY,APPS_ACTIVE,CALM=50|FOCUS=50,CASUAL=50|HAPPY=30|ANGRY=20,rel,0,rel,0,1
 :end_alternative
 
 :alternative,group=1,order=2,probability=25
-wakes up,07:15,15,0,0,0
-bathroom session about 10-20 minutes,rel,0,15,5,1
-eats his breakfast at home,rel,0,25,5,0
-household affairs until leaving home,rel,0,rel,0,0
-leaves home,08:20,5,2,1,0
-drives to the office by car,rel,0,25,5,0
-checks daily news and social media while eating his breakfast until he starts working,rel,0,rel,0,1
+wakes up,HOME,SEDENTARY,SCREEN_OFF,CALM=80|TENSE=20,CASUAL=60|HAPPY=20|STRESSED=20,07:15,15,0,0,0
+bathroom session about 10-20 minutes,HOME,INDOOR_ACTIVITY,APPS_ACTIVE,CALM=50|FOCUS=50,CASUAL,rel,0,15,5,1
+eats his breakfast at home,HOME,INDOOR_ACTIVITY,SCREEN_OFF,CALM,CASUAL,rel,0,25,5,0
+household affairs until leaving home,HOME,INDOOR_ACTIVITY,SCREEN_OFF,FOCUS,CASUAL,rel,0,rel,0,0
+leaves home,HOME,INDOOR_ACTIVITY,SCREEN_OFF,CALM,CASUAL,08:20,5,2,1,0
+drives to the office by car,OUTSIDE,DRIVING,SCREEN_OFF,CALM=60|FOCUS=40,CASUAL=70|STRESSED=15|ANGRY=15,rel,0,25,5,0
+checks daily news and social media while eating his breakfast until he starts working,OFFICE,SEDENTARY,APPS_ACTIVE,CALM=50|FOCUS=50,CASUAL=50|HAPPY=30|ANGRY=20,rel,0,rel,0,1
 :end_alternative
 
 :alternative,group=1,order=3,probability=15,last=true
-wakes up,08:00,15,0,0,0
-bathroom session about 10-20 minutes,rel,0,15,5,1
-drives to the office by car,rel,0,25,5,0
-checks daily news and social media while eating his breakfast until he starts working,rel,0,rel,0,1
+wakes up,HOME,SEDENTARY,SCREEN_OFF,CALM=80|TENSE=20,CASUAL=60|HAPPY=20|STRESSED=20,08:00,15,0,0,0
+bathroom session about 10-20 minutes,HOME,INDOOR_ACTIVITY,APPS_ACTIVE,CALM=50|FOCUS=50,CASUAL,rel,0,15,5,1
+drives to the office by car,OUTSIDE,DRIVING,SCREEN_OFF,CALM=60|FOCUS=40,CASUAL=70|STRESSED=15|ANGRY=15,rel,0,25,5,0
+checks daily news and social media while eating his breakfast until he starts working,OFFICE,SEDENTARY,APPS_ACTIVE,CALM=50|FOCUS=50,CASUAL=50|HAPPY=30|ANGRY=20,rel,0,rel,0,1
 :end_alternative
 
-works until lunch time,9:00,5,rel,0,1
-leaves the office and walks to lunch place,12:25,5,5,0,0
-eats his lunch in about 20 minutes,rel,0,20,5,0
-hangs at a coffee shop about 30 minutes with his friends,rel,0,30,5,1
+works until lunch time,OFFICE,SEDENTARY=90|INDOOR_ACTIVITY=10,rel,CALM=30|FOCUS=50|STRESSED=20,9:00,5,rel,0,APPS_ACTIVE;CALM=50|FOCUS=50;CASUAL=70|HAPPY=20|EXCITED=10
+leaves the office and walks to lunch place,OUTSIDE,WALKING,SCREEN_OFF,CALM,CASUAL,12:25,5,5,0,0
+eats his lunch in about 20 minutes,OUTSIDE,SEDENTARY,SCREEN_OFF,CALM,CASUAL,rel,0,20,5,0
+hangs at a coffee shop about 30 minutes with his friends,OUTSIDE,SEDENTARY,SCREEN_OFF=70|APPS_ACTIVE=30,CALM=70|FOCUSED=30,CASUAL=60|HAPPY=40,rel,0,30,5,1
 walks back to the office,13:20,2,5,0,0
 
 :alternative,group=2,probability=90
-works 1-2 hours until a 5-10 break,rel,0,90,30,1
-works until the end of business day,rel,0,rel,0,1
+works 1-2 hours until a 5-10 break,OFFICE,SEDENTARY=90|INDOOR_ACTIVITY=10,rel,CALM=30|FOCUS=50|STRESSED=20,rel,0,90,30,APPS_ACTIVE;CALM=50|FOCUS=50;CASUAL=70|HAPPY=20|EXCITED=10
+gets out of the office to get some fresh air,OFFICE,INDOOR_ACTIVITY,SCREEN_OFF=50|APPS_ACTIVE=50,CALM=50|FOCUS=50,CASUAL,rel,0,10,5,1
+works until the end of business day,OFFICE,SEDENTARY=90|INDOOR_ACTIVITY=10,rel,CALM=50|FOCUS=40|STRESSED=10,rel,0,rel,0,APPS_ACTIVE;CALM=50|FOCUS=50;CASUAL=70|HAPPY=20|EXCITED=10
 :end_alternative
 
 :alternative,group=2,probability=10,last=true
-works 1-2 hours until leaving the office for a meeting,rel,0,90,30,0
-leaves office to get on the car,rel,0,5,1,0
-sits in the car until the meeting place,rel,0,30,10,1
-attends meeting,rel,0,90,30,0,17:20
-leaves the meeting place to turn back to the office,rel,0,10,5,0
-turns back to the office,rel,0,30,10,1
-works until the end of business day,rel,0,rel,0,1,18:00
+works 1-2 hours until leaving the office for a meeting,OFFICE,SEDENTARY=90|INDOOR_ACTIVITY=10,rel,CALM=30|FOCUS=50|STRESSED=20,rel,0,90,30,APPS_ACTIVE;CALM=50|FOCUS=50;CASUAL=70|HAPPY=20|EXCITED=10
+leaves office to get on the car,OFFICE,WALKING,SCREEN_OFF,CALM=50|TENSE=50,CASUAL=70|STRESSED=30,rel,0,5,1,0
+sits in the car until the meeting place,OUTSIDE,SITTING_IN_CAR,SCREEN_OFF=50|APPS_ACTIVE=50,CALM=50|FOCUS=50,CASUAL,rel,0,30,10,1
+attends meeting,rel,OUTSIDE,SEDENTARY,SCREEN_OFF,FOCUS,CASUAL=80|STRESSED=20,0,90,30,0,17:20
+leaves the meeting place to turn back to the office,OUTSIDE,WALKING,SCREEN_OFF,CALM,RELAXED,rel,0,10,5,0
+turns back to the office,OUTSIDE,SITTING_IN_CAR,SCREEN_OFF=50|APPS_ACTIVE=50,CALM=50|FOCUS=50,CASUAL,rel,0,30,10,1
+works until the end of business day,OFFICE,SEDENTARY=90|INDOOR_ACTIVITY=10,rel,CALM=30|FOCUS=50|STRESSED=20,rel,0,rel,0,APPS_ACTIVE;CALM=50|FOCUS=50;CASUAL=70|HAPPY=20|EXCITED=10,18:00
 :end_alternative
 
 :alternative,group=1,order=1,continuation=yes

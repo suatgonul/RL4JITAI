@@ -1,4 +1,4 @@
-package tez.obselete.rlglue.skeleton;
+package rlglue.tez.obselete.skeleton;
 
 import org.rlcommunity.rlglue.codec.types.Observation_action;
 import org.rlcommunity.rlglue.codec.types.Reward_observation_action_terminal;

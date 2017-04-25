@@ -5,6 +5,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import tez.persona.Activity;
+import tez.persona.TimePlan;
+import tez.simulator.context.Context;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -23,7 +25,7 @@ public class PersonaParserTest {
 
     @Before
     public void initialize() {
-        activity = new Activity("test", getReferenceDate(), 60);
+        activity = new Activity("test", getReferenceDate(), 60, new Context());
     }
 
     @Test
@@ -89,10 +91,11 @@ public class PersonaParserTest {
     public void testGeneratedActivities_randomlyGenerated() {
         try {
             PersonaParser parser = new PersonaParser();
-            Method method = parser.getClass().getDeclaredMethod("generateActivitiesForTimePlan", String.class);
+            Method method = parser.getClass().getDeclaredMethod("getTimePlanForPersona", String.class);
             method.setAccessible(true);
 
-            List<Activity> activities = (List<Activity>) method.invoke(parser, "src/test/resources/test-persona-random.csv");
+            TimePlan timePlan = (TimePlan) method.invoke(parser, "src/test/resources/test-persona-random.csv");
+            List<Activity> activities = timePlan.getActivities();
             for (int i = 0; i < activities.size() - 1; i++) {
                 Assert.assertEquals("Inconsistent start time", activities.get(i + 1).getStart(), activities.get(i).getEndTime());
             }
@@ -125,10 +128,12 @@ public class PersonaParserTest {
     private void testGeneratedActivities(String filePath) {
         try {
             PersonaParser parser = new PersonaParser();
-            Method method = parser.getClass().getDeclaredMethod("generateActivitiesForTimePlan", String.class);
+            Method method = parser.getClass().getDeclaredMethod("getTimePlanForPersona", String.class);
             method.setAccessible(true);
 
-            List<Activity> activities = (List<Activity>) method.invoke(parser, filePath);
+            TimePlan timePlan = (TimePlan) method.invoke(parser, filePath);
+            List<Activity> activities = timePlan.getActivities();
+
             for (int i = 0; i < activities.size() - 1; i++) {
                 Assert.assertEquals("Inconsistent start time", activities.get(i + 1).getStart(), activities.get(i).getEndTime());
             }

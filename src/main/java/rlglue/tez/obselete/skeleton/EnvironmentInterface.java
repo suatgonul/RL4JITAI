@@ -23,7 +23,7 @@ http://rl-glue-ext.googlecode.com/
 */
 
 
-package tez.obselete.rlglue.skeleton;
+package rlglue.tez.obselete.skeleton;
 
 import org.rlcommunity.rlglue.codec.types.Action;
 import org.rlcommunity.rlglue.codec.types.Observation;

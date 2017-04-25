@@ -1,20 +1,31 @@
 :persona_property,midday_time=12:30
 :persona_property,evening_time=18:00
 
-#activity,time,time_variation,duration,duration_variation,phone_check_suitability
-wakes up,09:30,15,0,0,0
-rests until leaving the house for breakfast,rel,0,60,10,1
-drives to the restaurant for breakfast,rel,0,30,5,0
-eats breakfast,rel,0,40,15,1
-drives to the countryside,rel,0,40,10,0
-walks/runs alongside the river,rel,0,135,15,0
-drives home for getting ready for the dinner outside,rel,0,40,10,0
-takes a shower,rel,0,20,5,0
-:cond,current_time<15:30,checks social media,rel,0,105,15,1
-gets ready for going shopping mall,rel,0,30,10,0
-drives to the shopping mall,rel,0,20,5,0
-wanders around and eats something,rel,0,rel,0,1
-watches a movie at the shopping mall,20:15,15,120,30,0
-drives back home,rel,0,25,5,0
-:cond,current_time<22:30,reads book/articles,rel,0,60,20,0
-checks social media before sleeping,rel,0,60,10,1
+#activity_index,activity,location,physical_activity,phone_usage,state_of_mind,emotional_status,time,time_variation,duration,duration_variation,phone_check_suitability_and_context_details
+wakes up,HOME,SEDENTARY,SCREEN_OFF,CALM/RELAXED,09:30,15,0,0,0
+rests until leaving the house for breakfast,HOME,INDOOR_ACTIVITY=20|SEDENTARY=80,APPS_ACTIVE,CALM/RELAXED,rel,0,60,10,CALM/NEUTRAL=65|CALM/HAPPY=10|FOCUS/HAPPY=10|FOCUS/EXCITED=5|FOCUS/ANGRY=10
+walks to the car,OUTSIDE,WALKING,SCREEN_OFF,CALM/NEUTRAL,rel,0,2,1,0
+drives to the restaurant for breakfast,OUTSIDE,DRIVING,SCREEN_OFF,CALM/NEUTRAL=35|CALM/HAPPY=35|FOCUS/NEUTRAL=10|FOCUS/HAPPY=10|CALM/EXCITED=5|FOCUS/EXCITED=5,rel,0,30,5,0
+eats breakfast,OUTSIDE,SEDENTARY=90|INDOOR_ACTIVITY=10,SCREEN_OFF,CALM/NEUTRAL=50|CALM/HAPPY=50,rel,0,40,15,0
+drives to the countryside,OUTSIDE,DRIVING,SCREEN_OFF,CALM/NEUTRAL=35|CALM/HAPPY=35|FOCUS/NEUTRAL=10|FOCUS/HAPPY=10|CALM/EXCITED=5|FOCUS/EXCITED=5,rel,0,40,10,0
+walks/runs alongside the river,OUTSIDE,WALKING=70|RUNNING=30,SCREEN_OFF=95|TALKING=5,CALM/NEUTRAL=50|CALM/HAPPY=50,rel,0,60,15,0
+rests before further tracking,OUTSIDE,SEDENTARY,SCREEN_OFF=70|APPS_ACTIVE=30,CALM/RELAXED=40|CALM/HAPPY=40|CALM/NEUTRAL=20,rel,0,30,10,CALM/NEUTRAL=65|CALM/HAPPY=10|FOCUS/HAPPY=10|FOCUS/EXCITED=5|FOCUS/ANGRY=10
+walks/runs alongside the river,OUTSIDE,WALKING=70|RUNNING=30,SCREEN_OFF=95|TALKING=5,CALM/NEUTRAL=50|CALM/HAPPY=50,rel,0,60,15,0
+drives home for getting ready for the dinner outside,OUTSIDE,DRIVING,SCREEN_OFF,CALM/NEUTRAL=20|CALM/RELAXED=20|CALM/HAPPY=10|FOCUS/NEUTRAL=20|FOCUS/HAPPY=10|FOCUS/RELAXED=20,rel,0,40,10,0
+walks into home,OUTSIDE,WALKING,SCREEN_OFF,CALM/NEUTRAL,rel,0,8,2,0
+takes a shower,HOME,INDOOR_ACTIVITY,SCREEN_OFF,CALM/NEUTRAL=40|CALM/RELAXED=40|FOCUS/NEUTRAL=20,rel,0,20,5,0
+checks social media,HOME,SEDENTARY,APPS_ACTIVE,CALM/NEUTRAL=65|CALM/HAPPY=10|FOCUS/HAPPY=10|FOCUS/EXCITED=5|FOCUS/ANGRY=10,rel,0,105,15,1,:cond,current_time<15:30
+gets ready for going shopping mall,HOME,INDOOR_ACTIVITY,SCREEN_OFF,CALM/NEUTRAL=40|CALM/HAPPY=40|CALM/EXCITED=20,rel,0,30,10,0
+drives to the shopping mall,OUTSIDE,DRIVING,SCREEN_OFF,CALM/NEUTRAL=35|CALM/HAPPY=35|FOCUS/NEUTRAL=10|FOCUS/HAPPY=10|CALM/EXCITED=5|FOCUS/EXCITED=5,rel,0,20,5,0
+wanders around until deciding on what to eat,OUTSIDE,WALKING,SCREEN_OFF,CALM/NEUTRAL,rel,0,20,5,0
+eats dinner,OUTSIDE,SEDENTARY,SCREEN_OFF,CALM/RELAXED=50|CALM/HAPPY=50,rel,0,30,10,0
+wanders around until the movie,OUTSIDE,WALKING,SCREEN_OFF,CALM/NEUTRAL=50|CALM/HAPPY=50,rel,0,rel,0,CALM/NEUTRAL=65|CALM/HAPPY=10|FOCUS/HAPPY=10|FOCUS/EXCITED=5|FOCUS/ANGRY=10
+watches the first half of a movie at the shopping mall,OUTSIDE,SEDENTARY,SCREEN_OFF,FOCUS/HAPPY=40|FOCUS/RELAXED=40|FOCUS/EXCITED=20,20:15,15,60,15,0
+grabs pop corn at the break,OUTSIDE,INDOOR_ACTIVITY,SCREEN_OFF,CALM/NEUTRAL=50|CALM/HAPPY=30|CALM/RELAXED=20,rel,0,5,2,0
+sits until the second part of the movie starts,OUTSIDE,SEDENTARY,APPS_ACTIVE,CALM/NEUTRAL=65|CALM/HAPPY=10|FOCUS/HAPPY=10|FOCUS/EXCITED=5|FOCUS/ANGRY=10,rel,0,5,2,1
+watches the second half of the movie at the shopping mall,OUTSIDE,SEDENTARY,SCREEN_OFF,FOCUS/HAPPY=40|FOCUS/RELAXED=40|FOCUS/EXCITED=20,rel,0,60,15,0
+walks to the car park,OUTSIDE,WALKING,SCREEN_OFF,CALM/NEUTRAL=50|CALM/HAPPY=20|CALM/RELAXED=30,rel,0,5,0,0
+drives back home,OUTSIDE,DRIVING,SCREEN_OFF,CALM/NEUTRAL=20|CALM/RELAXED=20|CALM/HAPPY=10|FOCUS/NEUTRAL=20|FOCUS/HAPPY=10|FOCUS/RELAXED=20,rel,0,25,5,0
+walks into home,OUTSIDE,WALKING,SCREEN_OFF,CALM/NEUTRAL,rel,0,8,2,0
+reads book/articles,HOME,SEDENTARY,SCREEN_OFF,CALM/NEUTRAL=30|FOCUS/NEUTRAL=70,rel,0,60,20,0,:cond,current_time<22:30
+checks social media before sleeping,HOME,SEDENTARY,APPS_ACTIVE,CALM/NEUTRAL=65|CALM/HAPPY=10|FOCUS/HAPPY=10|FOCUS/EXCITED=5|FOCUS/ANGRY=10,rel,0,60,10,1

@@ -1,4 +1,4 @@
-package tez.obselete.rlglue.skeleton;
+package rlglue.tez.obselete.skeleton;
 
 import org.rlcommunity.rlglue.codec.EnvironmentInterface;
 import org.rlcommunity.rlglue.codec.types.Action;

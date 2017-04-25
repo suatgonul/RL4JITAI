@@ -40,10 +40,10 @@ public class SelfManagementEnvironment extends SimulatedEnvironment {
         State state = new MutableState();
         state.setObjectsValue(objectInstanceId, ATT_TIME, realWorld.getCurrentTime());
         state.setObjectsValue(objectInstanceId, ATT_LOCATION, firstActivity.getContext().getLocation());
-        state.setObjectsValue(objectInstanceId, ATT_, firstActivity.getContext().);
-        state.setObjectsValue(objectInstanceId, ATT_LOCATION, firstActivity.getContext().getLocation());
-        state.setObjectsValue(objectInstanceId, ATT_LOCATION, firstActivity.getContext().getLocation());
-        state.setObjectsValue(objectInstanceId, ATT_LOCATION, firstActivity.getContext().getLocation());
+//        state.setObjectsValue(objectInstanceId, ATT_, firstActivity.getContext().);
+//        state.setObjectsValue(objectInstanceId, ATT_LOCATION, firstActivity.getContext().getLocation());
+//        state.setObjectsValue(objectInstanceId, ATT_LOCATION, firstActivity.getContext().getLocation());
+//        state.setObjectsValue(objectInstanceId, ATT_LOCATION, firstActivity.getContext().getLocation());
         return state;
     }
 }

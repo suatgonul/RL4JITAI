@@ -1,9 +1,9 @@
 :persona_property,midday_time=12:30
 :persona_property,evening_time=18:00
 
-#activity,time,time_variation,duration,duration_variation,phone_check_suitability
-wakes up,09:30,0,0,0,0
-act1,9:30,0,40,20,0
-act2,rel,0,40,20,0
-act3,rel,0,rel,0,0
-act4,14:00,0,30,0,0
+#activity_index,activity,location,physical_activity,phone_usage,state_of_mind,emotional_status,time,time_variation,duration,duration_variation,phone_check_suitability_and_context_details
+wakes up,HOME,SEDENTARY,SCREEN_OFF,CALM/RELAXED,09:30,15,0,0,0
+act1,HOME,SEDENTARY,SCREEN_OFF,CALM/NEUTRAL,rel,0,40,20,0
+act2,HOME,SEDENTARY,SCREEN_OFF,CALM/NEUTRAL,rel,0,40,20,0
+act3,HOME,SEDENTARY,SCREEN_OFF,CALM/NEUTRAL,rel,0,rel,0,0
+act4,HOME,SEDENTARY,SCREEN_OFF,CALM/NEUTRAL,14:00,0,30,0,0

@@ -1,7 +1,7 @@
 package tez.persona;
 
 import org.joda.time.DateTime;
-import tez.simulator.Context;
+import tez.simulator.context.Context;
 
 /**
  * Created by suatgonul on 12/2/2016
@@ -16,16 +16,17 @@ public class Activity {
     // duration of activity in minutes
     private int duration;
 
-    private Context context;
+    private Context context = new Context();
 
     public Activity() {
 
     }
 
-    public Activity(String name, DateTime start, int duration) {
+    public Activity(String name, DateTime start, int duration, Context context) {
         this.name = name;
         this.start = start;
         this.duration = duration;
+        this.context = context.copy();
     }
 
     public void setName(String name) {
@@ -38,10 +39,6 @@ public class Activity {
 
     public void setDuration(int duration) {
         this.duration = duration;
-    }
-
-    public void setContext(Context context) {
-        this.context = context;
     }
 
     public String getName() {
@@ -65,7 +62,7 @@ public class Activity {
     }
 
     public Activity copy() {
-        Activity activity = new Activity(getName(), getStart(), getDuration());
+        Activity activity = new Activity(getName(), getStart(), getDuration(), getContext());
         return activity;
     }
 }

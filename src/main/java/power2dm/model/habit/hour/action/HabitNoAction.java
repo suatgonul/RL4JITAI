@@ -49,7 +49,7 @@ public class HabitNoAction extends SimpleAction implements FullActionModel {
         ns = ns.setObjectsValue(state.getName(), ATT_HOUR_OF_DAY, timing + 1);
         ns = ns.setObjectsValue(state.getName(), ATT_HABIT_COEFF, simulator.getHabitGainRatio());
         ns = ns.setObjectsValue(state.getName(), ATT_CAL_INTAKE_ENTRY, simulator.getCalorieIntakeEntry());
-//        s = s.setObjectsValue(state.getName(), ATT_LOCATION, simulator.getLocation().ordinal());
+//        s = s.setObjectsValue(state.getName(), ATT_LOCATION, simulator.getContext().ordinal());
 
         return ns;
     }

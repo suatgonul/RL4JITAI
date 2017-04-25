@@ -1,4 +1,4 @@
-package tez.obselete.rlglue.skeleton;/*
+package rlglue.tez.obselete.skeleton;/*
  * Copyright 2008 Brian Tanner
  * http://rl-glue-ext.googlecode.com/
  * brian@tannerpages.com

@@ -1,13 +1,9 @@
-package tez.simulator;
-
-import org.joda.time.DateTime;
+package tez.simulator.context;
 
 /**
  * Created by suatgonul on 12/24/2016.
  */
 public class Context {
-    private DateTime time;
-
     private Location location;
 
     private PhysicalActivity physicalActivity;
@@ -17,14 +13,6 @@ public class Context {
     private StateOfMind stateOfMind;
 
     private PhoneUsage phoneUsage;
-
-    public DateTime getTime() {
-        return time;
-    }
-
-    public void setTime(DateTime time) {
-        this.time = time;
-    }
 
     public Location getLocation() {
         return location;
@@ -64,5 +52,15 @@ public class Context {
 
     public void setPhoneUsage(PhoneUsage phoneUsage) {
         this.phoneUsage = phoneUsage;
+    }
+
+    public Context copy() {
+        Context context = new Context();
+        context.setPhoneUsage(getPhoneUsage());
+        context.setEmotionalStatus(getEmotionalStatus());
+        context.setStateOfMind(getStateOfMind());
+        context.setLocation(getLocation());
+        context.setPhysicalActivity(getPhysicalActivity());
+        return context;
     }
 }

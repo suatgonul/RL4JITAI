@@ -15,12 +15,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package tez.obselete.rlglue.skeleton;
+package rlglue.tez.obselete.temp;
 
 import org.rlcommunity.rlglue.codec.NetGlue;
 import org.rlcommunity.rlglue.codec.RLGlueInterface;
 import org.rlcommunity.rlglue.codec.types.*;
 
+/**
+ * This is the main RLGlue interface class for Experiment Programs.
+ * <p>This class is meant to be accessed statically, like:
+ * <ul>
+ * <li>RLGlue.RL_init()
+ * <li>RLGlue.RL_episode(5)
+ * <li>etc.
+ * </ul>
+ * <p>For future flexibility, we have made this class use an instance of type
+ * RLGlueInterface.  This will allow RL-Viz and other project swap out the network
+ * codec for a local (direct-compile) implementation without requiring any 
+ * changes to the experiment program.
+ * <p>Since this class offers some convenient extensions, the traditional RL-Glue
+ * methods have all been labeled as 'RL-Glue Core Method'.
+ * @author btanner
+ */
 public class RLGlue {
 
     private static RLGlueInterface instance = null;

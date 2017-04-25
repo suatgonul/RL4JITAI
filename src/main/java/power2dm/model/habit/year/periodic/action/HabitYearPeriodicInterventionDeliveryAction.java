@@ -51,7 +51,7 @@ public class HabitYearPeriodicInterventionDeliveryAction extends SimpleAction im
         ns = ns.setObjectsValue(state.getName(), ATT_CAL_INTAKE_AUTOMATION_RATIO_FOURTH_PERIOD, simulator.getAutomationRatioForPeriod(3));
         //ns = ns.setObjectsValue(state.getName(), ATT_CAL_INTAKE_AUTOMATION_RATIO_FIFTH_PERIOD, simulator.getAutomationRatioForPeriod(4));
         ns = ns.setObjectsValue(state.getName(), ATT_CAL_INTAKE_PERIOD, simulator.getPeriod());
-//        s = s.setObjectsValue(state.getName(), ATT_LOCATION, simulator.getLocation().ordinal());
+//        s = s.setObjectsValue(state.getName(), ATT_LOCATION, simulator.getContext().ordinal());
 
         return ns;
     }

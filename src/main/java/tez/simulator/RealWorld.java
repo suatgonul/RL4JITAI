@@ -1,24 +1,48 @@
 package tez.simulator;
 
+import burlap.oomdp.auxiliary.common.ConstantStateGenerator;
+import burlap.oomdp.core.Domain;
+import burlap.oomdp.core.TerminalFunction;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.objects.ObjectInstance;
+import burlap.oomdp.core.states.MutableState;
+import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.RewardFunction;
+import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
 import org.joda.time.DateTime;
-import tez.model.StateDTO;
+import tez.algorithm.ReactionRewardFunction;
 import tez.persona.Activity;
 import tez.persona.TimePlan;
 import tez.persona.parser.PersonaParser;
+import tez.persona.parser.PersonaParserException;
+import tez.simulator.context.DayType;
+import tez.algorithm.TerminalState;
 
-import java.io.IOException;
+import static tez.algorithm.SelfManagementDomainGenerator.*;
 
 /**
  * Created by suatgonul on 12/2/2016.
  */
-public class RealWorld {
+public class RealWorld extends SimulatedEnvironment {
+    private String personaFolder;
+    private int stateChangeFrequency;
+
     private int dayOffset;
     private TimePlan currentTimePlan;
     private DateTime currentTime;
     private Activity currentActivity;
+    boolean lastActivity;
 
-    private String personaFolder;
-    private int stateChangeFrequency;
+    public RealWorld(Domain domain, RewardFunction rf, TerminalFunction tf, String personaFolder, int stateChangeFrequency) {
+        super(domain, rf, tf);
+        ((ReactionRewardFunction) rf).setEnvironment(this);
+        this.personaFolder = personaFolder;
+        this.stateChangeFrequency = stateChangeFrequency;
+        dayOffset = 1;
+        episodeInit(dayOffset);
+        stateGenerator = new ConstantStateGenerator(getState());
+        resetEnvironment();
+    }
 
     public DateTime getCurrentTime() {
         return currentTime;
@@ -29,16 +53,8 @@ public class RealWorld {
         currentTimePlan = null;
         currentTime = null;
         currentActivity = null;
+        lastActivity = false;
         stateChangeFrequency = 0;
-    }
-
-    public void init(String personaFolder, int stateChangeFrequency) throws WorldSimulationException {
-        this.personaFolder = personaFolder;
-        this.stateChangeFrequency = stateChangeFrequency;
-
-        // initialize day offset
-        dayOffset = DateTime.now().getDayOfWeek();
-        episodeInit(dayOffset);
     }
 
     public void advanceNextEpisode() throws WorldSimulationException {
@@ -46,11 +62,61 @@ public class RealWorld {
         episodeInit(dayOffset);
     }
 
+    /**
+     * Increase the time in real world by considering the start of the next activity and state time period
+     */
+    public State getNextState() {
+        int currentActivityIndex = currentTimePlan.getActivities().indexOf(currentActivity);
+        advanceTimePlan(currentActivityIndex);
+        return getState();
+    }
+
+    private void advanceTimePlan(int currentActivityIndex) {
+        DateTime activityEndTime = currentActivity.getEndTime();
+        if (activityEndTime.isAfter(currentTime.plusMinutes(stateChangeFrequency))) {
+            currentTime = currentTime.plusMinutes(stateChangeFrequency);
+        } else {
+            currentTime = activityEndTime;
+            // update activity
+            lastActivity = currentActivityIndex == currentTimePlan.getActivities().size() - 1;
+            if (!lastActivity) {
+                currentActivity = currentTimePlan.getActivities().get(++currentActivityIndex);
+            }
+        }
+    }
+
+    private State getState() {
+        if(!lastActivity) {
+            State s = new MutableState();
+            s.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
+
+            ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
+            o.setValue(ATT_TIME, currentTime.getHourOfDay());
+            o.setValue(ATT_DAY_TYPE, getDayType(dayOffset).ordinal());
+            o.setValue(ATT_LOCATION, currentActivity.getContext().getLocation().ordinal());
+
+            return s;
+        } else {
+            return new TerminalState();
+        }
+    }
+
+    @Override
+    public void resetEnvironment() {
+        super.resetEnvironment();
+        episodeInit(++dayOffset);
+//        this.lastReward = 0.;
+//        this.curState = stateGenerator.generateState();
+//        for(EnvironmentObserver observer : this.observers){
+//            observer.observeEnvironmentReset(this);
+//        }
+    }
+
     private void episodeInit(int dayOffset) throws WorldSimulationException {
         // initialize time plan
         PersonaParser personaParser = new PersonaParser();
         String personaPath;
-        if (dayOffset % 7 >= 1 && dayOffset <= 5) {
+        if (getDayType(dayOffset) == DayType.WEEKDAY) {
             personaPath = personaFolder + "/weekday.csv";
         } else {
             personaPath = personaFolder + "/weekend.csv";
@@ -58,45 +124,22 @@ public class RealWorld {
 
         try {
             currentTimePlan = personaParser.getTimePlanForPersona(personaPath);
-        } catch (IOException e) {
+        } catch (PersonaParserException e) {
             System.out.println("Could get time plan for day of week: " + dayOffset);
             throw new WorldSimulationException("Could get time plan for day of week: " + dayOffset, e);
         }
 
         // initialize time
         currentTime = currentTimePlan.getStart();
+        // initialize activity
+        currentActivity = currentTimePlan.getActivities().get(0);
     }
 
-    /**
-     * Increase the time in real world by considering the start of the next activity and state time period
-     */
-    public StateDTO getStateAndAdvanceTimePlan() {
-        int currentActivityIndex = currentTimePlan.getActivities().indexOf(currentActivity);
-        boolean lastActivity = currentActivityIndex == currentTimePlan.getActivities().size() - 1;
-
-        StateDTO state = createStateDTO(lastActivity);
-        advanceTimePlan(currentActivityIndex, lastActivity);
-
-        return state;
-    }
-
-    private void advanceTimePlan(int currentActivityIndex, boolean lastActivity) {
-        DateTime activityEndTime = currentActivity.getEndTime();
-        if (activityEndTime.isAfter(currentTime.plusMinutes(stateChangeFrequency))) {
-            currentTime = currentTime.plus(stateChangeFrequency);
+    private DayType getDayType(int dayOffset) {
+        if(dayOffset % 7 < 5) {
+            return DayType.WEEKDAY;
         } else {
-            currentTime = activityEndTime;
-            // update activity
-            if (!lastActivity) {
-                currentActivity = currentTimePlan.getActivities().get(++currentActivityIndex);
-            }
+            return DayType.WEEKEND;
         }
-    }
-
-    private StateDTO createStateDTO(boolean lastActivity) {
-        StateDTO state = new StateDTO();
-        state.setTime(currentTime);
-        state.setTerminal(lastActivity);
-        return state;
     }
 }

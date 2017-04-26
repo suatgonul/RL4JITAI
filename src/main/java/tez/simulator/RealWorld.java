@@ -11,12 +11,12 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
 import org.joda.time.DateTime;
 import tez.algorithm.ReactionRewardFunction;
+import tez.algorithm.TerminalState;
 import tez.persona.Activity;
 import tez.persona.TimePlan;
 import tez.persona.parser.PersonaParser;
 import tez.persona.parser.PersonaParserException;
-import tez.simulator.context.DayType;
-import tez.algorithm.TerminalState;
+import tez.simulator.context.*;
 
 import static tez.algorithm.SelfManagementDomainGenerator.*;
 
@@ -48,20 +48,6 @@ public class RealWorld extends SimulatedEnvironment {
         return currentTime;
     }
 
-    public void reset() {
-        dayOffset = 0;
-        currentTimePlan = null;
-        currentTime = null;
-        currentActivity = null;
-        lastActivity = false;
-        stateChangeFrequency = 0;
-    }
-
-    public void advanceNextEpisode() throws WorldSimulationException {
-        dayOffset++;
-        episodeInit(dayOffset);
-    }
-
     /**
      * Increase the time in real world by considering the start of the next activity and state time period
      */
@@ -85,13 +71,27 @@ public class RealWorld extends SimulatedEnvironment {
         }
     }
 
+    public boolean userReacted() {
+        DayType dayType = getDayType(dayOffset);
+        Location location = currentActivity.getContext().getLocation();
+        int hourOfDay = currentTime.getHourOfDay();
+        StateOfMind stateOfMind = currentActivity.getContext().getStateOfMind();
+        EmotionalStatus emotionalStatus = currentActivity.getContext().getEmotionalStatus();
+        PhoneUsage phoneUsage = currentActivity.getContext().getPhoneUsage();
+
+        if (stateOfMind == StateOfMind.CALM && emotionalStatus == EmotionalStatus.NEUTRAL && phoneUsage == PhoneUsage.APPS_ACTIVE && location == Location.HOME) {
+            return true;
+        }
+        return false;
+    }
+
     private State getState() {
-        if(!lastActivity) {
+        if (!lastActivity) {
             State s = new MutableState();
             s.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
 
             ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
-            o.setValue(ATT_TIME, currentTime.getHourOfDay());
+            o.setValue(ATT_HOUR_OF_DAY, currentTime.getHourOfDay());
             o.setValue(ATT_DAY_TYPE, getDayType(dayOffset).ordinal());
             o.setValue(ATT_LOCATION, currentActivity.getContext().getLocation().ordinal());
 
@@ -105,11 +105,6 @@ public class RealWorld extends SimulatedEnvironment {
     public void resetEnvironment() {
         super.resetEnvironment();
         episodeInit(++dayOffset);
-//        this.lastReward = 0.;
-//        this.curState = stateGenerator.generateState();
-//        for(EnvironmentObserver observer : this.observers){
-//            observer.observeEnvironmentReset(this);
-//        }
     }
 
     private void episodeInit(int dayOffset) throws WorldSimulationException {
@@ -136,7 +131,7 @@ public class RealWorld extends SimulatedEnvironment {
     }
 
     private DayType getDayType(int dayOffset) {
-        if(dayOffset % 7 < 5) {
+        if (dayOffset % 7 < 5) {
             return DayType.WEEKDAY;
         } else {
             return DayType.WEEKEND;

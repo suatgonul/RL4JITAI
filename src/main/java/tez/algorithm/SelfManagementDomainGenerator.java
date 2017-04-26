@@ -12,9 +12,12 @@ import burlap.oomdp.singleagent.environment.Environment;
  * Created by suatgonul on 4/20/2017.
  */
 public class SelfManagementDomainGenerator implements DomainGenerator {
-    public static final String ATT_TIME = "hourOfDay";
+    public static final String ATT_HOUR_OF_DAY = "hourOfDay";
     public static final String ATT_LOCATION = "location";
     public static final String ATT_DAY_TYPE = "dayType";
+    public static final String ATT_PHONE_USAGE = "phoneUsage";
+    public static final String ATT_STATE_OF_MIND = "stateOfMind";
+    public static final String ATT_EMOTIONAL_STATUS = "emotionalStatus";
 
     public static final String CLASS_STATE = "state";
 
@@ -36,7 +39,7 @@ public class SelfManagementDomainGenerator implements DomainGenerator {
     public Domain generateDomain() {
         domain = new SADomain();
 
-        Attribute timingAtt = new Attribute(domain, ATT_TIME, Attribute.AttributeType.INT);
+        Attribute timingAtt = new Attribute(domain, ATT_HOUR_OF_DAY, Attribute.AttributeType.INT);
         timingAtt.setDiscValuesForRange(0, 23, 1);
         Attribute locationAtt = new Attribute(domain, ATT_LOCATION, Attribute.AttributeType.INT);
         locationAtt.setDiscValuesForRange(0, 2, 1);
@@ -59,7 +62,7 @@ public class SelfManagementDomainGenerator implements DomainGenerator {
         s.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
 
         ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
-        o.setValue(ATT_TIME, 0);
+        o.setValue(ATT_HOUR_OF_DAY, 0);
         o.setValue(ATT_DAY_TYPE, DayType.WEEKDAY.ordinal());
         o.setValue(ATT_LOCATION, Location.HOME.ordinal());
 

@@ -57,7 +57,7 @@ public class PersonaParser {
             lines = Files.readAllLines(p);
         } catch (IOException e) {
             PersonaParserException ppe = new PersonaParserException("Could not read lines from the specified path", e);
-            System.out.println("Could not read lines from the specified path");
+            //System.out.println("Could not read lines from the specified path");
             throw ppe;
         }
         // Parse persona-specific properties
@@ -72,9 +72,9 @@ public class PersonaParser {
         parseActivityContexts();
 
         //TODO delete the for below
-        for (int i = 0; i < parsedActivityPool.getParsedActivities().size(); i++) {
-            System.out.println(parsedActivityPool.getParsedActivities().get(i).getName() + "\t" + parsedActivityPool.getParsedActivities().get(i).getStart() + "\t" + parsedActivityPool.getParsedActivities().get(i).getDuration());
-        }
+//        for (int i = 0; i < parsedActivityPool.getParsedActivities().size(); i++) {
+//            System.out.println(parsedActivityPool.getParsedActivities().get(i).getName() + "\t" + parsedActivityPool.getParsedActivities().get(i).getStart() + "\t" + parsedActivityPool.getParsedActivities().get(i).getDuration());
+//        }
     }
 
     private void parsePersonaProperties(List<String> lines) {
@@ -246,17 +246,17 @@ public class PersonaParser {
         if (hasCondition) {
             boolean conditionSatisfied = checkCondition(words, Arrays.asList(new String[]{CONDITION_CURRENT_TIME, CONDITION_RANDOM}));
             if (!conditionSatisfied) {
-                System.out.println("Condition not satisfied");
+                //System.out.println("Condition not satisfied");
                 parsedActivities.remove(parsedActivities.size() - 1);
                 parsedLines.remove(parsedLines.size() - 1);
                 return;
             } else {
-                System.out.println("Condition satisfied");
+                //System.out.println("Condition satisfied");
             }
         }
 
         activity.setName(words.get(OFFSET_ACTIVITY).trim());
-        System.out.println(activity.getName());
+        //System.out.println(activity.getName());
 
         // If the activity does not have a static start time, we consider the end time of the last activity.
         // Having relative start time implies no deviation in the start time. In other words, start time has some
@@ -290,7 +290,7 @@ public class PersonaParser {
             // get start time of the next activity
             int lineIndex = chosenActivities.indexOf(activityLine);
             setActivityTiming(chosenActivities.get(lineIndex + 1));
-            System.out.println("called rec parse activity");
+            //System.out.println("called rec parse activity");
             Activity nextActivity = parsedActivities.get(currentActivityIndex + 1);
 
             //
@@ -298,7 +298,7 @@ public class PersonaParser {
             if (startTime.isAfter(nextStart)) {
                 parsedActivities.remove(currentActivityIndex);
                 parsedLines.remove(currentActivityIndex);
-                System.out.println("start time shifted");
+                //System.out.println("start time shifted");
                 return;
             } else {
                 DateTime durationPeriod = nextStart.minusMinutes(startTime.getHourOfDay() * 60 + startTime.getMinuteOfHour());
@@ -343,7 +343,7 @@ public class PersonaParser {
             }
         }
 
-        System.out.println("at the end for index: " + lineIndex);
+        //System.out.println("at the end for index: " + lineIndex);
     }
 
     private void parseActivityContexts() throws PersonaParserException {
@@ -394,7 +394,7 @@ public class PersonaParser {
                     }
 
                     i += splittedActivities.size() - 1;
-                    System.out.println("i: " + i);
+                    //System.out.println("i: " + i);
 
                     // Continue splitting with the remaining part of the initial activity
                     if (splittedActivities.size() == 3) {
@@ -419,7 +419,7 @@ public class PersonaParser {
         DateTime phoneCheckEnd = phoneCheckOffset.plusMinutes(phoneCheckDuration);
         DateTime activityEnd = initialActivity.getEndTime();
 
-        System.out.println("pce: " + phoneCheckEnd + "  ae: " + activityEnd);
+        //System.out.println("pce: " + phoneCheckEnd + "  ae: " + activityEnd);
 
         if (phoneCheckEnd.isBefore(activityEnd)) {
             // second part of the main activity
@@ -448,10 +448,10 @@ public class PersonaParser {
             initialActivity.setDuration(nextPhoneCheck);
         }
 
-        System.out.println("line index: " + lineIndex);
-        for (int i = 0; i < activities.size(); i++) {
-            System.out.println("splitted activities: " + activities.get(i).getName() + ": " + activities.get(i).getStart() + " duration: " + activities.get(i).getDuration());
-        }
+//        System.out.println("line index: " + lineIndex);
+//        for (int i = 0; i < activities.size(); i++) {
+//            System.out.println("splitted activities: " + activities.get(i).getName() + ": " + activities.get(i).getStart() + " duration: " + activities.get(i).getDuration());
+//        }
         return activities;
     }
 

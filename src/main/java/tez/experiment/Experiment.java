@@ -1,5 +1,6 @@
 package tez.experiment;
 
+import burlap.behavior.singleagent.auxiliary.performance.LearningAlgorithmExperimenter;
 import burlap.behavior.singleagent.auxiliary.performance.PerformanceMetric;
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.learning.LearningAgent;
@@ -53,7 +54,7 @@ public class Experiment {
 
         LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
         LearningAlgorithmExperimenter exp = new LearningAlgorithmExperimenter(environment,
-                10, 100, learningCases);
+                1, 20000, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 PerformanceMetric.CUMULATIVESTEPSPEREPISODE,

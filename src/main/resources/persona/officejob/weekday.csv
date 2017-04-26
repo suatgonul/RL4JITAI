@@ -1,7 +1,7 @@
 :persona_property,midday_time=12:30
 :persona_property,evening_time=18:00
 
-#activity,location,physical_activity,phone_usage,state_of_mind/emotional_status,time,time_variation,duration,duration_variation,phone_check_suitability_and_context_details
+#activity_description,location,physical_activity,phone_usage,state_of_mind/emotional_status,time,time_variation,duration,duration_variation,phone_check_suitability_and_context_details
 :alternative,group=1,order=1,probability=60
 wakes up,HOME,SEDENTARY,SCREEN_OFF,CALM/NEUTRAL=60|CALM/HAPPY=20|TENSE/STRESSED=20,07:15,15,0,0,0
 bathroom session,HOME,INDOOR_ACTIVITY,APPS_ACTIVE,CALM/NEUTRAL=50|FOCUS/NEUTRAL=50,rel,0,15,5,CALM/NEUTRAL=65|CALM/HAPPY=10|FOCUS/HAPPY=10|FOCUS/EXCITED=5|FOCUS/ANGRY=10
@@ -51,10 +51,10 @@ works until the end of business day,OFFICE,SEDENTARY=90|INDOOR_ACTIVITY=10,SCREE
 works 1-2 hours until leaving the office for a meeting,OFFICE,SEDENTARY=90|INDOOR_ACTIVITY=10,APPS_ACTIVE=95|TALKING=5,CALM/NEUTRAL=30|FOCUS/NEUTRAL=40|FOCUS/STRESSED=15|TENSE/STRESSED=15,rel,0,90,30,CALM/NEUTRAL=65|CALM/HAPPY=10|FOCUS/HAPPY=10|FOCUS/EXCITED=5|FOCUS/ANGRY=10
 leaves office to get on the car,OFFICE,WALKING,SCREEN_OFF,CALM/NEUTRAL=50|CALM/STRESSED=30|TENSE/STRESSED=20,rel,0,5,1,0
 sits in the car until the meeting place,OUTSIDE,SITTING_IN_CAR,SCREEN_OFF=50|APPS_ACTIVE=50,CALM/NEUTRAL=50|CALM/STRESSED=30|TENSE/STRESSED=20,rel,0,30,10,CALM/NEUTRAL=65|CALM/HAPPY=10|FOCUS/HAPPY=10|FOCUS/EXCITED=5|FOCUS/ANGRY=10
-attends meeting,rel,OUTSIDE,SEDENTARY,SCREEN_OFF,FOCUS/NEUTRAL=80|FOCUS/STRESSED=20,0,90,30,0,:cond,max_time=17:20
+attends meeting,OUTSIDE,SEDENTARY,SCREEN_OFF,FOCUS/NEUTRAL=80|FOCUS/STRESSED=20,rel,90,30,0,1,:cond,max_time=17:20
 leaves the meeting place to turn back to the office,OUTSIDE,WALKING,SCREEN_OFF,CALM/RELAXED,rel,0,10,5,0
 turns back to the office,OUTSIDE,SITTING_IN_CAR,SCREEN_OFF=50|APPS_ACTIVE=50,CALM/NEUTRAL=50|CALM/RELAXED=50,rel,0,30,10,CALM/NEUTRAL=65|CALM/HAPPY=10|FOCUS/HAPPY=10|FOCUS/EXCITED=5|FOCUS/ANGRY=10
-walks to the office,OUTSIDE,WALKING,SCREEN_OFF,CALM/NEUTRAL=50|CALM/RELAXED=50,rel,5,1,0
+walks to the office,OUTSIDE,WALKING,SCREEN_OFF,CALM/NEUTRAL=50|CALM/RELAXED=50,rel,5,1,0,0
 works until the end of business day,OFFICE,SEDENTARY=90|INDOOR_ACTIVITY=10,APPS_ACTIVE,CALM/NEUTRAL=60|FOCUS/NEUTRAL=30|FOCUS/STRESSED=10,rel,0,rel,0,CALM/NEUTRAL=65|CALM/HAPPY=10|FOCUS/HAPPY=10|FOCUS/EXCITED=5|FOCUS/ANGRY=10,:cond,max_time=18:00
 :end_alternative
 

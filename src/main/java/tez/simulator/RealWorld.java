@@ -28,6 +28,8 @@ public class RealWorld extends SimulatedEnvironment {
     private int stateChangeFrequency;
 
     private int dayOffset;
+    private DateTime previousTime;
+    private Activity previousActivity;
     private TimePlan currentTimePlan;
     private DateTime currentTime;
     private Activity currentActivity;
@@ -41,7 +43,7 @@ public class RealWorld extends SimulatedEnvironment {
         dayOffset = 1;
         episodeInit(dayOffset);
         stateGenerator = new ConstantStateGenerator(getState());
-        resetEnvironment();
+        super.resetEnvironment();
     }
 
     public DateTime getCurrentTime() {
@@ -58,6 +60,9 @@ public class RealWorld extends SimulatedEnvironment {
     }
 
     private void advanceTimePlan(int currentActivityIndex) {
+        previousTime = currentTime;
+        previousActivity = currentActivity;
+
         DateTime activityEndTime = currentActivity.getEndTime();
         if (activityEndTime.isAfter(currentTime.plusMinutes(stateChangeFrequency))) {
             currentTime = currentTime.plusMinutes(stateChangeFrequency);
@@ -73,11 +78,11 @@ public class RealWorld extends SimulatedEnvironment {
 
     public boolean userReacted() {
         DayType dayType = getDayType(dayOffset);
-        Location location = currentActivity.getContext().getLocation();
-        int hourOfDay = currentTime.getHourOfDay();
-        StateOfMind stateOfMind = currentActivity.getContext().getStateOfMind();
-        EmotionalStatus emotionalStatus = currentActivity.getContext().getEmotionalStatus();
-        PhoneUsage phoneUsage = currentActivity.getContext().getPhoneUsage();
+        Location location = previousActivity.getContext().getLocation();
+        int hourOfDay = previousTime.getHourOfDay();
+        StateOfMind stateOfMind = previousActivity.getContext().getStateOfMind();
+        EmotionalStatus emotionalStatus = previousActivity.getContext().getEmotionalStatus();
+        PhoneUsage phoneUsage = previousActivity.getContext().getPhoneUsage();
 
         if (stateOfMind == StateOfMind.CALM && emotionalStatus == EmotionalStatus.NEUTRAL && phoneUsage == PhoneUsage.APPS_ACTIVE && location == Location.HOME) {
             return true;

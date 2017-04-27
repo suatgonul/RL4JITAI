@@ -1,11 +1,9 @@
 package tez.experiment;
 
-import burlap.behavior.singleagent.auxiliary.performance.LearningAlgorithmExperimenter;
 import burlap.behavior.singleagent.auxiliary.performance.PerformanceMetric;
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
-import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -14,6 +12,7 @@ import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import tez.algorithm.DayTerminalFunction;
 import tez.algorithm.ReactionRewardFunction;
 import tez.algorithm.SelfManagementDomainGenerator;
+import tez.algorithm.SelfManagementQLearning;
 import tez.simulator.RealWorld;
 
 import java.util.ArrayList;
@@ -24,15 +23,7 @@ import java.util.List;
  */
 public class Experiment {
 
-    private Experiment experiment;
     private Environment environment;
-
-    public Experiment getInstance() {
-        if (experiment == null) {
-            experiment = new Experiment();
-        }
-        return this;
-    }
 
     public static void main(String[] args) {
         Experiment exp = new Experiment();
@@ -53,16 +44,17 @@ public class Experiment {
         domGen.setEnvironment(environment);
 
         LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
-        LearningAlgorithmExperimenter exp = new LearningAlgorithmExperimenter(environment,
-                1, 20000, learningCases);
+        SelfManagementExperimenter exp = new SelfManagementExperimenter(environment,
+                1, 1000, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
-                PerformanceMetric.CUMULATIVESTEPSPEREPISODE,
-                PerformanceMetric.CUMULATIVEREWARDPERSTEP,
-                PerformanceMetric.CUMULTAIVEREWARDPEREPISODE,
-                PerformanceMetric.AVERAGEEPISODEREWARD,
-                PerformanceMetric.STEPSPEREPISODE,
-                PerformanceMetric.MEDIANEPISODEREWARD);
+                //PerformanceMetric.CUMULATIVESTEPSPEREPISODE,
+                //PerformanceMetric.CUMULATIVEREWARDPERSTEP,
+                //PerformanceMetric.CUMULTAIVEREWARDPEREPISODE,
+                PerformanceMetric.AVERAGEEPISODEREWARD
+                //PerformanceMetric.STEPSPEREPISODE,
+                //PerformanceMetric.MEDIANEPISODEREWARD
+        );
 
 
         //start experiment
@@ -78,7 +70,7 @@ public class Experiment {
             }
 
             public LearningAgent generateAgent() {
-                return new QLearning(domain, 0.99, hashingFactory, 0.3, 0.1);
+                return new SelfManagementQLearning(domain, 0.9, hashingFactory, 0.3, 0.1);
             }
         };
 

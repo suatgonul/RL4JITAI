@@ -19,7 +19,7 @@ public class ReactionRewardFunction implements RewardFunction {
         if (a.action.getName().equals(ACTION_INT_DELIVERY)) {
             boolean userReacted = ((RealWorld) environment).userReacted();
             if(userReacted) {
-                return 1000;
+                return 2;
             } else {
                 return -1;
             }

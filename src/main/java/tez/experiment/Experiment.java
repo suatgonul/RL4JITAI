@@ -1,6 +1,5 @@
 package tez.experiment;
 
-import burlap.behavior.singleagent.auxiliary.performance.PerformanceMetric;
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
@@ -13,6 +12,7 @@ import tez.algorithm.DayTerminalFunction;
 import tez.algorithm.ReactionRewardFunction;
 import tez.algorithm.SelfManagementDomainGenerator;
 import tez.algorithm.SelfManagementQLearning;
+import tez.experiment.performance.SelfManagementPerformanceMetric;
 import tez.simulator.RealWorld;
 
 import java.util.ArrayList;
@@ -51,9 +51,11 @@ public class Experiment {
                 //PerformanceMetric.CUMULATIVESTEPSPEREPISODE,
                 //PerformanceMetric.CUMULATIVEREWARDPERSTEP,
                 //PerformanceMetric.CUMULTAIVEREWARDPEREPISODE,
-                PerformanceMetric.AVERAGEEPISODEREWARD
-                //PerformanceMetric.STEPSPEREPISODE,
-                //PerformanceMetric.MEDIANEPISODEREWARD
+                //SelfManagementPerformanceMetric.AVERAGEEPISODEREWARD,
+                SelfManagementPerformanceMetric.STEPSPEREPISODE,
+                //PerformanceMetric.MEDIANEPISODEREWARD,
+                SelfManagementPerformanceMetric.REWARD_PER_EPISODE,
+                SelfManagementPerformanceMetric.USER_REACTION_PER_EPISODE
         );
 
 
@@ -61,9 +63,9 @@ public class Experiment {
         exp.startExperiment();
     }
 
-    private LearningAgentFactory[] getLearningAlternatives(Domain domain) {
+    private LearningAgentFactory[] getLearningAlternatives(final Domain domain) {
         List<LearningAgentFactory> learningAlternatives = new ArrayList<>();
-        SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
+        final SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
         LearningAgentFactory qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {
                 return "Q-learning";

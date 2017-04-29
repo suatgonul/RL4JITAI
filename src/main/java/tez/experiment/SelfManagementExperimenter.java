@@ -10,12 +10,17 @@ import burlap.debugtools.DPrint;
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
+import power2dm.reporting.visualization.VisualizationMetadata;
+import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementPerformanceMetric;
 import tez.experiment.performance.SelfManagementRewardPlotter;
-import tez.simulator.context.DayType;
-import tez.simulator.context.Location;
+import tez.experiment.performance.visualization.ReactionHitRatioVisualizer;
+import tez.experiment.performance.visualization.Visualizer;
+import tez.simulator.context.*;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import static tez.algorithm.SelfManagementDomainGenerator.*;
 
@@ -217,10 +222,10 @@ public class SelfManagementExperimenter {
 
 
         //this.domain.addActionObserverForAllAction(plotter);
-        this.environmentSever = new EnvironmentServer(this.testEnvironment, plotter);
+        this.environmentSever = new EnvironmentServer(this.testEnvironment/*, plotter*/);
 
         if (this.displayPlots) {
-            this.plotter.startGUI();
+            //this.plotter.startGUI();
         }
 
         for (int i = 0; i < this.agentFactories.length; i++) {
@@ -268,31 +273,54 @@ public class SelfManagementExperimenter {
 
         this.plotter.startNewTrial();
 
+        List<SelfManagementEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
         for (int i = 0; i < this.trialLength; i++) {
-            QValueEpisodeAnalysis ea = (QValueEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
+            SelfManagementEpisodeAnalysis ea = (SelfManagementEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
+            episodeAnalysisList.add(ea);
+
             this.plotter.endEpisode();
             this.environmentSever.resetEnvironment();
 
             System.out.println("Episode " + i);
 
-            for (int j = 0; j < ea.rewardSequence.size(); j++) {
+            if(i > 18000)
+            for (int j = 0; j < ea.rewardSequence.size() && j % 10 == 0; j++) {
+                // Context details from the state object
                 ObjectInstance o = ea.stateSequence.get(j).getObjectsOfClass(CLASS_STATE).get(0);
                 int hourOfDay = o.getIntValForAttribute(ATT_HOUR_OF_DAY);
                 Location location = Location.values()[o.getIntValForAttribute(ATT_LOCATION)];
                 DayType dayType = DayType.values()[o.getIntValForAttribute(ATT_DAY_TYPE)];
-                if (hourOfDay > 20) {
-                    int actionNo;
-                    System.out.print("(" + hourOfDay + ", " + location + ", " + dayType + ") (");
-                    for (QValue qv : ea.qValuesForStates.get(j)) {
-                        actionNo = qv.a.actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
-                        System.out.print(actionNo + ": " + qValPrecision.format(qv.q) + ", ");
-                    }
-                    actionNo = ea.actionSequence.get(j).actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
-                    System.out.println(") A:" + actionNo + ", R:" + ea.rewardSequence.get(j));
+
+                // Context details from the context object
+                Context context = ea.userContexts.get(j);
+                Location location_c = context.getLocation();
+                PhoneUsage phoneUsage_c = context.getPhoneUsage();
+                EmotionalStatus emotionalStatus_c = context.getEmotionalStatus();
+                PhysicalActivity physicalActivity_c = context.getPhysicalActivity();
+                StateOfMind stateOfMind_c = context.getStateOfMind();
+
+                //if (hourOfDay > 16) {
+                int actionNo;
+                System.out.print("(" + hourOfDay + ", " + location + ", " + dayType + ") ");
+                System.out.print("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");
+                for (QValue qv : ea.qValuesForStates.get(j)) {
+                    actionNo = qv.a.actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
+                    System.out.print(actionNo + ": " + qValPrecision.format(qv.q) + ", ");
                 }
+                actionNo = ea.actionSequence.get(j).actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
+                System.out.print(") A:" + actionNo + ", R:" + ea.rewardSequence.get(j));
+                System.out.println(ea.userReactions.get(j) == true ? " (X)" : "");
+                //}
             }
         }
 
+        //TODO do it properly
+        VisualizationMetadata visualizerMetadata = new VisualizationMetadata();
+        visualizerMetadata
+                .setMetadataForVisualizer(ReactionHitRatioVisualizer.class, power2dm.reporting.visualization.Visualizer.METADATA_LEARNING_ALGORITHM, "Q-Learning")
+                .setMetadataForVisualizer(ReactionHitRatioVisualizer.class, power2dm.reporting.visualization.Visualizer.METADATA_POLICY, agent);
+        Visualizer visualizer = new ReactionHitRatioVisualizer(visualizerMetadata.getVisualizerMetadata(ReactionHitRatioVisualizer.class));
+        visualizer.createRewardGraph(episodeAnalysisList);
         this.plotter.endTrial();
 
     }

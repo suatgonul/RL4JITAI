@@ -12,7 +12,7 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
-import tez.experiment.QValueEpisodeAnalysis;
+import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 
 /**
  * Created by suatgonul on 4/26/2017.
@@ -30,7 +30,7 @@ public class SelfManagementQLearning extends QLearning {
 
         State initialState = env.getCurrentObservation();
 
-        QValueEpisodeAnalysis ea = new QValueEpisodeAnalysis(initialState);
+        SelfManagementEpisodeAnalysis ea = new SelfManagementEpisodeAnalysis(initialState);
         HashableState curState = this.stateHash(initialState);
         eStepCounter = 0;
 
@@ -57,7 +57,8 @@ public class SelfManagementQLearning extends QLearning {
             eStepCounter += stepInc;
 
             if(action.action.isPrimitive() || !this.shouldAnnotateOptions){
-                ea.recordTransitionTo(action, nextState.s, r, qIndex.get(curState).qEntry);
+                ExtendedEnvironmentOutcome eeo = (ExtendedEnvironmentOutcome) eo;
+                ea.recordTransitionTo(action, nextState.s, r, qIndex.get(curState).qEntry, eeo.getUserContext(), eeo.getUserReaction());
             }
             else{
                 ea.appendAndMergeEpisodeAnalysis(((Option)action.action).getLastExecutionResults());

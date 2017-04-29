@@ -7,10 +7,15 @@ import burlap.oomdp.core.objects.MutableObjectInstance;
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
+import burlap.oomdp.singleagent.environment.EnvironmentObserver;
+import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
 import org.joda.time.DateTime;
+import tez.algorithm.ExtendedEnvironmentOutcome;
 import tez.algorithm.ReactionRewardFunction;
+import tez.algorithm.StateInfo;
 import tez.algorithm.TerminalState;
 import tez.persona.Activity;
 import tez.persona.TimePlan;
@@ -42,27 +47,60 @@ public class RealWorld extends SimulatedEnvironment {
         this.stateChangeFrequency = stateChangeFrequency;
         dayOffset = 1;
         episodeInit(dayOffset);
-        stateGenerator = new ConstantStateGenerator(getState());
+        stateGenerator = new ConstantStateGenerator(getStateFromCurrentContext());
         super.resetEnvironment();
     }
 
-    public DateTime getCurrentTime() {
-        return currentTime;
+    @Override
+    public EnvironmentOutcome executeAction(GroundedAction ga) {
+
+        GroundedAction simGA = (GroundedAction)ga.copy();
+        simGA.action = this.domain.getAction(ga.actionName());
+        if(simGA.action == null){
+            throw new RuntimeException("Cannot execute action " + ga.toString() + " in this SimulatedEnvironment because the action is to known in this Environment's domain");
+        }
+
+        for(EnvironmentObserver observer : this.observers){
+            observer.observeEnvironmentActionInitiation(this.getCurrentObservation(), ga);
+        }
+
+        State nextState;
+        if(this.allowActionFromTerminalStates || !this.isInTerminalState()) {
+            nextState = simGA.executeIn(this.curState);
+            this.lastReward = this.rf.reward(this.curState, simGA, nextState);
+        }
+        else{
+            nextState = this.curState;
+            this.lastReward = 0.;
+        }
+
+        EnvironmentOutcome eo = new ExtendedEnvironmentOutcome(this.curState.copy(), simGA, nextState.copy(), this.lastReward, this.tf.isTerminal(nextState), previousActivity.getContext().copy(), userReacted());
+
+        this.curState = nextState;
+
+        for(EnvironmentObserver observer : this.observers){
+            observer.observeEnvironmentInteraction(eo);
+        }
+
+        return eo;
     }
+
 
     /**
      * Increase the time in real world by considering the start of the next activity and state time period
      */
-    public State getNextState() {
-        int currentActivityIndex = currentTimePlan.getActivities().indexOf(currentActivity);
-        advanceTimePlan(currentActivityIndex);
-        return getState();
+    public StateInfo getNextState() {
+        advanceTimePlan();
+        boolean userReacted = userReacted();
+        State state = getStateFromCurrentContext();
+        return new StateInfo(state, userReacted);
     }
 
-    private void advanceTimePlan(int currentActivityIndex) {
+    private void advanceTimePlan() {
         previousTime = currentTime;
         previousActivity = currentActivity;
 
+        int currentActivityIndex = currentTimePlan.getActivities().indexOf(currentActivity);
         DateTime activityEndTime = currentActivity.getEndTime();
         if (activityEndTime.isAfter(currentTime.plusMinutes(stateChangeFrequency))) {
             currentTime = currentTime.plusMinutes(stateChangeFrequency);
@@ -77,22 +115,13 @@ public class RealWorld extends SimulatedEnvironment {
     }
 
     public boolean userReacted() {
-        DayType dayType = getDayType(dayOffset);
-        Location location = previousActivity.getContext().getLocation();
-        int hourOfDay = previousTime.getHourOfDay();
-        StateOfMind stateOfMind = previousActivity.getContext().getStateOfMind();
-        EmotionalStatus emotionalStatus = previousActivity.getContext().getEmotionalStatus();
-        PhoneUsage phoneUsage = previousActivity.getContext().getPhoneUsage();
-
-        if (stateOfMind == StateOfMind.CALM && emotionalStatus == EmotionalStatus.NEUTRAL && phoneUsage == PhoneUsage.APPS_ACTIVE && location == Location.HOME) {
-            return true;
-        }
-        return false;
+        return checkUserReaction(previousActivity, previousTime);
     }
 
-    private State getState() {
+    private State getStateFromCurrentContext() {
+        State s;
         if (!lastActivity) {
-            State s = new MutableState();
+            s = new MutableState();
             s.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
 
             ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
@@ -100,10 +129,26 @@ public class RealWorld extends SimulatedEnvironment {
             o.setValue(ATT_DAY_TYPE, getDayType(dayOffset).ordinal());
             o.setValue(ATT_LOCATION, currentActivity.getContext().getLocation().ordinal());
 
-            return s;
         } else {
-            return new TerminalState();
+            s = new TerminalState();
         }
+
+        return s;
+    }
+
+    private boolean checkUserReaction(Activity activity, DateTime time) {
+        DayType dayType = getDayType(dayOffset);
+        Location location = activity.getContext().getLocation();
+        int hourOfDay = time.getHourOfDay();
+        StateOfMind stateOfMind = activity.getContext().getStateOfMind();
+        EmotionalStatus emotionalStatus = activity.getContext().getEmotionalStatus();
+        PhoneUsage phoneUsage = activity.getContext().getPhoneUsage();
+
+        //if (stateOfMind == StateOfMind.CALM && emotionalStatus == EmotionalStatus.NEUTRAL && phoneUsage == PhoneUsage.APPS_ACTIVE && location == Location.HOME) {
+        if (location == Location.HOME && hourOfDay > 20) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -133,6 +178,7 @@ public class RealWorld extends SimulatedEnvironment {
         currentTime = currentTimePlan.getStart();
         // initialize activity
         currentActivity = currentTimePlan.getActivities().get(0);
+        lastActivity = false;
     }
 
     private DayType getDayType(int dayOffset) {

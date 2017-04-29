@@ -28,7 +28,7 @@ public abstract class SelfManagementAction extends SimpleAction implements FullA
     @Override
     protected State performActionHelper(State s, GroundedAction groundedAction) {
         // advance the environment state
-        return ((RealWorld) environment).getNextState();
+        return ((RealWorld) environment).getNextState().getUserState();
     }
 
     public List<TransitionProbability> getTransitions(State s, GroundedAction groundedAction) {

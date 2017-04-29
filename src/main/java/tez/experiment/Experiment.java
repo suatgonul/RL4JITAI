@@ -45,7 +45,7 @@ public class Experiment {
 
         LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
         SelfManagementExperimenter exp = new SelfManagementExperimenter(environment,
-                1, 1000, learningCases);
+                1, 20000, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 //PerformanceMetric.CUMULATIVESTEPSPEREPISODE,
@@ -72,7 +72,7 @@ public class Experiment {
             }
 
             public LearningAgent generateAgent() {
-                return new SelfManagementQLearning(domain, 0.9, hashingFactory, 0.3, 0.1);
+                return new SelfManagementQLearning(domain, 0.9, hashingFactory, 0, 0.1);
             }
         };
 

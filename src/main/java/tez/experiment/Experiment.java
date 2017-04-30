@@ -36,14 +36,14 @@ public class Experiment {
 
         TerminalFunction tf = new DayTerminalFunction();
         RewardFunction rf = new ReactionRewardFunction();
-        SelfManagementDomainGenerator domGen = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.MEDIUM);
+        SelfManagementDomainGenerator domGen = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
         Domain domain = domGen.generateDomain();
         environment = new RealWorld(domain, rf, tf, "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
         domGen.setEnvironment(environment);
 
         LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
         SelfManagementExperimenter exp = new SelfManagementExperimenter(environment,
-                1, 5000, learningCases);
+                10, 10000, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 //PerformanceMetric.CUMULATIVESTEPSPEREPISODE,

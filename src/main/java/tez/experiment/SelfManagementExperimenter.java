@@ -315,6 +315,14 @@ public class SelfManagementExperimenter {
                     String quarterHourOfDay = o.getStringValForAttribute(ATT_QUARTER_HOUR_OF_DAY);
                     PhysicalActivity activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)];
                     System.out.print("(" + quarterHourOfDay + ", " + activity + ", " + location + ", " + dayType + ") ");
+
+                } else if (complexity == SelfManagementDomain.DomainComplexity.HARD) {
+                    String activityTime = o.getStringValForAttribute(ATT_ACTIVITY_TIME);
+                    PhysicalActivity activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)];
+                    PhoneUsage phoneUsage = PhoneUsage.values()[o.getIntValForAttribute(ATT_PHONE_USAGE)];
+                    StateOfMind stateOfMind = StateOfMind.values()[o.getIntValForAttribute(ATT_STATE_OF_MIND)];
+                    EmotionalStatus emotionalStatus = EmotionalStatus.values()[o.getIntValForAttribute(ATT_EMOTIONAL_STATUS)];
+                    System.out.print("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + stateOfMind + ", " + emotionalStatus + ") ");
                 }
 
                 System.out.print("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");

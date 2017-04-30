@@ -129,10 +129,12 @@ public class RealWorld extends SimulatedEnvironment {
 
             if (smdomain.getComplexity() == SelfManagementDomain.DomainComplexity.EASY) {
                 o.setValue(ATT_HOUR_OF_DAY, currentTime.getHourOfDay());
+
             } else if (smdomain.getComplexity() == SelfManagementDomain.DomainComplexity.MEDIUM) {
                 o.setValue(ATT_QUARTER_HOUR_OF_DAY, getQuarterStateRepresentation());
                 o.setValue(ATT_ACTIVITY, currentActivity.getContext().getPhysicalActivity().ordinal());
-            } else if (smdomain.getComplexity() == SelfManagementDomain.DomainComplexity.MEDIUM) {
+
+            } else if (smdomain.getComplexity() == SelfManagementDomain.DomainComplexity.HARD) {
                 o.setValue(ATT_ACTIVITY_TIME, currentTime.getHourOfDay() + "" + currentTime.getMinuteOfHour());
                 o.setValue(ATT_ACTIVITY, currentActivity.getContext().getPhysicalActivity().ordinal());
                 o.setValue(ATT_PHONE_USAGE, currentActivity.getContext().getPhoneUsage().ordinal());

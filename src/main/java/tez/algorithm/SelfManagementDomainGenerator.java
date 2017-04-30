@@ -73,15 +73,15 @@ public class SelfManagementDomainGenerator implements DomainGenerator {
             stateClass.addAttribute(locationAtt);
             stateClass.addAttribute(activityAtt);
 
-        } else if(complexity == SelfManagementDomain.DomainComplexity.HARD) {
-            Attribute timingAtt = new Attribute(domain, ATT_ACTIVITY_TIME);
+        } else if (complexity == SelfManagementDomain.DomainComplexity.HARD) {
+            Attribute timingAtt = new Attribute(domain, ATT_ACTIVITY_TIME, Attribute.AttributeType.STRING);
             Attribute activityAtt = new Attribute(domain, ATT_ACTIVITY, Attribute.AttributeType.INT);
             activityAtt.setDiscValuesForRange(0, 5, 1);
-            Attribute phoneUsageAtt = new Attribute(domain, ATT_PHONE_USAGE);
+            Attribute phoneUsageAtt = new Attribute(domain, ATT_PHONE_USAGE, Attribute.AttributeType.INT);
             phoneUsageAtt.setDiscValuesForRange(0, 2, 1);
-            Attribute emotionalStatusAtt = new Attribute(domain, ATT_PHONE_USAGE);
+            Attribute emotionalStatusAtt = new Attribute(domain, ATT_EMOTIONAL_STATUS, Attribute.AttributeType.INT);
             emotionalStatusAtt.setDiscValuesForRange(0, 5, 1);
-            Attribute stateOfMindAtt = new Attribute(domain, ATT_PHONE_USAGE);
+            Attribute stateOfMindAtt = new Attribute(domain, ATT_STATE_OF_MIND, Attribute.AttributeType.INT);
             stateOfMindAtt.setDiscValuesForRange(0, 2, 1);
 
             stateClass.addAttribute(timingAtt);

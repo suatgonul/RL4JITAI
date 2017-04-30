@@ -1,5 +1,6 @@
 package tez.experiment;
 
+import burlap.behavior.policy.GreedyQPolicy;
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
@@ -8,10 +9,7 @@ import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
-import tez.algorithm.DayTerminalFunction;
-import tez.algorithm.ReactionRewardFunction;
-import tez.algorithm.SelfManagementDomainGenerator;
-import tez.algorithm.SelfManagementQLearning;
+import tez.algorithm.*;
 import tez.experiment.performance.SelfManagementPerformanceMetric;
 import tez.simulator.RealWorld;
 
@@ -38,14 +36,14 @@ public class Experiment {
 
         TerminalFunction tf = new DayTerminalFunction();
         RewardFunction rf = new ReactionRewardFunction();
-        SelfManagementDomainGenerator domGen = new SelfManagementDomainGenerator();
+        SelfManagementDomainGenerator domGen = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.MEDIUM);
         Domain domain = domGen.generateDomain();
         environment = new RealWorld(domain, rf, tf, "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
         domGen.setEnvironment(environment);
 
         LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
         SelfManagementExperimenter exp = new SelfManagementExperimenter(environment,
-                1, 20000, learningCases);
+                1, 5000, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 //PerformanceMetric.CUMULATIVESTEPSPEREPISODE,
@@ -72,7 +70,7 @@ public class Experiment {
             }
 
             public LearningAgent generateAgent() {
-                return new SelfManagementQLearning(domain, 0.9, hashingFactory, 0, 0.1);
+                return new SelfManagementQLearning(domain, 0.9, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE);
             }
         };
 

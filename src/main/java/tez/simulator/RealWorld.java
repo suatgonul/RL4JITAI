@@ -1,6 +1,5 @@
 package tez.simulator;
 
-import burlap.oomdp.auxiliary.common.ConstantStateGenerator;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.objects.MutableObjectInstance;
@@ -13,10 +12,7 @@ import burlap.oomdp.singleagent.environment.EnvironmentObserver;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
 import org.joda.time.DateTime;
-import tez.algorithm.ExtendedEnvironmentOutcome;
-import tez.algorithm.ReactionRewardFunction;
-import tez.algorithm.StateInfo;
-import tez.algorithm.TerminalState;
+import tez.algorithm.*;
 import tez.persona.Activity;
 import tez.persona.TimePlan;
 import tez.persona.parser.PersonaParser;
@@ -47,29 +43,29 @@ public class RealWorld extends SimulatedEnvironment {
         this.stateChangeFrequency = stateChangeFrequency;
         dayOffset = 1;
         episodeInit(dayOffset);
-        stateGenerator = new ConstantStateGenerator(getStateFromCurrentContext());
+        //stateGenerator = new ConstantStateGenerator(getStateFromCurrentContext());
+        stateGenerator = new SelfManagementStateGenerator(this);
         super.resetEnvironment();
     }
 
     @Override
     public EnvironmentOutcome executeAction(GroundedAction ga) {
 
-        GroundedAction simGA = (GroundedAction)ga.copy();
+        GroundedAction simGA = (GroundedAction) ga.copy();
         simGA.action = this.domain.getAction(ga.actionName());
-        if(simGA.action == null){
+        if (simGA.action == null) {
             throw new RuntimeException("Cannot execute action " + ga.toString() + " in this SimulatedEnvironment because the action is to known in this Environment's domain");
         }
 
-        for(EnvironmentObserver observer : this.observers){
+        for (EnvironmentObserver observer : this.observers) {
             observer.observeEnvironmentActionInitiation(this.getCurrentObservation(), ga);
         }
 
         State nextState;
-        if(this.allowActionFromTerminalStates || !this.isInTerminalState()) {
+        if (this.allowActionFromTerminalStates || !this.isInTerminalState()) {
             nextState = simGA.executeIn(this.curState);
             this.lastReward = this.rf.reward(this.curState, simGA, nextState);
-        }
-        else{
+        } else {
             nextState = this.curState;
             this.lastReward = 0.;
         }
@@ -78,22 +74,24 @@ public class RealWorld extends SimulatedEnvironment {
 
         this.curState = nextState;
 
-        for(EnvironmentObserver observer : this.observers){
+        for (EnvironmentObserver observer : this.observers) {
             observer.observeEnvironmentInteraction(eo);
         }
 
         return eo;
     }
 
+    public SelfManagementDomain getDomain() {
+        return (SelfManagementDomain) domain;
+    }
 
     /**
      * Increase the time in real world by considering the start of the next activity and state time period
      */
-    public StateInfo getNextState() {
+    public State getNextState() {
         advanceTimePlan();
-        boolean userReacted = userReacted();
         State state = getStateFromCurrentContext();
-        return new StateInfo(state, userReacted);
+        return state;
     }
 
     private void advanceTimePlan() {
@@ -118,16 +116,29 @@ public class RealWorld extends SimulatedEnvironment {
         return checkUserReaction(previousActivity, previousTime);
     }
 
-    private State getStateFromCurrentContext() {
+    public State getStateFromCurrentContext() {
+        SelfManagementDomain smdomain = (SelfManagementDomain) domain;
         State s;
         if (!lastActivity) {
             s = new MutableState();
             s.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
 
             ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
-            o.setValue(ATT_HOUR_OF_DAY, currentTime.getHourOfDay());
             o.setValue(ATT_DAY_TYPE, getDayType(dayOffset).ordinal());
             o.setValue(ATT_LOCATION, currentActivity.getContext().getLocation().ordinal());
+
+            if (smdomain.getComplexity() == SelfManagementDomain.DomainComplexity.EASY) {
+                o.setValue(ATT_HOUR_OF_DAY, currentTime.getHourOfDay());
+            } else if (smdomain.getComplexity() == SelfManagementDomain.DomainComplexity.MEDIUM) {
+                o.setValue(ATT_QUARTER_HOUR_OF_DAY, getQuarterStateRepresentation());
+                o.setValue(ATT_ACTIVITY, currentActivity.getContext().getPhysicalActivity().ordinal());
+            } else if (smdomain.getComplexity() == SelfManagementDomain.DomainComplexity.MEDIUM) {
+                o.setValue(ATT_ACTIVITY_TIME, currentTime.getHourOfDay() + "" + currentTime.getMinuteOfHour());
+                o.setValue(ATT_ACTIVITY, currentActivity.getContext().getPhysicalActivity().ordinal());
+                o.setValue(ATT_PHONE_USAGE, currentActivity.getContext().getPhoneUsage().ordinal());
+                o.setValue(ATT_EMOTIONAL_STATUS, currentActivity.getContext().getEmotionalStatus().ordinal());
+                o.setValue(ATT_STATE_OF_MIND, currentActivity.getContext().getStateOfMind().ordinal());
+            }
 
         } else {
             s = new TerminalState();
@@ -145,16 +156,17 @@ public class RealWorld extends SimulatedEnvironment {
         PhoneUsage phoneUsage = activity.getContext().getPhoneUsage();
 
         //if (stateOfMind == StateOfMind.CALM && emotionalStatus == EmotionalStatus.NEUTRAL && phoneUsage == PhoneUsage.APPS_ACTIVE && location == Location.HOME) {
-        if (location == Location.HOME && hourOfDay > 20) {
-            return true;
-        }
-        return false;
+//        if (location == Location.HOME && ((dayType == DayType.WEEKDAY && hourOfDay > 20 || dayType == DayType.WEEKEND)) && stateOfMind == StateOfMind.CALM && emotionalStatus == EmotionalStatus.NEUTRAL) {
+//            return true;
+//        }
+        return activity.getContext().getPhoneCheckSuitability();
+        //return false;
     }
 
     @Override
     public void resetEnvironment() {
-        super.resetEnvironment();
         episodeInit(++dayOffset);
+        super.resetEnvironment();
     }
 
     private void episodeInit(int dayOffset) throws WorldSimulationException {
@@ -182,10 +194,20 @@ public class RealWorld extends SimulatedEnvironment {
     }
 
     private DayType getDayType(int dayOffset) {
-        if (dayOffset % 7 < 5) {
+        if (dayOffset - 1 % 7 < 5) {
             return DayType.WEEKDAY;
         } else {
             return DayType.WEEKEND;
         }
+    }
+
+    private String getQuarterStateRepresentation() {
+        int minute = currentTime.getMinuteOfHour();
+        int quarterIndex = minute / 15;
+        int quarterOffset = minute % 15;
+        if (quarterOffset > 7) {
+            quarterIndex++;
+        }
+        return currentTime.getHourOfDay() + "" + quarterIndex;
     }
 }

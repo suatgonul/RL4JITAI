@@ -4,7 +4,6 @@ import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import tez.persona.Activity;
 import tez.persona.TimePlan;
-import tez.simulator.context.PhoneUsage;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -367,6 +366,7 @@ public class PersonaParser {
             List<String> words = asList(line.split(","));
             Activity activity = parsedActivities.get(i);
 
+            // If there are specific emotional context values for the phone usage activity
             if (!words.get(OFFSET_PHONE_CHECK).trim().equals("0") && !words.get(OFFSET_PHONE_CHECK).trim().equals("1")) {
                 while (true) {
                     Random rand = new Random();
@@ -404,8 +404,9 @@ public class PersonaParser {
                     }
                 }
 
-            } else if (words.get(OFFSET_PHONE_CHECK).trim().equals("0")) {
-                activity.getContext().setPhoneUsage(PhoneUsage.SCREEN_OFF);
+                // if the activity is suitable for phone check
+            } else if (words.get(OFFSET_PHONE_CHECK).trim().equals("1")) {
+                activity.getContext().setPhoneCheckSuitability(true);
             }
         }
     }
@@ -413,7 +414,6 @@ public class PersonaParser {
     private List<Activity> addPhoneCheckActivity(Activity initialActivity, int nextPhoneCheck, int phoneCheckDuration) {
         List<Activity> activities = new ArrayList<>();
         activities.add(initialActivity);
-        initialActivity.getContext().setPhoneUsage(PhoneUsage.SCREEN_OFF);
 
         DateTime phoneCheckOffset = initialActivity.getStart().plusMinutes(nextPhoneCheck);
         DateTime phoneCheckEnd = phoneCheckOffset.plusMinutes(phoneCheckDuration);
@@ -427,13 +427,12 @@ public class PersonaParser {
             secondPart.setStart(phoneCheckEnd);
             secondPart.setDuration(initialActivity.getDuration() - nextPhoneCheck - phoneCheckDuration);
 
-
             // first part of the main activity
             initialActivity.setDuration(nextPhoneCheck);
 
             // phone check
             Activity phoneCheckActivity = new Activity("Phone check", phoneCheckOffset, phoneCheckDuration, initialActivity.getContext());
-            phoneCheckActivity.getContext().setPhoneUsage(null);
+            phoneCheckActivity.getContext().setPhoneCheckSuitability(true);
             activities.add(phoneCheckActivity);
             activities.add(secondPart);
 
@@ -442,7 +441,6 @@ public class PersonaParser {
         } else {
             phoneCheckDuration = initialActivity.getDuration() - nextPhoneCheck;
             Activity phoneCheckActivity = new Activity("Phone check", phoneCheckOffset, phoneCheckDuration, initialActivity.getContext());
-            phoneCheckActivity.getContext().setPhoneUsage(null);
             activities.add(phoneCheckActivity);
 
             initialActivity.setDuration(nextPhoneCheck);

@@ -5,14 +5,11 @@ package tez.simulator.context;
  */
 public class Context {
     private Location location;
-
     private PhysicalActivity physicalActivity;
-
     private EmotionalStatus emotionalStatus;
-
     private StateOfMind stateOfMind;
-
     private PhoneUsage phoneUsage;
+    private boolean phoneCheckSuitability;
 
     public Location getLocation() {
         return location;
@@ -54,6 +51,14 @@ public class Context {
         this.phoneUsage = phoneUsage;
     }
 
+    public boolean getPhoneCheckSuitability() {
+        return phoneCheckSuitability;
+    }
+
+    public void setPhoneCheckSuitability(boolean phoneCheckSuitability) {
+        this.phoneCheckSuitability = phoneCheckSuitability;
+    }
+
     public Context copy() {
         Context context = new Context();
         context.setPhoneUsage(getPhoneUsage());
@@ -61,6 +66,7 @@ public class Context {
         context.setStateOfMind(getStateOfMind());
         context.setLocation(getLocation());
         context.setPhysicalActivity(getPhysicalActivity());
+        context.setPhoneCheckSuitability(getPhoneCheckSuitability());
         return context;
     }
 }

@@ -11,11 +11,13 @@ import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import power2dm.reporting.visualization.VisualizationMetadata;
+import tez.algorithm.SelfManagementDomain;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementPerformanceMetric;
 import tez.experiment.performance.SelfManagementRewardPlotter;
 import tez.experiment.performance.visualization.ReactionHitRatioVisualizer;
 import tez.experiment.performance.visualization.Visualizer;
+import tez.simulator.RealWorld;
 import tez.simulator.context.*;
 
 import java.text.DecimalFormat;
@@ -222,10 +224,10 @@ public class SelfManagementExperimenter {
 
 
         //this.domain.addActionObserverForAllAction(plotter);
-        this.environmentSever = new EnvironmentServer(this.testEnvironment/*, plotter*/);
+        this.environmentSever = new EnvironmentServer(this.testEnvironment, plotter);
 
         if (this.displayPlots) {
-            //this.plotter.startGUI();
+            this.plotter.startGUI();
         }
 
         for (int i = 0; i < this.agentFactories.length; i++) {
@@ -275,19 +277,20 @@ public class SelfManagementExperimenter {
 
         List<SelfManagementEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
         for (int i = 0; i < this.trialLength; i++) {
+            System.out.println("Episode " + (i + 1));
             SelfManagementEpisodeAnalysis ea = (SelfManagementEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
-            episodeAnalysisList.add(ea);
+
 
             this.plotter.endEpisode();
             this.environmentSever.resetEnvironment();
+            //if(i % 10 != 0) continue;
+            episodeAnalysisList.add(ea);
 
-            System.out.println("Episode " + i);
 
-            if(i > 18000)
-            for (int j = 0; j < ea.rewardSequence.size() && j % 10 == 0; j++) {
+            //if(i > 18000)
+            for (int j = 0; j < ea.rewardSequence.size(); j++) {
                 // Context details from the state object
                 ObjectInstance o = ea.stateSequence.get(j).getObjectsOfClass(CLASS_STATE).get(0);
-                int hourOfDay = o.getIntValForAttribute(ATT_HOUR_OF_DAY);
                 Location location = Location.values()[o.getIntValForAttribute(ATT_LOCATION)];
                 DayType dayType = DayType.values()[o.getIntValForAttribute(ATT_DAY_TYPE)];
 
@@ -300,9 +303,22 @@ public class SelfManagementExperimenter {
                 StateOfMind stateOfMind_c = context.getStateOfMind();
 
                 //if (hourOfDay > 16) {
-                int actionNo;
-                System.out.print("(" + hourOfDay + ", " + location + ", " + dayType + ") ");
+
+                SelfManagementDomain smDomain = ((RealWorld) environmentSever.getEnvironmentDelegate()).getDomain();
+                SelfManagementDomain.DomainComplexity complexity = smDomain.getComplexity();
+
+                if (complexity == SelfManagementDomain.DomainComplexity.EASY) {
+                    int hourOfDay = o.getIntValForAttribute(ATT_HOUR_OF_DAY);
+                    System.out.print("(" + hourOfDay + ", " + location + ", " + dayType + ") ");
+
+                } else if (complexity == SelfManagementDomain.DomainComplexity.MEDIUM) {
+                    String quarterHourOfDay = o.getStringValForAttribute(ATT_QUARTER_HOUR_OF_DAY);
+                    PhysicalActivity activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)];
+                    System.out.print("(" + quarterHourOfDay + ", " + activity + ", " + location + ", " + dayType + ") ");
+                }
+
                 System.out.print("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");
+                int actionNo;
                 for (QValue qv : ea.qValuesForStates.get(j)) {
                     actionNo = qv.a.actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
                     System.out.print(actionNo + ": " + qValPrecision.format(qv.q) + ", ");

@@ -1,5 +1,7 @@
 package tez.algorithm;
 
+import burlap.behavior.policy.Policy;
+import burlap.behavior.policy.SolverDerivedPolicy;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.options.Option;
@@ -19,8 +21,11 @@ import tez.experiment.performance.SelfManagementEpisodeAnalysis;
  */
 public class SelfManagementQLearning extends QLearning {
 
-    public SelfManagementQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate) {
-        super(domain, gamma, hashingFactory, qInit, learningRate);
+    public SelfManagementQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize) {
+        super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, maxEpisodeSize);
+        if (learningPolicy instanceof SolverDerivedPolicy) {
+            ((SolverDerivedPolicy) learningPolicy).setSolver(this);
+        }
     }
 
     @Override
@@ -35,9 +40,9 @@ public class SelfManagementQLearning extends QLearning {
         eStepCounter = 0;
 
         maxQChangeInLastEpisode = 0.;
-        while(!env.isInTerminalState() && (eStepCounter < maxSteps || maxSteps == -1)){
+        while (!env.isInTerminalState() && (eStepCounter < maxSteps || maxSteps == -1)) {
 
-            GroundedAction action = (GroundedAction)learningPolicy.getAction(curState.s);
+            GroundedAction action = (GroundedAction) learningPolicy.getAction(curState.s);
             QValue curQ = this.getQ(curState, action);
 
             EnvironmentOutcome eo = action.executeIn(env);
@@ -46,22 +51,21 @@ public class SelfManagementQLearning extends QLearning {
             HashableState nextState = this.stateHash(eo.op);
             double maxQ = 0.;
 
-            if(!eo.terminated){
+            if (!eo.terminated) {
                 maxQ = this.getMaxQ(nextState);
             }
 
             //manage option specifics
             double r = eo.r;
-            double discount = eo instanceof EnvironmentOptionOutcome ? ((EnvironmentOptionOutcome)eo).discount : this.gamma;
-            int stepInc = eo instanceof EnvironmentOptionOutcome ? ((EnvironmentOptionOutcome)eo).numSteps : 1;
+            double discount = eo instanceof EnvironmentOptionOutcome ? ((EnvironmentOptionOutcome) eo).discount : this.gamma;
+            int stepInc = eo instanceof EnvironmentOptionOutcome ? ((EnvironmentOptionOutcome) eo).numSteps : 1;
             eStepCounter += stepInc;
 
-            if(action.action.isPrimitive() || !this.shouldAnnotateOptions){
+            if (action.action.isPrimitive() || !this.shouldAnnotateOptions) {
                 ExtendedEnvironmentOutcome eeo = (ExtendedEnvironmentOutcome) eo;
                 ea.recordTransitionTo(action, nextState.s, r, qIndex.get(curState).qEntry, eeo.getUserContext(), eeo.getUserReaction());
-            }
-            else{
-                ea.appendAndMergeEpisodeAnalysis(((Option)action.action).getLastExecutionResults());
+            } else {
+                ea.appendAndMergeEpisodeAnalysis(((Option) action.action).getLastExecutionResults());
             }
 
             double oldQ = curQ.q;
@@ -70,7 +74,7 @@ public class SelfManagementQLearning extends QLearning {
             curQ.q = curQ.q + this.learningRate.pollLearningRate(this.totalNumberOfSteps, curState.s, action) * (r + (discount * maxQ) - curQ.q);
 
             double deltaQ = Math.abs(oldQ - curQ.q);
-            if(deltaQ > maxQChangeInLastEpisode){
+            if (deltaQ > maxQChangeInLastEpisode) {
                 maxQChangeInLastEpisode = deltaQ;
             }
 
@@ -81,7 +85,7 @@ public class SelfManagementQLearning extends QLearning {
 
         }
 
-        if(episodeHistory.size() >= numEpisodesToStore){
+        if (episodeHistory.size() >= numEpisodesToStore) {
             episodeHistory.poll();
         }
         episodeHistory.offer(ea);

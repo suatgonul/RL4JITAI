@@ -1,4 +1,4 @@
-package tez.algorithm;
+package tez.algorithm.action;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TransitionProbability;
@@ -28,7 +28,7 @@ public abstract class SelfManagementAction extends SimpleAction implements FullA
     @Override
     protected State performActionHelper(State s, GroundedAction groundedAction) {
         // advance the environment state
-        return ((RealWorld) environment).getNextState().getUserState();
+        return ((RealWorld) environment).getNextState();
     }
 
     public List<TransitionProbability> getTransitions(State s, GroundedAction groundedAction) {

@@ -1,4 +1,4 @@
-package tez.algorithm;
+package tez.algorithm.action;
 
 import burlap.oomdp.core.Domain;
 

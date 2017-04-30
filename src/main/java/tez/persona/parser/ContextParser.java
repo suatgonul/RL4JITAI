@@ -29,18 +29,21 @@ public class ContextParser {
         PhysicalActivity physicalActivity = PhysicalActivity.valueOf(valueStr);
         context.setPhysicalActivity(physicalActivity);
 
-        // If the phone usage parameter is not set, the activity should be a phone check activity
+        valueStr = getContextValueRandomly(words.get(OFFSET_PHONE_USAGE).trim());
+        PhoneUsage phoneUsage = PhoneUsage.valueOf(valueStr);
+        context.setPhoneUsage(phoneUsage);
+
         String psychologicalParametersStr;
-        if (activity.getContext().getPhoneUsage() == null) {
+        if (activity.getContext().getPhoneCheckSuitability() == true) {
+            if(phoneUsage == PhoneUsage.TALKING) {
+                context.setPhoneCheckSuitability(false);
+            }
+
             if (words.get(OFFSET_PHONE_CHECK).trim().equals("1")) {
                 psychologicalParametersStr = words.get(OFFSET_STATE_OF_MIND_EMOTIONAL_STATUS);
             } else {
                 psychologicalParametersStr = words.get(OFFSET_PHONE_CHECK);
             }
-
-            valueStr = getContextValueRandomly(words.get(OFFSET_PHONE_USAGE).trim());
-            PhoneUsage phoneUsage = PhoneUsage.valueOf(valueStr);
-            context.setPhoneUsage(phoneUsage);
 
         } else {
             psychologicalParametersStr = words.get(OFFSET_STATE_OF_MIND_EMOTIONAL_STATUS);
@@ -54,7 +57,7 @@ public class ContextParser {
 
     }
 
-    private String getContextValueRandomly(String values) throws PersonaParserException {
+    public String getContextValueRandomly(String values) throws PersonaParserException {
         if (values.contains("|")) {
             int randomProbability = new Random().nextInt(100) + 1;
             int aggregatedProbability = 0;

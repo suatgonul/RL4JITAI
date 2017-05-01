@@ -5,26 +5,16 @@ import burlap.behavior.singleagent.auxiliary.performance.ExperimentalEnvironment
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
-import burlap.behavior.valuefunction.QValue;
 import burlap.debugtools.DPrint;
-import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
-import power2dm.reporting.visualization.VisualizationMetadata;
-import tez.algorithm.SelfManagementDomain;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementPerformanceMetric;
 import tez.experiment.performance.SelfManagementRewardPlotter;
-import tez.experiment.performance.visualization.ReactionHitRatioVisualizer;
-import tez.experiment.performance.visualization.Visualizer;
-import tez.simulator.RealWorld;
-import tez.simulator.context.*;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-
-import static tez.algorithm.SelfManagementDomainGenerator.*;
 
 /**
  * Created by suatgonul on 4/26/2017.
@@ -277,7 +267,7 @@ public class SelfManagementExperimenter {
 
         List<SelfManagementEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
         for (int i = 0; i < this.trialLength; i++) {
-            System.out.println("Episode " + (i + 1));
+           // System.out.println("Episode " + (i + 1));
             SelfManagementEpisodeAnalysis ea = (SelfManagementEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
 
 
@@ -290,7 +280,7 @@ public class SelfManagementExperimenter {
             //if(i > 18000)
             for (int j = 0; j < ea.rewardSequence.size(); j++) {
                 // Context details from the state object
-                ObjectInstance o = ea.stateSequence.get(j).getObjectsOfClass(CLASS_STATE).get(0);
+ /*               ObjectInstance o = ea.stateSequence.get(j).getObjectsOfClass(CLASS_STATE).get(0);
                 Location location = Location.values()[o.getIntValForAttribute(ATT_LOCATION)];
                 DayType dayType = DayType.values()[o.getIntValForAttribute(ATT_DAY_TYPE)];
 
@@ -333,18 +323,18 @@ public class SelfManagementExperimenter {
                 }
                 actionNo = ea.actionSequence.get(j).actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
                 System.out.print(") A:" + actionNo + ", R:" + ea.rewardSequence.get(j));
-                System.out.println(ea.userReactions.get(j) == true ? " (X)" : "");
+                System.out.println(ea.userReactions.get(j) == true ? " (X)" : "");*/
                 //}
             }
         }
 
         //TODO do it properly
-        VisualizationMetadata visualizerMetadata = new VisualizationMetadata();
+        /*VisualizationMetadata visualizerMetadata = new VisualizationMetadata();
         visualizerMetadata
                 .setMetadataForVisualizer(ReactionHitRatioVisualizer.class, power2dm.reporting.visualization.Visualizer.METADATA_LEARNING_ALGORITHM, "Q-Learning")
                 .setMetadataForVisualizer(ReactionHitRatioVisualizer.class, power2dm.reporting.visualization.Visualizer.METADATA_POLICY, agent);
         Visualizer visualizer = new ReactionHitRatioVisualizer(visualizerMetadata.getVisualizerMetadata(ReactionHitRatioVisualizer.class));
-        visualizer.createRewardGraph(episodeAnalysisList);
+        visualizer.createRewardGraph(episodeAnalysisList);*/
         this.plotter.endTrial();
 
     }

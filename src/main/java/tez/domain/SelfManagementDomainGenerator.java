@@ -1,4 +1,4 @@
-package tez.algorithm;
+package tez.domain;
 
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.Attribute;
@@ -6,9 +6,9 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.environment.Environment;
-import tez.algorithm.action.InterventionDeliveryAction;
-import tez.algorithm.action.NoAction;
-import tez.algorithm.action.SelfManagementAction;
+import tez.domain.action.InterventionDeliveryAction;
+import tez.domain.action.NoAction;
+import tez.domain.action.SelfManagementAction;
 
 /**
  * Created by suatgonul on 4/20/2017.

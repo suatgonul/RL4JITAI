@@ -12,14 +12,14 @@ import burlap.oomdp.singleagent.environment.EnvironmentObserver;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
 import org.joda.time.DateTime;
-import tez.algorithm.*;
+import tez.domain.*;
 import tez.persona.Activity;
 import tez.persona.TimePlan;
 import tez.persona.parser.PersonaParser;
 import tez.persona.parser.PersonaParserException;
 import tez.simulator.context.*;
 
-import static tez.algorithm.SelfManagementDomainGenerator.*;
+import static tez.domain.SelfManagementDomainGenerator.*;
 
 /**
  * Created by suatgonul on 12/2/2016.

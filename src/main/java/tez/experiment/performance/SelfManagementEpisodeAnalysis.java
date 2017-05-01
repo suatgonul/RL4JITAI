@@ -4,7 +4,7 @@ import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
-import tez.algorithm.SelfManagementDomainGenerator;
+import tez.domain.SelfManagementDomainGenerator;
 import tez.simulator.context.Context;
 
 import java.util.ArrayList;

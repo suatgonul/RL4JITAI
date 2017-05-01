@@ -1,4 +1,4 @@
-package tez.algorithm;
+package tez.domain.algorithm;
 
 import burlap.behavior.policy.Policy;
 import burlap.behavior.policy.SolverDerivedPolicy;
@@ -14,6 +14,7 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
+import tez.domain.ExtendedEnvironmentOutcome;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 
 /**

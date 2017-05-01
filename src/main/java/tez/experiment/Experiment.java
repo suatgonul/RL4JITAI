@@ -9,7 +9,12 @@ import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
-import tez.algorithm.*;
+import tez.domain.DayTerminalFunction;
+import tez.domain.ReactionRewardFunction;
+import tez.domain.SelfManagementDomain;
+import tez.domain.SelfManagementDomainGenerator;
+import tez.domain.algorithm.SelfManagementSarsa;
+import tez.domain.algorithm.SelfManagementSarsaLam;
 import tez.experiment.performance.SelfManagementPerformanceMetric;
 import tez.simulator.RealWorld;
 
@@ -43,13 +48,13 @@ public class Experiment {
 
         LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
         SelfManagementExperimenter exp = new SelfManagementExperimenter(environment,
-                10, 10000, learningCases);
+                3, 5000, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
-                //PerformanceMetric.CUMULATIVESTEPSPEREPISODE,
-                //PerformanceMetric.CUMULATIVEREWARDPERSTEP,
-                //PerformanceMetric.CUMULTAIVEREWARDPEREPISODE,
-                //SelfManagementPerformanceMetric.AVERAGEEPISODEREWARD,
+                //SelfManagementPerformanceMetric.CUMULATIVESTEPSPEREPISODE,
+                //SelfManagementPerformanceMetric.CUMULATIVEREWARDPERSTEP,
+                SelfManagementPerformanceMetric.CUMULTAIVEREWARDPEREPISODE,
+                SelfManagementPerformanceMetric.AVERAGEEPISODEREWARD,
                 SelfManagementPerformanceMetric.STEPSPEREPISODE,
                 //PerformanceMetric.MEDIANEPISODEREWARD,
                 SelfManagementPerformanceMetric.REWARD_PER_EPISODE,
@@ -64,7 +69,21 @@ public class Experiment {
     private LearningAgentFactory[] getLearningAlternatives(final Domain domain) {
         List<LearningAgentFactory> learningAlternatives = new ArrayList<>();
         final SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
-        LearningAgentFactory qLearningFactory = new LearningAgentFactory() {
+
+        LearningAgentFactory         qLearningFactory = new LearningAgentFactory() {
+            @Override
+            public String getAgentName() {
+                return "Sarsa";
+            }
+
+            @Override
+            public LearningAgent generateAgent() {
+                return new SelfManagementSarsa(domain, 0.9, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8);
+            }
+        };
+        learningAlternatives.add(qLearningFactory);
+
+        /*qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {
                 return "Q-learning";
             }
@@ -73,8 +92,21 @@ public class Experiment {
                 return new SelfManagementQLearning(domain, 0.9, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE);
             }
         };
+        learningAlternatives.add(qLearningFactory);*/
 
+        qLearningFactory = new LearningAgentFactory() {
+            @Override
+            public String getAgentName() {
+                return "Sarsa-Lam";
+            }
+
+            @Override
+            public LearningAgent generateAgent() {
+                return new SelfManagementSarsaLam(domain, 0.9, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE, 0);
+            }
+        };
         learningAlternatives.add(qLearningFactory);
+
         return learningAlternatives.toArray(new LearningAgentFactory[0]);
     }
 }

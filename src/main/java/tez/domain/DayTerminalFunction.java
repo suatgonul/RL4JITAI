@@ -1,4 +1,4 @@
-package tez.algorithm;
+package tez.domain;
 
 /**
  * Created by suatgonul on 12/23/2016.

@@ -1,4 +1,4 @@
-package tez.algorithm;
+package tez.domain;
 
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;

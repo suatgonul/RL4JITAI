@@ -1,4 +1,4 @@
-package tez.algorithm;
+package tez.domain;
 
 import burlap.oomdp.auxiliary.StateGenerator;
 import burlap.oomdp.core.states.State;

@@ -1,4 +1,4 @@
-package tez.algorithm;
+package tez.domain;
 
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
@@ -6,7 +6,7 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import tez.simulator.RealWorld;
 
-import static tez.algorithm.SelfManagementDomainGenerator.ACTION_INT_DELIVERY;
+import static tez.domain.SelfManagementDomainGenerator.ACTION_INT_DELIVERY;
 
 /**
  * Created by suatgonul on 12/23/2016.

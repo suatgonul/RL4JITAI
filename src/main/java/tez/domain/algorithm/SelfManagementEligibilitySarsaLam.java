@@ -14,20 +14,17 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
-import tez.domain.ExtendedEnvironmentOutcome;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
-import tez.model.Constants;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Created by suatgonul on 5/1/2017.
  */
-public class SelfManagementSarsaLam extends SarsaLam {
-    private List<State> deliveredInterventions;
-
-    public SelfManagementSarsaLam(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize, double lambda) {
+public class SelfManagementEligibilitySarsaLam extends SarsaLam {
+    public SelfManagementEligibilitySarsaLam(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize, double lambda) {
         super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, maxEpisodeSize, lambda);
         if (learningPolicy instanceof SolverDerivedPolicy) {
             ((SolverDerivedPolicy) learningPolicy).setSolver(this);
@@ -36,7 +33,6 @@ public class SelfManagementSarsaLam extends SarsaLam {
 
     @Override
     public EpisodeAnalysis runLearningEpisode(Environment env, int maxSteps) {
-        deliveredInterventions = null;
 
         State initialState = env.getCurrentObservation();
 
@@ -45,17 +41,14 @@ public class SelfManagementSarsaLam extends SarsaLam {
 
         HashableState curState = this.stateHash(initialState);
         eStepCounter = 0;
-        LinkedList<EligibilityTrace> traces = new LinkedList<SarsaLam.EligibilityTrace>();
+        LinkedList<EligibilityTrace> traces = new LinkedList<EligibilityTrace>();
+        List<EligibilityTrace> tracesWithIntervention = new ArrayList<>();
 
         GroundedAction action = (GroundedAction) learningPolicy.getAction(curState.s);
         QValue curQ = this.getQ(curState, action);
 
 
         while (!env.isInTerminalState() && (eStepCounter < maxSteps || maxSteps == -1)) {
-
-            if(action.actionName().equals(Constants.ACTION_INT_DELIVERY)) {
-                deliveredInterventions.add(curState);
-            }
 
             EnvironmentOutcome eo = action.executeIn(env);
 
@@ -81,7 +74,6 @@ public class SelfManagementSarsaLam extends SarsaLam {
                 ea.appendAndMergeEpisodeAnalysis(((Option) action.action).getLastExecutionResults());
             }
 
-            ExtendedEnvironmentOutcome eeo = (ExtendedEnvironmentOutcome) eo;
 
             //delta
             double delta = r + (discount * nextQV) - curQ.q;
@@ -95,7 +87,6 @@ public class SelfManagementSarsaLam extends SarsaLam {
                         foundCurrentQTrace = true;
                         //et.eligibility = 1.; //replacing traces
                         et.eligibility = et.eligibility + 1;
-                        System.out.println("Encountered previous state: " + curState);
                     } else {
                         et.eligibility = 0.; //replacing traces
                     }
@@ -103,14 +94,8 @@ public class SelfManagementSarsaLam extends SarsaLam {
 
                 double learningRate = this.learningRate.pollLearningRate(this.totalNumberOfSteps, et.sh.s, et.q.a);
 
-                // if the user reaction is positive
-                if(eeo.getUserReaction() && et.q.a.actionName().equals(Constants.ACTION_INT_DELIVERY)) {
-                    continue;
-                } else {
-                    // if the user reaction is negative then apply regular eligibility traces
-                    et.q.q = et.q.q + (learningRate * et.eligibility * delta);
-                    et.eligibility = et.eligibility * lambda * discount;
-                }
+                et.q.q = et.q.q + (learningRate * et.eligibility * delta);
+                et.eligibility = et.eligibility * lambda * discount;
 
                 double deltaQ = Math.abs(et.initialQ - et.q.q);
                 if (deltaQ > maxQChangeInLastEpisode) {
@@ -118,13 +103,6 @@ public class SelfManagementSarsaLam extends SarsaLam {
                 }
 
             }
-
-            boolean interventionDelivered= false;
-            if(deliveredInterventions.size() > 0) {
-                interventionDelivered = true;
-            }
-
-            // TODO: continue with updating the current state with the intervention delivery  
 
             if (!foundCurrentQTrace) {
                 //then update and add it

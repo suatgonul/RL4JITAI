@@ -11,13 +11,19 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.EnvironmentObserver;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
+import burlap.oomdp.statehashing.HashableState;
+import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import org.joda.time.DateTime;
+import org.joda.time.LocalTime;
 import tez.domain.*;
 import tez.persona.Activity;
 import tez.persona.TimePlan;
 import tez.persona.parser.PersonaParser;
 import tez.persona.parser.PersonaParserException;
 import tez.simulator.context.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static tez.domain.SelfManagementDomainGenerator.*;
 
@@ -34,7 +40,10 @@ public class RealWorld extends SimulatedEnvironment {
     private TimePlan currentTimePlan;
     private DateTime currentTime;
     private Activity currentActivity;
-    boolean lastActivity;
+    private boolean lastActivity;
+
+    private List<HashableState> interventionDeliveryStatesPerEpisode;
+    private DateTime lastInterventionCheck;
 
     public RealWorld(Domain domain, RewardFunction rf, TerminalFunction tf, String personaFolder, int stateChangeFrequency) {
         super(domain, rf, tf);
@@ -47,6 +56,11 @@ public class RealWorld extends SimulatedEnvironment {
         stateGenerator = new SelfManagementStateGenerator(this);
         super.resetEnvironment();
     }
+
+    public SelfManagementDomain getDomain() {
+        return (SelfManagementDomain) domain;
+    }
+
 
     @Override
     public EnvironmentOutcome executeAction(GroundedAction ga) {
@@ -63,12 +77,17 @@ public class RealWorld extends SimulatedEnvironment {
 
         State nextState;
         if (this.allowActionFromTerminalStates || !this.isInTerminalState()) {
+            // advances the time plan
             nextState = simGA.executeIn(this.curState);
+
+            // generates the reward based on the reaction of the user
             this.lastReward = this.rf.reward(this.curState, simGA, nextState);
         } else {
             nextState = this.curState;
             this.lastReward = 0.;
         }
+
+        interventionDeliveryStatesPerEpisode.add(new SimpleHashableStateFactory().hashState(this.curState));
 
         EnvironmentOutcome eo = new ExtendedEnvironmentOutcome(this.curState.copy(), simGA, nextState.copy(), this.lastReward, this.tf.isTerminal(nextState), previousActivity.getContext().copy(), userReacted());
 
@@ -81,9 +100,6 @@ public class RealWorld extends SimulatedEnvironment {
         return eo;
     }
 
-    public SelfManagementDomain getDomain() {
-        return (SelfManagementDomain) domain;
-    }
 
     /**
      * Increase the time in real world by considering the start of the next activity and state time period
@@ -110,10 +126,6 @@ public class RealWorld extends SimulatedEnvironment {
                 currentActivity = currentTimePlan.getActivities().get(++currentActivityIndex);
             }
         }
-    }
-
-    public boolean userReacted() {
-        return checkUserReaction(previousActivity, previousTime);
     }
 
     public State getStateFromCurrentContext() {
@@ -149,10 +161,22 @@ public class RealWorld extends SimulatedEnvironment {
         return s;
     }
 
+    /**
+     * This method return whether the user has reacted to an intervention if at least there is one invetervention delivered.
+     * It should be called after the environment variables are updated after calling {@code advanceTimePlan}.
+     *
+     * @return
+     */
+    public boolean userReacted() {
+        return checkUserReaction(previousActivity, previousTime);
+    }
+
     private boolean checkUserReaction(Activity activity, DateTime time) {
         DayType dayType = getDayType(dayOffset);
         Location location = activity.getContext().getLocation();
+        PhysicalActivity physicalActivity = activity.getContext().getPhysicalActivity();
         int hourOfDay = time.getHourOfDay();
+        int minuteOfHour = time.getMinuteOfHour();
         StateOfMind stateOfMind = activity.getContext().getStateOfMind();
         EmotionalStatus emotionalStatus = activity.getContext().getEmotionalStatus();
         PhoneUsage phoneUsage = activity.getContext().getPhoneUsage();
@@ -161,9 +185,79 @@ public class RealWorld extends SimulatedEnvironment {
 //        if (location == Location.HOME && ((dayType == DayType.WEEKDAY && hourOfDay > 20 || dayType == DayType.WEEKEND)) && stateOfMind == StateOfMind.CALM && emotionalStatus == EmotionalStatus.NEUTRAL) {
 //            return true;
 //        }
-        return activity.getContext().getPhoneCheckSuitability();
-        //return false;
+        if (activity.getContext().getPhoneCheckSuitability() == true) {
+            boolean contextSuitable = false;
+            boolean timeSuitable = false;
+
+            if (dayType == DayType.WEEKDAY) {
+                List<LocalTime> startTimes = new ArrayList<>();
+                List<LocalTime> endTimes = new ArrayList<>();
+                startTimes.add(new LocalTime(6, 0));
+                endTimes.add(new LocalTime(10, 0));
+                startTimes.add(new LocalTime(11, 0));
+                endTimes.add(new LocalTime(12, 30));
+                startTimes.add(new LocalTime(13, 30));
+                endTimes.add(new LocalTime(14, 15));
+                startTimes.add(new LocalTime(15, 0));
+                endTimes.add(new LocalTime(16, 30));
+                startTimes.add(new LocalTime(17, 20));
+                endTimes.add(new LocalTime(18, 30));
+                startTimes.add(new LocalTime(19, 30));
+                endTimes.add(new LocalTime(23, 00));
+
+                // check timing
+                for (int i = 0; i < startTimes.size(); i++) {
+                    LocalTime localTime = time.toLocalTime();
+                    if (localTime.isAfter(startTimes.get(i)) && localTime.isBefore(endTimes.get(i))) {
+                        timeSuitable = true;
+                        break;
+                    }
+                }
+
+                // before going to work and at the beginning of the working day
+                if (timeSuitable &&
+                        (stateOfMind == StateOfMind.CALM || stateOfMind == StateOfMind.FOCUS) &&
+                        (emotionalStatus == EmotionalStatus.NEUTRAL || emotionalStatus == EmotionalStatus.RELAXED || emotionalStatus == EmotionalStatus.HAPPY) &&
+                        physicalActivity == PhysicalActivity.SITTING_IN_CAR || physicalActivity == PhysicalActivity.SEDENTARY) {
+                    contextSuitable = true;
+                }
+            }
+
+            // check other heuristics related to reaction to a delivered intervention
+            if (contextSuitable) {
+                // check the time between two reactions is less than 3 hours
+                if (lastInterventionCheck.getMillis() - time.getMillis() <= 3 * 60 * 60 * 1000) {
+                    return false;
+                } else {
+                    return true;
+                }
+
+            } else {
+                return false;
+            }
+
+        } else {
+            return false;
+        }
     }
+
+    /*private boolean checkUserReaction(Activity activity, DateTime time) {
+            DayType dayType = getDayType(dayOffset);
+        Location location = activity.getContext().getLocation();
+        PhysicalActivity physicalActivity = activity.getContext().getPhysicalActivity();
+        int hourOfDay = time.getHourOfDay();
+        int minuteOfHour = time.getMinuteOfHour();
+        StateOfMind stateOfMind = activity.getContext().getStateOfMind();
+        EmotionalStatus emotionalStatus = activity.getContext().getEmotionalStatus();
+        PhoneUsage phoneUsage = activity.getContext().getPhoneUsage();
+
+        //if (stateOfMind == StateOfMind.CALM && emotionalStatus == EmotionalStatus.NEUTRAL && phoneUsage == PhoneUsage.APPS_ACTIVE && location == Location.HOME) {
+//        if (location == Location.HOME && ((dayType == DayType.WEEKDAY && hourOfDay > 20 || dayType == DayType.WEEKEND)) && stateOfMind == StateOfMind.CALM && emotionalStatus == EmotionalStatus.NEUTRAL) {
+//            return true;
+//        }
+
+        return activity.getContext().getPhoneCheckSuitability();
+    }*/
 
     @Override
     public void resetEnvironment() {
@@ -193,6 +287,7 @@ public class RealWorld extends SimulatedEnvironment {
         // initialize activity
         currentActivity = currentTimePlan.getActivities().get(0);
         lastActivity = false;
+        interventionDeliveryStatesPerEpisode = new ArrayList<>();
     }
 
     private DayType getDayType(int dayOffset) {

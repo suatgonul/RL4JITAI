@@ -47,7 +47,7 @@ public class RealWorld extends SimulatedEnvironment {
 
     public RealWorld(Domain domain, RewardFunction rf, TerminalFunction tf, String personaFolder, int stateChangeFrequency) {
         super(domain, rf, tf);
-        ((ReactionRewardFunction) rf).setEnvironment(this);
+        ((SelfManagementReactionRewardFunction) rf).setEnvironment(this);
         this.personaFolder = personaFolder;
         this.stateChangeFrequency = stateChangeFrequency;
         dayOffset = 1;

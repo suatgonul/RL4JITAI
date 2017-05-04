@@ -10,7 +10,7 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import tez.domain.DayTerminalFunction;
-import tez.domain.ReactionRewardFunction;
+import tez.domain.SelfManagementReactionRewardFunction;
 import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.domain.algorithm.SelfManagementSarsa;
@@ -40,7 +40,7 @@ public class Experiment {
     private void runExperiment() {
 
         TerminalFunction tf = new DayTerminalFunction();
-        RewardFunction rf = new ReactionRewardFunction();
+        RewardFunction rf = new SelfManagementReactionRewardFunction();
         SelfManagementDomainGenerator domGen = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
         Domain domain = domGen.generateDomain();
         environment = new RealWorld(domain, rf, tf, "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);

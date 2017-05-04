@@ -9,12 +9,14 @@ import burlap.behavior.singleagent.options.support.EnvironmentOptionOutcome;
 import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
 import tez.domain.ExtendedEnvironmentOutcome;
+import tez.domain.SelfManagementDomainGenerator;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez.model.Constants;
 
@@ -86,7 +88,7 @@ public class SelfManagementSarsaLam extends SarsaLam {
             //delta
             double delta = r + (discount * nextQV) - curQ.q;
 
-            //update all
+            //update all states visited in this episode so far
             boolean foundCurrentQTrace = false;
             for (EligibilityTrace et : traces) {
 
@@ -124,15 +126,27 @@ public class SelfManagementSarsaLam extends SarsaLam {
                 interventionDelivered = true;
             }
 
-            // TODO: continue with updating the current state with the intervention delivery  
-
             if (!foundCurrentQTrace) {
                 //then update and add it
                 double learningRate = this.learningRate.pollLearningRate(this.totalNumberOfSteps, curQ.s, curQ.a);
+
                 curQ.q = curQ.q + (learningRate * delta);
                 EligibilityTrace et = new EligibilityTrace(curState, curQ, lambda * discount);
-
                 traces.add(et);
+
+                if(!interventionDelivered) {
+                    Action intDeliveryAction = null;
+                    for(Action a : actions) {
+                        if(a.getName().equals(SelfManagementDomainGenerator.ACTION_INT_DELIVERY)) {
+                            intDeliveryAction = a;
+                        }
+                    }
+                    QValue qVal = this.getQ(curState, intDeliveryAction);
+                    if(qVal == null) {
+
+                    }
+                    et = new EligibilityTrace(curState, )
+                }
 
                 double deltaQ = Math.abs(et.initialQ - et.q.q);
                 if (deltaQ > maxQChangeInLastEpisode) {

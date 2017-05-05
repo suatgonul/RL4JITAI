@@ -47,7 +47,7 @@ public class RealWorld extends SimulatedEnvironment {
 
     public RealWorld(Domain domain, RewardFunction rf, TerminalFunction tf, String personaFolder, int stateChangeFrequency) {
         super(domain, rf, tf);
-        ((SelfManagementReactionRewardFunction) rf).setEnvironment(this);
+        ((SelfManagementRewardFunction) rf).setEnvironment(this);
         this.personaFolder = personaFolder;
         this.stateChangeFrequency = stateChangeFrequency;
         dayOffset = 1;
@@ -87,7 +87,9 @@ public class RealWorld extends SimulatedEnvironment {
             this.lastReward = 0.;
         }
 
-        interventionDeliveryStatesPerEpisode.add(new SimpleHashableStateFactory().hashState(this.curState));
+        if(simGA.actionName().equals(ACTION_INT_DELIVERY)) {
+            interventionDeliveryStatesPerEpisode.add(new SimpleHashableStateFactory().hashState(this.curState));
+        }
 
         EnvironmentOutcome eo = new ExtendedEnvironmentOutcome(this.curState.copy(), simGA, nextState.copy(), this.lastReward, this.tf.isTerminal(nextState), previousActivity.getContext().copy(), userReacted());
 
@@ -213,25 +215,28 @@ public class RealWorld extends SimulatedEnvironment {
                         break;
                     }
                 }
+            } else {
+                timeSuitable = true;
+            }
 
-                // before going to work and at the beginning of the working day
-                if (timeSuitable &&
-                        (stateOfMind == StateOfMind.CALM || stateOfMind == StateOfMind.FOCUS) &&
-                        (emotionalStatus == EmotionalStatus.NEUTRAL || emotionalStatus == EmotionalStatus.RELAXED || emotionalStatus == EmotionalStatus.HAPPY) &&
-                        physicalActivity == PhysicalActivity.SITTING_IN_CAR || physicalActivity == PhysicalActivity.SEDENTARY) {
-                    contextSuitable = true;
-                }
+            // before going to work and at the beginning of the working day
+            if (timeSuitable &&
+                    (stateOfMind == StateOfMind.CALM || stateOfMind == StateOfMind.FOCUS) &&
+                    (emotionalStatus == EmotionalStatus.NEUTRAL || emotionalStatus == EmotionalStatus.RELAXED || emotionalStatus == EmotionalStatus.HAPPY) &&
+                    physicalActivity == PhysicalActivity.SITTING_IN_CAR || physicalActivity == PhysicalActivity.SEDENTARY) {
+                contextSuitable = true;
             }
 
             // check other heuristics related to reaction to a delivered intervention
             if (contextSuitable) {
                 // check the time between two reactions is less than 3 hours
-                if (lastInterventionCheck.getMillis() - time.getMillis() <= 3 * 60 * 60 * 1000) {
+                /*if (lastInterventionCheck == null || lastInterventionCheck.getMillis() - time.getMillis() <= 3 * 60 * 60 * 1000) {
                     return false;
                 } else {
+                    lastInterventionCheck = currentTime;
                     return true;
-                }
-
+                }*/
+                return true;
             } else {
                 return false;
             }
@@ -241,7 +246,7 @@ public class RealWorld extends SimulatedEnvironment {
         }
     }
 
-    /*private boolean checkUserReaction(Activity activity, DateTime time) {
+   /* private boolean checkUserReaction(Activity activity, DateTime time) {
             DayType dayType = getDayType(dayOffset);
         Location location = activity.getContext().getLocation();
         PhysicalActivity physicalActivity = activity.getContext().getPhysicalActivity();
@@ -252,11 +257,13 @@ public class RealWorld extends SimulatedEnvironment {
         PhoneUsage phoneUsage = activity.getContext().getPhoneUsage();
 
         //if (stateOfMind == StateOfMind.CALM && emotionalStatus == EmotionalStatus.NEUTRAL && phoneUsage == PhoneUsage.APPS_ACTIVE && location == Location.HOME) {
-//        if (location == Location.HOME && ((dayType == DayType.WEEKDAY && hourOfDay > 20 || dayType == DayType.WEEKEND)) && stateOfMind == StateOfMind.CALM && emotionalStatus == EmotionalStatus.NEUTRAL) {
-//            return true;
-//        }
+        if (location == Location.HOME && ((dayType == DayType.WEEKDAY && hourOfDay > 20 || dayType == DayType.WEEKEND)) && stateOfMind == StateOfMind.CALM && emotionalStatus == EmotionalStatus.NEUTRAL) {
+            return true;
+        } else {
+            return false;
+        }
 
-        return activity.getContext().getPhoneCheckSuitability();
+  //      return activity.getContext().getPhoneCheckSuitability();
     }*/
 
     @Override
@@ -288,6 +295,7 @@ public class RealWorld extends SimulatedEnvironment {
         currentActivity = currentTimePlan.getActivities().get(0);
         lastActivity = false;
         interventionDeliveryStatesPerEpisode = new ArrayList<>();
+        lastInterventionCheck = null;
     }
 
     private DayType getDayType(int dayOffset) {

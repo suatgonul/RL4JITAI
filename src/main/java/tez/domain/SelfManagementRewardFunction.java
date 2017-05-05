@@ -11,7 +11,7 @@ import static tez.domain.SelfManagementDomainGenerator.ACTION_INT_DELIVERY;
 /**
  * Created by suatgonul on 12/23/2016.
  */
-public class SelfManagementReactionRewardFunction implements RewardFunction {
+public class SelfManagementRewardFunction implements RewardFunction {
     private Environment environment;
 
     private static double REWARD_REACTION_TO_INTERVENTION = 5;

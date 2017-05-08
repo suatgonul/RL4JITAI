@@ -19,6 +19,7 @@ import burlap.oomdp.statehashing.HashableStateFactory;
 import tez.domain.ExtendedEnvironmentOutcome;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.domain.SelfManagementRewardFunction;
+import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez.model.Constants;
 
@@ -45,12 +46,12 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
         State initialState = env.getCurrentObservation();
 
-        SelfManagementEpisodeAnalysis ea = new SelfManagementEpisodeAnalysis(initialState);
+        SelfManagementEligibilityEpisodeAnalysis ea = new SelfManagementEligibilityEpisodeAnalysis(initialState);
         maxQChangeInLastEpisode = 0.;
 
         HashableState curState = this.stateHash(initialState);
         eStepCounter = 0;
-        LinkedList<EligibilityTrace> traces = new LinkedList<SarsaLam.EligibilityTrace>();
+        LinkedList<SelfManagementEligibilityTrace> traces = new LinkedList<>();
 
         GroundedAction action = (GroundedAction) learningPolicy.getAction(curState.s);
         QValue curQ = this.getQ(curState, action);
@@ -80,12 +81,6 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
             int stepInc = eo instanceof EnvironmentOptionOutcome ? ((EnvironmentOptionOutcome) eo).numSteps : 1;
             eStepCounter += stepInc;
 
-            if (action.action.isPrimitive() || !this.shouldAnnotateOptions) {
-                ea.recordTransitionTo(action, nextState.s, r);
-            } else {
-                ea.appendAndMergeEpisodeAnalysis(((Option) action.action).getLastExecutionResults());
-            }
-
             ExtendedEnvironmentOutcome eeo = (ExtendedEnvironmentOutcome) eo;
 
             //delta
@@ -93,7 +88,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
             //update all states visited in this episode so far
             boolean foundCurrentQTrace = false;
-            for (EligibilityTrace et : traces) {
+            for (SelfManagementEligibilityTrace et : traces) {
 
                 if (et.sh.equals(curState)) {
                     if (et.q.a.equals(action)) {
@@ -108,9 +103,20 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
                 double learningRate = this.learningRate.pollLearningRate(this.totalNumberOfSteps, et.sh.s, et.q.a);
 
-                // if the user reaction is positive
+                // if the user reaction is positive at the current state and if the current trace includes an
+                // intervention delivery action
                 if (eeo.getUserReaction() && et.q.a.actionName().equals(Constants.ACTION_INT_DELIVERY)) {
-                    continue;
+                    if(!et.isUseful()) {
+                        double tempDelta = SelfManagementRewardFunction.getRewardNonReactionToIntervention() + (discount * nextQV) - curQ.q;
+                        et.q.q = et.q.q + (learningRate * et.eligibility * tempDelta);
+                        et.eligibility = et.eligibility * lambda * discount;
+
+                    } else {
+                        et.q.q = et.q.q + (learningRate * et.eligibility * delta);
+                        et.eligibility = et.eligibility * lambda * discount;
+                    }
+
+                    //continue;
                 } else {
                     // if the user reaction is negative then apply regular eligibility traces
                     et.q.q = et.q.q + (learningRate * et.eligibility * delta);
@@ -125,6 +131,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
             }
 
             boolean interventionDelivered = false;
+            boolean interference = false;
             if (deliveredInterventions.size() > 0) {
                 interventionDelivered = true;
             }
@@ -132,7 +139,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                 //then update and add it
                 double learningRate = this.learningRate.pollLearningRate(this.totalNumberOfSteps, curQ.s, curQ.a);
 
-                EligibilityTrace et;
+                SelfManagementEligibilityTrace et;
 
                 // if there is an intervention delivered already and user's context is suitable for reacting to the
                 // delivered intervention
@@ -145,18 +152,26 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                         }
                     }
 
-                    QValue simCurQ = this.getQ(curState, new SimpleGroundedAction(intDeliveryAction));
+                    action = new SimpleGroundedAction(intDeliveryAction);
+                    QValue simCurQ = this.getQ(curState, action);
                     delta = SelfManagementRewardFunction.getRewardReactionToIntervention() + (discount * nextQV) - simCurQ.q;
                     simCurQ.q = simCurQ.q + (learningRate * delta);
 
-                    et = new EligibilityTrace(curState, simCurQ, lambda * discount);
+                    et = new SelfManagementEligibilityTrace(curState, simCurQ, lambda * discount, true);
+                    interference = true;
 
                 } else {
                     curQ.q = curQ.q + (learningRate * delta);
-                    et = new EligibilityTrace(curState, curQ, lambda * discount);
+                    et = new SelfManagementEligibilityTrace(curState, curQ, lambda * discount, false);
                 }
 
                 traces.add(et);
+
+                if (action.action.isPrimitive() || !this.shouldAnnotateOptions) {
+                    ea.recordTransitionTo(action, nextState.s, r, qIndex.get(curState).qEntry, eeo.getUserContext(), eeo.getUserReaction(), interference);
+                } else {
+                    ea.appendAndMergeEpisodeAnalysis(((Option) action.action).getLastExecutionResults());
+                }
 
                 double deltaQ = Math.abs(et.initialQ - et.q.q);
                 if (deltaQ > maxQChangeInLastEpisode) {
@@ -170,6 +185,10 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
             curState = nextState;
             action = nextAction;
             curQ = nextQ;
+
+            if(eeo.getUserReaction()) {
+                deliveredInterventions = new ArrayList<>();
+            }
 
             this.totalNumberOfSteps++;
 

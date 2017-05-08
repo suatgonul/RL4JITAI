@@ -14,6 +14,7 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
+import tez.domain.ExtendedEnvironmentOutcome;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 
 import java.util.ArrayList;
@@ -68,7 +69,8 @@ public class SelfManagementSarsaLam extends SarsaLam {
             eStepCounter += stepInc;
 
             if (action.action.isPrimitive() || !this.shouldAnnotateOptions) {
-                ea.recordTransitionTo(action, nextState.s, r);
+                ExtendedEnvironmentOutcome eeo = (ExtendedEnvironmentOutcome) eo;
+                ea.recordTransitionTo(action, nextState.s, r, qIndex.get(curState).qEntry, eeo.getUserContext(), eeo.getUserReaction());
             } else {
                 ea.appendAndMergeEpisodeAnalysis(((Option) action.action).getLastExecutionResults());
             }

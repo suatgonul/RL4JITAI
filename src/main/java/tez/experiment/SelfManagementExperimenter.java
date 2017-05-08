@@ -5,16 +5,24 @@ import burlap.behavior.singleagent.auxiliary.performance.ExperimentalEnvironment
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
+import burlap.behavior.valuefunction.QValue;
 import burlap.debugtools.DPrint;
+import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
+import tez.domain.SelfManagementDomain;
+import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementPerformanceMetric;
 import tez.experiment.performance.SelfManagementRewardPlotter;
+import tez.simulator.RealWorld;
+import tez.simulator.context.*;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import static tez.domain.SelfManagementDomainGenerator.*;
 
 /**
  * Created by suatgonul on 4/26/2017.
@@ -22,80 +30,56 @@ import java.util.List;
 public class SelfManagementExperimenter {
 
 
+    private static DecimalFormat qValPrecision = new DecimalFormat("#0.0000");
+    /**
+     * The debug code used for debug printing. This experimenter will print with the debugger the number of trials completed for each agent.
+     */
+    public int debugCode = 63634013;
     /**
      * The test {@link burlap.oomdp.singleagent.environment.Environment} in which experiments will be performed.
      */
     protected Environment testEnvironment;
-
-
     /**
      * The {@link burlap.oomdp.singleagent.environment.EnvironmentServer} that wraps the test {@link burlap.oomdp.singleagent.environment.Environment}
      * and tells a {@link burlap.behavior.singleagent.auxiliary.performance.PerformancePlotter} about the individual interactions.
      */
     protected EnvironmentServer environmentSever;
-
-
     /**
      * The array of agent factories for the agents to be compared.
      */
     protected LearningAgentFactory[] agentFactories;
-
-
     /**
      * The number of trials that each agent is evaluated
      */
     protected int nTrials;
-
-
     /**
      * The length of each trial
      */
     protected int trialLength;
-
-
     /**
      * Whether the trial length specifies a number of episodes (which is the default) or the total number of steps
      */
     protected boolean trialLengthIsInEpisodes = true;
-
-
     /**
      * The PerformancePlotter used to collect and plot results
      */
     protected SelfManagementRewardPlotter plotter = null;
-
-
     /**
      * Whether the performance should be visually plotted (by default they will)
      */
     protected boolean displayPlots = true;
-
-
     /**
      * The delay in milliseconds between autmatic refreshes of the plots
      */
     protected int plotRefresh = 1000;
-
-
     /**
      * The signficance value for the confidence interval in the plots. The default is 0.05 which correspodns to a 95% CI
      */
     protected double plotCISignificance = 0.05;
-
-
     /**
      * Whether the experimenter has completed.
      */
     protected boolean completedExperiment = false;
-
-
-    /**
-     * The debug code used for debug printing. This experimenter will print with the debugger the number of trials completed for each agent.
-     */
-    public int debugCode = 63634013;
-
-
-    private static DecimalFormat qValPrecision = new DecimalFormat("#0.0000");
 
 
     /**
@@ -267,7 +251,6 @@ public class SelfManagementExperimenter {
 
         List<SelfManagementEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
         for (int i = 0; i < this.trialLength; i++) {
-           // System.out.println("Episode " + (i + 1));
             SelfManagementEpisodeAnalysis ea = (SelfManagementEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
 
 
@@ -276,55 +259,61 @@ public class SelfManagementExperimenter {
             //if(i % 10 != 0) continue;
             episodeAnalysisList.add(ea);
 
+            if (ea instanceof SelfManagementEpisodeAnalysis) {
+                if (i < 50)
+                    System.out.println("Episode " + (i + 1));
+                    for (int j = 0; j < ea.rewardSequence.size(); j++) {
+                        // Context details from the state object
+                        ObjectInstance o = ea.stateSequence.get(j).getObjectsOfClass(CLASS_STATE).get(0);
+                        Location location = Location.values()[o.getIntValForAttribute(ATT_LOCATION)];
+                        DayType dayType = DayType.values()[o.getIntValForAttribute(ATT_DAY_TYPE)];
 
-            //if(i > 18000)
-            for (int j = 0; j < ea.rewardSequence.size(); j++) {
-                // Context details from the state object
- /*               ObjectInstance o = ea.stateSequence.get(j).getObjectsOfClass(CLASS_STATE).get(0);
-                Location location = Location.values()[o.getIntValForAttribute(ATT_LOCATION)];
-                DayType dayType = DayType.values()[o.getIntValForAttribute(ATT_DAY_TYPE)];
+                        // Context details from the context object
+                        Context context = ea.userContexts.get(j);
+                        Location location_c = context.getLocation();
+                        PhoneUsage phoneUsage_c = context.getPhoneUsage();
+                        EmotionalStatus emotionalStatus_c = context.getEmotionalStatus();
+                        PhysicalActivity physicalActivity_c = context.getPhysicalActivity();
+                        StateOfMind stateOfMind_c = context.getStateOfMind();
 
-                // Context details from the context object
-                Context context = ea.userContexts.get(j);
-                Location location_c = context.getLocation();
-                PhoneUsage phoneUsage_c = context.getPhoneUsage();
-                EmotionalStatus emotionalStatus_c = context.getEmotionalStatus();
-                PhysicalActivity physicalActivity_c = context.getPhysicalActivity();
-                StateOfMind stateOfMind_c = context.getStateOfMind();
+                        //if (hourOfDay > 16) {
 
-                //if (hourOfDay > 16) {
+                        SelfManagementDomain smDomain = ((RealWorld) environmentSever.getEnvironmentDelegate()).getDomain();
+                        SelfManagementDomain.DomainComplexity complexity = smDomain.getComplexity();
 
-                SelfManagementDomain smDomain = ((RealWorld) environmentSever.getEnvironmentDelegate()).getDomain();
-                SelfManagementDomain.DomainComplexity complexity = smDomain.getComplexity();
+                        if (complexity == SelfManagementDomain.DomainComplexity.EASY) {
+                            int hourOfDay = o.getIntValForAttribute(ATT_HOUR_OF_DAY);
+                            System.out.print("(" + hourOfDay + ", " + location + ", " + dayType + ") ");
 
-                if (complexity == SelfManagementDomain.DomainComplexity.EASY) {
-                    int hourOfDay = o.getIntValForAttribute(ATT_HOUR_OF_DAY);
-                    System.out.print("(" + hourOfDay + ", " + location + ", " + dayType + ") ");
+                        } else if (complexity == SelfManagementDomain.DomainComplexity.MEDIUM) {
+                            String quarterHourOfDay = o.getStringValForAttribute(ATT_QUARTER_HOUR_OF_DAY);
+                            PhysicalActivity activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)];
+                            System.out.print("(" + quarterHourOfDay + ", " + activity + ", " + location + ", " + dayType + ") ");
 
-                } else if (complexity == SelfManagementDomain.DomainComplexity.MEDIUM) {
-                    String quarterHourOfDay = o.getStringValForAttribute(ATT_QUARTER_HOUR_OF_DAY);
-                    PhysicalActivity activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)];
-                    System.out.print("(" + quarterHourOfDay + ", " + activity + ", " + location + ", " + dayType + ") ");
+                        } else if (complexity == SelfManagementDomain.DomainComplexity.HARD) {
+                            String activityTime = o.getStringValForAttribute(ATT_ACTIVITY_TIME);
+                            PhysicalActivity activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)];
+                            PhoneUsage phoneUsage = PhoneUsage.values()[o.getIntValForAttribute(ATT_PHONE_USAGE)];
+                            StateOfMind stateOfMind = StateOfMind.values()[o.getIntValForAttribute(ATT_STATE_OF_MIND)];
+                            EmotionalStatus emotionalStatus = EmotionalStatus.values()[o.getIntValForAttribute(ATT_EMOTIONAL_STATUS)];
+                            System.out.print("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + stateOfMind + ", " + emotionalStatus + ") ");
+                        }
 
-                } else if (complexity == SelfManagementDomain.DomainComplexity.HARD) {
-                    String activityTime = o.getStringValForAttribute(ATT_ACTIVITY_TIME);
-                    PhysicalActivity activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)];
-                    PhoneUsage phoneUsage = PhoneUsage.values()[o.getIntValForAttribute(ATT_PHONE_USAGE)];
-                    StateOfMind stateOfMind = StateOfMind.values()[o.getIntValForAttribute(ATT_STATE_OF_MIND)];
-                    EmotionalStatus emotionalStatus = EmotionalStatus.values()[o.getIntValForAttribute(ATT_EMOTIONAL_STATUS)];
-                    System.out.print("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + stateOfMind + ", " + emotionalStatus + ") ");
-                }
-
-                System.out.print("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");
-                int actionNo;
-                for (QValue qv : ea.qValuesForStates.get(j)) {
-                    actionNo = qv.a.actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
-                    System.out.print(actionNo + ": " + qValPrecision.format(qv.q) + ", ");
-                }
-                actionNo = ea.actionSequence.get(j).actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
-                System.out.print(") A:" + actionNo + ", R:" + ea.rewardSequence.get(j));
-                System.out.println(ea.userReactions.get(j) == true ? " (X)" : "");*/
-                //}
+                        System.out.print("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");
+                        int actionNo;
+                        for (QValue qv : ea.qValuesForStates.get(j)) {
+                            actionNo = qv.a.actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
+                            System.out.print(actionNo + ": " + qValPrecision.format(qv.q) + ", ");
+                        }
+                        actionNo = ea.actionSequence.get(j).actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
+                        System.out.print(") A:" + actionNo + ", R:" + ea.rewardSequence.get(j));
+                        if(ea instanceof SelfManagementEligibilityEpisodeAnalysis) {
+                            System.out.print(ea.userReactions.get(j) == true ? " (X)" : "");
+                            System.out.println(" Inter: " + ((SelfManagementEligibilityEpisodeAnalysis) ea).interferenceList.get(j));
+                        } else {
+                            System.out.println(ea.userReactions.get(j) == true ? " (X)" : "");
+                        }
+                    }
             }
         }
 

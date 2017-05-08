@@ -51,7 +51,7 @@ public class Experiment {
 
         LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
         SelfManagementExperimenter exp = new SelfManagementExperimenter(environment,
-                5, 10000, learningCases);
+                2, 10000, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 //SelfManagementPerformanceMetric.CUMULATIVESTEPSPEREPISODE,
@@ -87,12 +87,36 @@ public class Experiment {
         learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
+            @Override
+            public String getAgentName() {
+                return "Sarsa-Elig-Lam (Lambda: 0.8, Gamma: 0.1, LR: 1.0)";
+            }
+
+            @Override
+            public LearningAgent generateAgent() {
+                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 1.0, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8);
+            }
+        };
+        learningAlternatives.add(qLearningFactory);
+
+        qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {
                 return "Sarsa-Lam (Lambda: 0.8, Gamma: 0.1, LR: 0.1)";
             }
 
             public LearningAgent generateAgent() {
                 return new SelfManagementSarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8);
+            }
+        };
+        learningAlternatives.add(qLearningFactory);
+
+        qLearningFactory = new LearningAgentFactory() {
+            public String getAgentName() {
+                return "Sarsa-Lam (Lambda: 0.8, Gamma: 0.1, LR: 1.0)";
+            }
+
+            public LearningAgent generateAgent() {
+                return new SelfManagementSarsaLam(domain, 0.1, hashingFactory, 0, 1.0, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8);
             }
         };
         learningAlternatives.add(qLearningFactory);
@@ -110,14 +134,14 @@ public class Experiment {
 
         qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {
-                return "Q-learning (Gamma: 0.1, LR: 0.1)";
+                return "Q-learning (Gamma: 0.1, LR: 1.0)";
             }
 
             public LearningAgent generateAgent() {
-                return new SelfManagementQLearning(domain, 0.1, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE);
+                return new SelfManagementQLearning(domain, 0.1, hashingFactory, 0, 1.0, new GreedyQPolicy(), Integer.MAX_VALUE);
             }
         };
-        learningAlternatives.add(qLearningFactory);
+        //learningAlternatives.add(qLearningFactory);
 
         return learningAlternatives.toArray(new LearningAgentFactory[0]);
     }

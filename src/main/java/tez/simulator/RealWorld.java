@@ -42,7 +42,6 @@ public class RealWorld extends SimulatedEnvironment {
     private Activity currentActivity;
     private boolean lastActivity;
 
-    private List<HashableState> interventionDeliveryStatesPerEpisode;
     private DateTime lastInterventionCheck;
 
     public RealWorld(Domain domain, RewardFunction rf, TerminalFunction tf, String personaFolder, int stateChangeFrequency) {
@@ -85,10 +84,6 @@ public class RealWorld extends SimulatedEnvironment {
         } else {
             nextState = this.curState;
             this.lastReward = 0.;
-        }
-
-        if(simGA.actionName().equals(ACTION_INT_DELIVERY)) {
-            interventionDeliveryStatesPerEpisode.add(new SimpleHashableStateFactory().hashState(this.curState));
         }
 
         EnvironmentOutcome eo = new ExtendedEnvironmentOutcome(this.curState.copy(), simGA, nextState.copy(), this.lastReward, this.tf.isTerminal(nextState), previousActivity.getContext().copy(), userReacted());
@@ -230,13 +225,13 @@ public class RealWorld extends SimulatedEnvironment {
             // check other heuristics related to reaction to a delivered intervention
             if (contextSuitable) {
                 // check the time between two reactions is less than 3 hours
-                /*if (lastInterventionCheck == null || lastInterventionCheck.getMillis() - time.getMillis() <= 3 * 60 * 60 * 1000) {
+                if (lastInterventionCheck != null && lastInterventionCheck.getMillis() - time.getMillis() > 3 * 60 * 60 * 1000) {
                     return false;
                 } else {
-                    lastInterventionCheck = currentTime;
+                    lastInterventionCheck = time;
                     return true;
-                }*/
-                return true;
+                }
+                //return true;
             } else {
                 return false;
             }
@@ -293,8 +288,9 @@ public class RealWorld extends SimulatedEnvironment {
         currentTime = currentTimePlan.getStart();
         // initialize activity
         currentActivity = currentTimePlan.getActivities().get(0);
+
         lastActivity = false;
-        interventionDeliveryStatesPerEpisode = new ArrayList<>();
+        // reset the time for reaction to the last intervention
         lastInterventionCheck = null;
     }
 

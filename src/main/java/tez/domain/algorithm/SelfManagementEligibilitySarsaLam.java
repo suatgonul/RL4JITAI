@@ -38,7 +38,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
         if (learningPolicy instanceof SolverDerivedPolicy) {
             ((SolverDerivedPolicy) learningPolicy).setSolver(this);
         }
-    }
+     }
 
     @Override
     public EpisodeAnalysis runLearningEpisode(Environment env, int maxSteps) {
@@ -46,7 +46,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
         State initialState = env.getCurrentObservation();
 
-        SelfManagementEligibilityEpisodeAnalysis ea = new SelfManagementEligibilityEpisodeAnalysis(initialState);
+        SelfManagementEligibilityEpisodeAnalysis ea = new SelfManagementEligibilityEpisodeAnalysis("SM Eligibility Sarsa G_" + gamma + " LR_" + learningRate + " L_" + lambda, initialState);
         maxQChangeInLastEpisode = 0.;
 
         HashableState curState = this.stateHash(initialState);

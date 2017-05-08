@@ -14,6 +14,7 @@ import java.util.List;
  * Created by suatgonul on 4/26/2017.
  */
 public class SelfManagementEpisodeAnalysis extends EpisodeAnalysis {
+    private String boundAlgorithm;
     public List<List<QValue>> qValuesForStates;
     public List<Context> userContexts;
     public List<Boolean> userReactions;
@@ -21,8 +22,9 @@ public class SelfManagementEpisodeAnalysis extends EpisodeAnalysis {
     public int actionDeliveredForPotentialReaction;
 
 
-    public SelfManagementEpisodeAnalysis(State initialState) {
+    public SelfManagementEpisodeAnalysis(String boundAlgorithm, State initialState) {
         super(initialState);
+        this.boundAlgorithm = boundAlgorithm;
         qValuesForStates = new ArrayList<>();
         userContexts = new ArrayList<>();
         userReactions = new ArrayList<>();

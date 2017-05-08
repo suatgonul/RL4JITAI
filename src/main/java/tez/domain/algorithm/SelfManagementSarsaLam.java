@@ -15,6 +15,7 @@ import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
 import tez.domain.ExtendedEnvironmentOutcome;
+import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 
 import java.util.ArrayList;
@@ -37,7 +38,8 @@ public class SelfManagementSarsaLam extends SarsaLam {
 
         State initialState = env.getCurrentObservation();
 
-        SelfManagementEpisodeAnalysis ea = new SelfManagementEpisodeAnalysis(initialState);
+        SelfManagementEpisodeAnalysis ea = new SelfManagementEpisodeAnalysis("SM Eligibility Sarsa G_" + gamma + " LR_" + learningRate + " L_" + lambda, initialState);
+
         maxQChangeInLastEpisode = 0.;
 
         HashableState curState = this.stateHash(initialState);

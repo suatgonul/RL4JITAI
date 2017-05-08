@@ -15,6 +15,7 @@ import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
 import tez.domain.ExtendedEnvironmentOutcome;
+import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 
 /**
@@ -36,7 +37,7 @@ public class SelfManagementQLearning extends QLearning {
 
         State initialState = env.getCurrentObservation();
 
-        SelfManagementEpisodeAnalysis ea = new SelfManagementEpisodeAnalysis(initialState);
+        SelfManagementEpisodeAnalysis ea = new SelfManagementEpisodeAnalysis("SM QLearning G_" + gamma + " LR_" + learningRate, initialState);
         HashableState curState = this.stateHash(initialState);
         eStepCounter = 0;
 

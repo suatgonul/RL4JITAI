@@ -16,8 +16,8 @@ import java.util.List;
 public class SelfManagementEligibilityEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
     public List<Boolean> interferenceList;
 
-    public SelfManagementEligibilityEpisodeAnalysis(State initialState) {
-        super(initialState);
+    public SelfManagementEligibilityEpisodeAnalysis(String boundAlgorithm, State initialState) {
+        super(boundAlgorithm, initialState);
         interferenceList = new ArrayList<>();
     }
 

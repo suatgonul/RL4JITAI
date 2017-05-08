@@ -11,6 +11,7 @@ import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import tez.domain.SelfManagementDomain;
+import tez.experiment.debug.Reporter;
 import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementPerformanceMetric;
@@ -250,19 +251,24 @@ public class SelfManagementExperimenter {
         this.plotter.startNewTrial();
 
         List<SelfManagementEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
+        Reporter reporter = new Reporter(, Reporter.ReportMode.FILE);
+        StringBuilder sb;
         for (int i = 0; i < this.trialLength; i++) {
             SelfManagementEpisodeAnalysis ea = (SelfManagementEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
 
 
             this.plotter.endEpisode();
             this.environmentSever.resetEnvironment();
-            //if(i % 10 != 0) continue;
+
             episodeAnalysisList.add(ea);
 
             if (ea instanceof SelfManagementEpisodeAnalysis) {
                 if (i < 50)
-                    System.out.println("Episode " + (i + 1));
+                    //System.out.println("Episode " + (i + 1));
+                    reporter.report("Episode " + (i + 1));
                     for (int j = 0; j < ea.rewardSequence.size(); j++) {
+                        sb = new StringBuilder();
+
                         // Context details from the state object
                         ObjectInstance o = ea.stateSequence.get(j).getObjectsOfClass(CLASS_STATE).get(0);
                         Location location = Location.values()[o.getIntValForAttribute(ATT_LOCATION)];
@@ -296,23 +302,30 @@ public class SelfManagementExperimenter {
                             PhoneUsage phoneUsage = PhoneUsage.values()[o.getIntValForAttribute(ATT_PHONE_USAGE)];
                             StateOfMind stateOfMind = StateOfMind.values()[o.getIntValForAttribute(ATT_STATE_OF_MIND)];
                             EmotionalStatus emotionalStatus = EmotionalStatus.values()[o.getIntValForAttribute(ATT_EMOTIONAL_STATUS)];
-                            System.out.print("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + stateOfMind + ", " + emotionalStatus + ") ");
+                            //System.out.print("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + stateOfMind + ", " + emotionalStatus + ") ");
+                            sb.append("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + stateOfMind + ", " + emotionalStatus + ") ");
                         }
 
-                        System.out.print("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");
+                        //System.out.print("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");
+                        sb.append("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");
                         int actionNo;
                         for (QValue qv : ea.qValuesForStates.get(j)) {
                             actionNo = qv.a.actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
-                            System.out.print(actionNo + ": " + qValPrecision.format(qv.q) + ", ");
+
+                            //System.out.print(actionNo + ": " + qValPrecision.format(qv.q) + ", ");
+                            sb.append(actionNo + ": " + qValPrecision.format(qv.q) + ", ");
                         }
                         actionNo = ea.actionSequence.get(j).actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
-                        System.out.print(") A:" + actionNo + ", R:" + ea.rewardSequence.get(j));
+                        //System.out.print(") A:" + actionNo + ", R:" + ea.rewardSequence.get(j));
+                        sb.append(") A:" + actionNo + ", R:" + ea.rewardSequence.get(j));
                         if(ea instanceof SelfManagementEligibilityEpisodeAnalysis) {
-                            System.out.print(ea.userReactions.get(j) == true ? " (X)" : "");
-                            System.out.println(" Inter: " + ((SelfManagementEligibilityEpisodeAnalysis) ea).interferenceList.get(j));
+                            //System.out.println(ea.userReactions.get(j) == true ? " (X)" : "" + " Inter: " + ((SelfManagementEligibilityEpisodeAnalysis) ea).interferenceList.get(j));
+                            sb.append(ea.userReactions.get(j) == true ? " (X)" : "" + " Inter: " + ((SelfManagementEligibilityEpisodeAnalysis) ea).interferenceList.get(j));
                         } else {
-                            System.out.println(ea.userReactions.get(j) == true ? " (X)" : "");
+                            //System.out.println(ea.userReactions.get(j) == true ? " (X)" : "");
+                            sb.append(ea.userReactions.get(j) == true ? " (X)" : "");
                         }
+                        reporter.report(sb.toString());
                     }
             }
         }

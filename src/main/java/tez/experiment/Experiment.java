@@ -4,19 +4,18 @@ import burlap.behavior.policy.GreedyQPolicy;
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
-import burlap.behavior.singleagent.learning.tdmethods.SarsaLam;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import tez.domain.DayTerminalFunction;
-import tez.domain.SelfManagementRewardFunction;
 import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
+import tez.domain.SelfManagementRewardFunction;
+import tez.domain.algorithm.SelfManagementEligibilitySarsaLam;
 import tez.domain.algorithm.SelfManagementQLearning;
 import tez.domain.algorithm.SelfManagementSarsa;
-import tez.domain.algorithm.SelfManagementEligibilitySarsaLam;
 import tez.domain.algorithm.SelfManagementSarsaLam;
 import tez.experiment.performance.SelfManagementPerformanceMetric;
 import tez.simulator.RealWorld;
@@ -46,7 +45,7 @@ public class Experiment {
         RewardFunction rf = new SelfManagementRewardFunction();
         SelfManagementDomainGenerator domGen = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
         Domain domain = domGen.generateDomain();
-        environment = new RealWorld(domain, rf, tf, "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
+        environment = new RealWorld(domain, rf, tf, "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
         domGen.setEnvironment(environment);
 
         LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
@@ -76,7 +75,7 @@ public class Experiment {
         LearningAgentFactory qLearningFactory = new LearningAgentFactory() {
             @Override
             public String getAgentName() {
-                return "Sarsa-Elig-Lam (Lambda: 0.8, Gamma: 0.1, LR: 0.1)";
+                return "Sarsa-Elig-Lam  Lambda_0.8 Gamma_0.1 LR_ 0.1";
             }
 
             @Override
@@ -89,7 +88,7 @@ public class Experiment {
         qLearningFactory = new LearningAgentFactory() {
             @Override
             public String getAgentName() {
-                return "Sarsa-Elig-Lam (Lambda: 0.8, Gamma: 0.1, LR: 1.0)";
+                return "Sarsa-Elig-Lam  Lambda_0.8 Gamma_0.1 LR_1.0";
             }
 
             @Override
@@ -101,7 +100,7 @@ public class Experiment {
 
         qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {
-                return "Sarsa-Lam (Lambda: 0.8, Gamma: 0.1, LR: 0.1)";
+                return "Sarsa-Lam  Lambda_0.8 Gamma_0.1 LR_0.1";
             }
 
             public LearningAgent generateAgent() {
@@ -112,7 +111,7 @@ public class Experiment {
 
         qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {
-                return "Sarsa-Lam (Lambda: 0.8, Gamma: 0.1, LR: 1.0)";
+                return "Sarsa-Lam  Lambda_0.8 Gamma_0.1 LR_1.0";
             }
 
             public LearningAgent generateAgent() {
@@ -123,7 +122,7 @@ public class Experiment {
 
         qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {
-                return "Sarsa (Gamma: 0.1, LR: 0.1)";
+                return "Sarsa  Gamma_0.1 LR_0.1";
             }
 
             public LearningAgent generateAgent() {
@@ -134,7 +133,7 @@ public class Experiment {
 
         qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {
-                return "Q-learning (Gamma: 0.1, LR: 1.0)";
+                return "Q-learning  Gamma_0.1 LR_1.0";
             }
 
             public LearningAgent generateAgent() {

@@ -11,8 +11,6 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.EnvironmentObserver;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
-import burlap.oomdp.statehashing.HashableState;
-import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import tez.domain.*;
@@ -41,8 +39,8 @@ public class RealWorld extends SimulatedEnvironment {
     private DateTime currentTime;
     private Activity currentActivity;
     private boolean lastActivity;
-
-    private DateTime lastInterventionCheck;
+    private boolean lastUserReaction;
+    private DateTime lastInterventionCheckTime;
 
     public RealWorld(Domain domain, RewardFunction rf, TerminalFunction tf, String personaFolder, int stateChangeFrequency) {
         super(domain, rf, tf);
@@ -61,6 +59,14 @@ public class RealWorld extends SimulatedEnvironment {
     }
 
 
+    /**
+     * Main orchestrator call for executing a single step of an episode. Within this method, by calling the executeIn
+     * method of the environment state is set to the next state and afterwards reward is obtained by calling the
+     * reward function's reward method.
+     *
+     * @param ga
+     * @return
+     */
     @Override
     public EnvironmentOutcome executeAction(GroundedAction ga) {
 
@@ -79,6 +85,8 @@ public class RealWorld extends SimulatedEnvironment {
             // advances the time plan
             nextState = simGA.executeIn(this.curState);
 
+            lastUserReaction = userReacted();
+
             // generates the reward based on the reaction of the user
             this.lastReward = this.rf.reward(this.curState, simGA, nextState);
         } else {
@@ -86,7 +94,7 @@ public class RealWorld extends SimulatedEnvironment {
             this.lastReward = 0.;
         }
 
-        EnvironmentOutcome eo = new ExtendedEnvironmentOutcome(this.curState.copy(), simGA, nextState.copy(), this.lastReward, this.tf.isTerminal(nextState), previousActivity.getContext().copy(), userReacted());
+        EnvironmentOutcome eo = new ExtendedEnvironmentOutcome(this.curState.copy(), simGA, nextState.copy(), this.lastReward, this.tf.isTerminal(nextState), previousActivity.getContext().copy(), lastUserReaction);
 
         this.curState = nextState;
 
@@ -164,7 +172,7 @@ public class RealWorld extends SimulatedEnvironment {
      *
      * @return
      */
-    public boolean userReacted() {
+    private boolean userReacted() {
         return checkUserReaction(previousActivity, previousTime);
     }
 
@@ -225,10 +233,10 @@ public class RealWorld extends SimulatedEnvironment {
             // check other heuristics related to reaction to a delivered intervention
             if (contextSuitable) {
                 // check the time between two reactions is less than 3 hours
-                if (lastInterventionCheck != null && lastInterventionCheck.getMillis() - time.getMillis() > 3 * 60 * 60 * 1000) {
+                if (lastInterventionCheckTime != null && time.getMillis() - lastInterventionCheckTime.getMillis() < 3 * 60 * 60 * 1000) {
                     return false;
                 } else {
-                    lastInterventionCheck = time;
+                    lastInterventionCheckTime = time;
                     return true;
                 }
                 //return true;
@@ -291,7 +299,7 @@ public class RealWorld extends SimulatedEnvironment {
 
         lastActivity = false;
         // reset the time for reaction to the last intervention
-        lastInterventionCheck = null;
+        lastInterventionCheckTime = null;
     }
 
     private DayType getDayType(int dayOffset) {
@@ -310,5 +318,9 @@ public class RealWorld extends SimulatedEnvironment {
             quarterIndex++;
         }
         return currentTime.getHourOfDay() + "" + quarterIndex;
+    }
+
+    public boolean getLastUserReaction() {
+        return lastUserReaction;
     }
 }

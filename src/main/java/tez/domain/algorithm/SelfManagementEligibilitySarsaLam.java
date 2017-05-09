@@ -20,7 +20,6 @@ import tez.domain.ExtendedEnvironmentOutcome;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.domain.SelfManagementRewardFunction;
 import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
-import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez.model.Constants;
 
 import java.util.ArrayList;
@@ -46,7 +45,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
         State initialState = env.getCurrentObservation();
 
-        SelfManagementEligibilityEpisodeAnalysis ea = new SelfManagementEligibilityEpisodeAnalysis("SM Eligibility Sarsa G_" + gamma + " LR_" + learningRate + " L_" + lambda, initialState);
+        SelfManagementEligibilityEpisodeAnalysis ea = new SelfManagementEligibilityEpisodeAnalysis(initialState);
         maxQChangeInLastEpisode = 0.;
 
         HashableState curState = this.stateHash(initialState);
@@ -64,6 +63,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
             }
 
             EnvironmentOutcome eo = action.executeIn(env);
+            ExtendedEnvironmentOutcome eeo = (ExtendedEnvironmentOutcome) eo;
 
             HashableState nextState = this.stateHash(eo.op);
             GroundedAction nextAction = (GroundedAction) learningPolicy.getAction(nextState.s);
@@ -80,8 +80,6 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
             double discount = eo instanceof EnvironmentOptionOutcome ? ((EnvironmentOptionOutcome) eo).discount : this.gamma;
             int stepInc = eo instanceof EnvironmentOptionOutcome ? ((EnvironmentOptionOutcome) eo).numSteps : 1;
             eStepCounter += stepInc;
-
-            ExtendedEnvironmentOutcome eeo = (ExtendedEnvironmentOutcome) eo;
 
             //delta
             double delta = r + (discount * nextQV) - curQ.q;
@@ -104,7 +102,8 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                 double learningRate = this.learningRate.pollLearningRate(this.totalNumberOfSteps, et.sh.s, et.q.a);
 
                 // if the user reaction is positive at the current state and if the current trace includes an
-                // intervention delivery action
+                // intervention delivery action do not positively reward a previous trace if it did not provide a
+                // positive result.
                 if (eeo.getUserReaction() && et.q.a.actionName().equals(Constants.ACTION_INT_DELIVERY)) {
                     if(!et.isUseful()) {
                         double tempDelta = SelfManagementRewardFunction.getRewardNonReactionToIntervention() + (discount * nextQV) - curQ.q;
@@ -130,35 +129,40 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
             }
 
-            boolean interventionDelivered = false;
-            boolean interference = false;
-            if (deliveredInterventions.size() > 0) {
-                interventionDelivered = true;
-            }
+            String interference = "N";
             if (!foundCurrentQTrace) {
                 //then update and add it
                 double learningRate = this.learningRate.pollLearningRate(this.totalNumberOfSteps, curQ.s, curQ.a);
 
                 SelfManagementEligibilityTrace et;
 
-                // if there is an intervention delivered already and user's context is suitable for reacting to the
-                // delivered intervention
-                if (interventionDelivered && eeo.getUserReaction()) {
-                    // override delta for the simulated action
-                    Action intDeliveryAction = null;
-                    for (Action a : actions) {
-                        if (a.getName().equals(SelfManagementDomainGenerator.ACTION_INT_DELIVERY)) {
-                            intDeliveryAction = a;
+                if(eeo.getUserReaction()) {
+                    if(action.actionName().equals(SelfManagementDomainGenerator.ACTION_INT_DELIVERY)) {
+                        curQ.q = curQ.q + (learningRate * delta);
+                        et = new SelfManagementEligibilityTrace(curState, curQ, lambda * discount, true);
+                        interference = "NoN"; //no need
+
+                    } else if(deliveredInterventions.size() > 0) {
+                        // override delta for the simulated action
+                        Action intDeliveryAction = null;
+                        for (Action a : actions) {
+                            if (a.getName().equals(SelfManagementDomainGenerator.ACTION_INT_DELIVERY)) {
+                                intDeliveryAction = a;
+                            }
                         }
+
+                        action = new SimpleGroundedAction(intDeliveryAction);
+                        QValue simCurQ = this.getQ(curState, action);
+                        r = SelfManagementRewardFunction.getRewardReactionToIntervention();
+                        delta = r + (discount * nextQV) - simCurQ.q;
+                        simCurQ.q = simCurQ.q + (learningRate * delta);
+
+                        et = new SelfManagementEligibilityTrace(curState, simCurQ, lambda * discount, true);
+                        interference = "Y";
+                    } else {
+                        curQ.q = curQ.q + (learningRate * delta);
+                        et = new SelfManagementEligibilityTrace(curState, curQ, lambda * discount, false);
                     }
-
-                    action = new SimpleGroundedAction(intDeliveryAction);
-                    QValue simCurQ = this.getQ(curState, action);
-                    delta = SelfManagementRewardFunction.getRewardReactionToIntervention() + (discount * nextQV) - simCurQ.q;
-                    simCurQ.q = simCurQ.q + (learningRate * delta);
-
-                    et = new SelfManagementEligibilityTrace(curState, simCurQ, lambda * discount, true);
-                    interference = true;
 
                 } else {
                     curQ.q = curQ.q + (learningRate * delta);

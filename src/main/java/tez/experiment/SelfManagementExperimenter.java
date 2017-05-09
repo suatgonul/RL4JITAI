@@ -10,12 +10,15 @@ import burlap.debugtools.DPrint;
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
+import power2dm.reporting.visualization.VisualizationMetadata;
 import tez.domain.SelfManagementDomain;
 import tez.experiment.debug.Reporter;
 import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementPerformanceMetric;
 import tez.experiment.performance.SelfManagementRewardPlotter;
+import tez.experiment.performance.visualization.ReactionHitRatioVisualizer;
+import tez.experiment.performance.visualization.Visualizer;
 import tez.simulator.RealWorld;
 import tez.simulator.context.*;
 
@@ -251,11 +254,12 @@ public class SelfManagementExperimenter {
         this.plotter.startNewTrial();
 
         List<SelfManagementEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
-        Reporter reporter = new Reporter(, Reporter.ReportMode.FILE);
+        Reporter reporter = new Reporter(agentFactory.getAgentName() + ".txt");
+        reporter.report("New Trial");
         StringBuilder sb;
+
         for (int i = 0; i < this.trialLength; i++) {
             SelfManagementEpisodeAnalysis ea = (SelfManagementEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
-
 
             this.plotter.endEpisode();
             this.environmentSever.resetEnvironment();
@@ -263,7 +267,7 @@ public class SelfManagementExperimenter {
             episodeAnalysisList.add(ea);
 
             if (ea instanceof SelfManagementEpisodeAnalysis) {
-                if (i < 50)
+                if (i < 50 || i > 9950) {
                     //System.out.println("Episode " + (i + 1));
                     reporter.report("Episode " + (i + 1));
                     for (int j = 0; j < ea.rewardSequence.size(); j++) {
@@ -318,25 +322,29 @@ public class SelfManagementExperimenter {
                         actionNo = ea.actionSequence.get(j).actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
                         //System.out.print(") A:" + actionNo + ", R:" + ea.rewardSequence.get(j));
                         sb.append(") A:" + actionNo + ", R:" + ea.rewardSequence.get(j));
-                        if(ea instanceof SelfManagementEligibilityEpisodeAnalysis) {
+                        if (ea instanceof SelfManagementEligibilityEpisodeAnalysis) {
                             //System.out.println(ea.userReactions.get(j) == true ? " (X)" : "" + " Inter: " + ((SelfManagementEligibilityEpisodeAnalysis) ea).interferenceList.get(j));
-                            sb.append(ea.userReactions.get(j) == true ? " (X)" : "" + " Inter: " + ((SelfManagementEligibilityEpisodeAnalysis) ea).interferenceList.get(j));
+                            String interference = ((SelfManagementEligibilityEpisodeAnalysis) ea).interferenceList.get(j);
+                            sb.append(ea.userReactions.get(j) == true ? " (X) Inter: " + interference : "" + " Inter: " + interference);
                         } else {
                             //System.out.println(ea.userReactions.get(j) == true ? " (X)" : "");
                             sb.append(ea.userReactions.get(j) == true ? " (X)" : "");
                         }
                         reporter.report(sb.toString());
                     }
+                }
             }
         }
 
+        reporter.finalizeReporting();
+
         //TODO do it properly
-        /*VisualizationMetadata visualizerMetadata = new VisualizationMetadata();
+        VisualizationMetadata visualizerMetadata = new VisualizationMetadata();
         visualizerMetadata
-                .setMetadataForVisualizer(ReactionHitRatioVisualizer.class, power2dm.reporting.visualization.Visualizer.METADATA_LEARNING_ALGORITHM, "Q-Learning")
-                .setMetadataForVisualizer(ReactionHitRatioVisualizer.class, power2dm.reporting.visualization.Visualizer.METADATA_POLICY, agent);
+                .setMetadataForVisualizer(ReactionHitRatioVisualizer.class, Visualizer.METADATA_LEARNING_ALGORITHM, agentFactory.getAgentName())
+                .setMetadataForVisualizer(ReactionHitRatioVisualizer.class, Visualizer.METADATA_POLICY, agent);
         Visualizer visualizer = new ReactionHitRatioVisualizer(visualizerMetadata.getVisualizerMetadata(ReactionHitRatioVisualizer.class));
-        visualizer.createRewardGraph(episodeAnalysisList);*/
+        visualizer.createRewardGraph(episodeAnalysisList);
         this.plotter.endTrial();
 
     }

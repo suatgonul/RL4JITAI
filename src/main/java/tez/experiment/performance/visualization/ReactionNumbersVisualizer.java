@@ -42,8 +42,8 @@ public class ReactionNumbersVisualizer extends Visualizer {
         //XYSeries calorieIntakeEntrySeries = new XYSeries(RANDOM_DECISION);
 
         for (int i = 0; i < episodeAnalysisList.size(); i++) {
-            totalReactionSeries.add(i, (double) episodeAnalysisList.get(i).actionDeliveredForPotentialReaction / (double) episodeAnalysisList.get(i).totalNumberOfPotentialPositiveReaction);
-            //hitReactionSeries.add(i, episodeAnalysisList.get(i).actionDeliveredForPotentialReaction);
+            totalReactionSeries.add(i, (double) episodeAnalysisList.get(i).actionDeliveredDuringPhoneCheck / (double) episodeAnalysisList.get(i).phoneCheckNumber);
+            //hitReactionSeries.add(i, episodeAnalysisList.get(i).actionDeliveredDuringPhoneCheck);
             //calorieIntakeEntrySeries.add(i, ((HabitEpisodeAnalysis) episodeAnalysisList.get(i)).isCalorieIntakeEntered() == true ? 20 : 0);
         }
 

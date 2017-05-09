@@ -1,26 +1,36 @@
 package tez.experiment.debug;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 /**
  * Created by suat on 08-May-17.
  */
 public class Reporter {
-    private PrintStream printStream;
+    private File outputFile;
+    private BufferedWriter bw = null;
+    private FileWriter fw = null;
     private ReportMode reportMode;
 
-    public Reporter (String filePath, ReportMode reportMode) {
-        this.reportMode = reportMode;
+    public Reporter() {
+        this.reportMode = ReportMode.CONSOLE;
+    }
+
+    public Reporter(String filePath) {
+        this.reportMode = ReportMode.FILE;
+        this.outputFile = new File(filePath);
         try {
-            this.printStream = new PrintStream(filePath);
-        } catch (FileNotFoundException e) {
+            fw = new FileWriter(outputFile, true);
+            bw = new BufferedWriter(fw);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public void report(String string) {
-        if(reportMode == ReportMode.CONSOLE) {
+        if (reportMode == ReportMode.CONSOLE) {
             System.out.println(string);
         } else {
             writeToFile(string);
@@ -28,7 +38,20 @@ public class Reporter {
     }
 
     private void writeToFile(String string) {
-        printStream.println(string);
+        try {
+            bw.append(string + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void finalizeReporting() {
+        try {
+            bw.close();
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public enum ReportMode {

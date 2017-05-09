@@ -89,6 +89,7 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
     protected XYSeriesCollection colSE;
     protected XYSeriesCollection colRPE;
     protected XYSeriesCollection colURE;
+    protected XYSeriesCollection colCRR;
 
 
     /**
@@ -122,6 +123,7 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
     protected YIntervalSeriesCollection colSEAvg;
     protected YIntervalSeriesCollection colRPEAvg;
     protected YIntervalSeriesCollection colUREAvg;
+    protected YIntervalSeriesCollection colCRRAvg;
 
 
     /**
@@ -211,6 +213,7 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
         colSE = new XYSeriesCollection();
         colRPE = new XYSeriesCollection();
         colURE = new XYSeriesCollection();
+        colCRR = new XYSeriesCollection();
 
         colCSRAvg = new YIntervalSeriesCollection();
         colCERAvg = new YIntervalSeriesCollection();
@@ -220,6 +223,7 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
         colSEAvg = new YIntervalSeriesCollection();
         colRPEAvg = new YIntervalSeriesCollection();
         colUREAvg = new YIntervalSeriesCollection();
+        colCRRAvg = new YIntervalSeriesCollection();
 
         this.curTrial = new Trial();
         this.curAgentDatasets = new AgentDatasets(curAgentName);
@@ -260,9 +264,9 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
                 this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Episode Reward", "Episode", "Episode Reward", colRPE, colRPEAvg);
             } else if (m == SelfManagementPerformanceMetric.USER_REACTION_PER_EPISODE) {
                 this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Episode User Reaction", "Episode", "Episode User Reaction", colURE, colUREAvg);
+            } else if(m == SelfManagementPerformanceMetric.CUMULATIVE_REACTION_RATIO) {
+                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Cumulative Reaction Ratio", "Episode", "Cumulative Reaction Ratio", colCRR, colCRRAvg);
             }
-
-
         }
 
         int totalChartHeight = ((metrics.length / columns) + 1) * (chartHeight + 10);
@@ -559,6 +563,7 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
                                 SelfManagementRewardPlotter.this.updateSESeries();
                                 SelfManagementRewardPlotter.this.updateRPESeries();
                                 SelfManagementRewardPlotter.this.updateURESeries();
+                                SelfManagementRewardPlotter.this.updateCRRSeries();
 
                                 SelfManagementRewardPlotter.this.lastEpisode = SelfManagementRewardPlotter.this.curEpisode;
                             }
@@ -678,6 +683,17 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
                 }
                 double[] ci = getCI(avgi, this.significance);
                 curAgentDatasets.ureAvgSeries.add(i, ci[0], ci[1], ci[2]);
+            }
+        }
+
+        if(this.metricsSet.contains(SelfManagementPerformanceMetric.CUMULATIVE_REACTION_RATIO)) {
+            for (int i = 0; i < n[1]; i++) {
+                DescriptiveStatistics avgi = new DescriptiveStatistics();
+                for (Trial t : trials) {
+                    avgi.addValue(t.cumulativeReactionRatio.get(i));
+                }
+                double[] ci = getCI(avgi, this.significance);
+                curAgentDatasets.crrAvgSeries.add(i, ci[0], ci[1], ci[2]);
             }
         }
         curAgentDatasets.fireAllAverages();
@@ -825,6 +841,20 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
         }
     }
 
+    protected void updateCRRSeries() {
+        if (!this.metricsSet.contains(SelfManagementPerformanceMetric.CUMULATIVE_REACTION_RATIO)) {
+            return;
+        }
+
+        int n = this.curTrial.cumulativeReactionRatio.size();
+        for (int i = this.lastEpisode; i < n; i++) {
+            this.curAgentDatasets.cumulativeReactionRatioSeries.add((double) i, this.curTrial.cumulativeReactionRatio.get(i), false);
+        }
+        if (n > this.lastEpisode) {
+            this.curAgentDatasets.cumulativeReactionRatioSeries.fireSeriesChanged();
+        }
+    }
+
     /**
      * Computes the sum of the last entry in list and the value v and adds it to the end of list. Use for maintainly cumulative data.
      *
@@ -922,6 +952,7 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
 
         public List<Integer> cumulativeEpisodeUserReaction = new ArrayList<>();
         public List<Double> cumulativeRewardInEpisode = new ArrayList<>();
+        public List<Double> cumulativeReactionRatio = new ArrayList<>();
 
         /**
          * The cumulative reward of the episode so far
@@ -933,6 +964,7 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
          */
         public int curEpisodeSteps = 0;
         public int currentEpisodeUserReaction = 0;
+        public int currentReactionAmount = 0;
 
 
         /**

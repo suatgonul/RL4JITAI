@@ -25,7 +25,7 @@ public class SelfManagementRewardFunction implements RewardFunction {
     @Override
     public double reward(State s, GroundedAction a, State sprime) {
         if (a.action.getName().equals(ACTION_INT_DELIVERY)) {
-            boolean userReacted = ((RealWorld) environment).userReacted();
+            boolean userReacted = ((RealWorld) environment).getLastUserReaction();
             if(userReacted) {
                 return REWARD_REACTION_TO_INTERVENTION;
             } else {

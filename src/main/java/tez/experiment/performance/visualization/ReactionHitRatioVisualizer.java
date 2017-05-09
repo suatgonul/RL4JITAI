@@ -25,7 +25,7 @@ public class ReactionHitRatioVisualizer extends Visualizer {
 
     public ReactionHitRatioVisualizer(Map<String, Object> visualizationMetadata) {
         super(visualizationMetadata);
-        visualizationMetadata.put(Visualizer.METADATA_WINDOW_TITLE, WINDOW_TITLE);
+        visualizationMetadata.put(Visualizer.METADATA_WINDOW_TITLE, Visualizer.METADATA_LEARNING_ALGORITHM);
         visualizationMetadata.put(Visualizer.METADATA_X_LABEL, X_LABEL);
         visualizationMetadata.put(Visualizer.METADATA_Y_LABEL, Y_LABEL);
         this.setTitle((String) visualizationMetadata.get(METADATA_WINDOW_TITLE));
@@ -37,17 +37,16 @@ public class ReactionHitRatioVisualizer extends Visualizer {
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         VisualizationData visualizationData = new VisualizationData(dataSet, renderer);
 
-        XYSeries totalReactionSeries = new XYSeries(TOTAL_REACTION_POTENTIAL);
+        XYSeries reactionHitRatioSeries = new XYSeries(TOTAL_REACTION_POTENTIAL);
         XYSeries hitReactionSeries = new XYSeries(HIT_REACTION);
         //XYSeries calorieIntakeEntrySeries = new XYSeries(RANDOM_DECISION);
 
         for (int i = 0; i < episodeAnalysisList.size(); i++) {
-            totalReactionSeries.add(i, (double) episodeAnalysisList.get(i).actionDeliveredForPotentialReaction / (double) episodeAnalysisList.get(i).totalNumberOfPotentialPositiveReaction);
-            //hitReactionSeries.add(i, episodeAnalysisList.get(i).actionDeliveredForPotentialReaction);
-            //calorieIntakeEntrySeries.add(i, ((HabitEpisodeAnalysis) episodeAnalysisList.get(i)).isCalorieIntakeEntered() == true ? 20 : 0);
+            reactionHitRatioSeries.add(i, 100 * (double) episodeAnalysisList.get(i).actionDeliveredDuringPhoneCheck / (double) episodeAnalysisList.get(i).phoneCheckNumber);
+            //hitReactionSeries.add(i, episodeAnalysisList.get(i).actionDeliveredDuringPhoneCheck);
         }
 
-        dataSet.addSeries(totalReactionSeries);
+        dataSet.addSeries(reactionHitRatioSeries);
         //dataSet.addSeries(hitReactionSeries);
 
         renderer.setSeriesShapesVisible(0, false);

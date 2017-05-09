@@ -14,17 +14,15 @@ import java.util.List;
  * Created by suatgonul on 4/26/2017.
  */
 public class SelfManagementEpisodeAnalysis extends EpisodeAnalysis {
-    private String boundAlgorithm;
     public List<List<QValue>> qValuesForStates;
     public List<Context> userContexts;
     public List<Boolean> userReactions;
-    public int totalNumberOfPotentialPositiveReaction;
-    public int actionDeliveredForPotentialReaction;
+    public int phoneCheckNumber;
+    public int actionDeliveredDuringPhoneCheck;
 
 
-    public SelfManagementEpisodeAnalysis(String boundAlgorithm, State initialState) {
+    public SelfManagementEpisodeAnalysis(State initialState) {
         super(initialState);
-        this.boundAlgorithm = boundAlgorithm;
         qValuesForStates = new ArrayList<>();
         userContexts = new ArrayList<>();
         userReactions = new ArrayList<>();
@@ -40,9 +38,9 @@ public class SelfManagementEpisodeAnalysis extends EpisodeAnalysis {
         userContexts.add(userContext);
         userReactions.add(userReaction);
         if (userReaction == true) {
-            totalNumberOfPotentialPositiveReaction++;
+            phoneCheckNumber++;
             if(usingAction.actionName().equals(SelfManagementDomainGenerator.ACTION_INT_DELIVERY)) {
-                actionDeliveredForPotentialReaction++;
+                actionDeliveredDuringPhoneCheck++;
             }
         }
 

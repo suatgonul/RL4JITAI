@@ -13,10 +13,7 @@ import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import power2dm.reporting.visualization.VisualizationMetadata;
 import tez.domain.SelfManagementDomain;
 import tez.experiment.debug.Reporter;
-import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
-import tez.experiment.performance.SelfManagementEpisodeAnalysis;
-import tez.experiment.performance.SelfManagementPerformanceMetric;
-import tez.experiment.performance.SelfManagementRewardPlotter;
+import tez.experiment.performance.*;
 import tez.experiment.performance.visualization.ReactionHitRatioVisualizer;
 import tez.experiment.performance.visualization.ReactionNumbersVisualizer;
 import tez.experiment.performance.visualization.Visualizer;
@@ -32,7 +29,7 @@ import static tez.domain.SelfManagementDomainGenerator.*;
 /**
  * Created by suatgonul on 4/26/2017.
  */
-public class SelfManagementExperimenter {
+public class StaticSelfManagementExperimenter {
 
 
     private static DecimalFormat qValPrecision = new DecimalFormat("#0.0000");
@@ -41,11 +38,11 @@ public class SelfManagementExperimenter {
      */
     public int debugCode = 63634013;
     /**
-     * The test {@link burlap.oomdp.singleagent.environment.Environment} in which experiments will be performed.
+     * The test {@link Environment} in which experiments will be performed.
      */
     protected Environment testEnvironment;
     /**
-     * The {@link burlap.oomdp.singleagent.environment.EnvironmentServer} that wraps the test {@link burlap.oomdp.singleagent.environment.Environment}
+     * The {@link EnvironmentServer} that wraps the test {@link Environment}
      * and tells a {@link burlap.behavior.singleagent.auxiliary.performance.PerformancePlotter} about the individual interactions.
      */
     protected EnvironmentServer environmentSever;
@@ -68,7 +65,7 @@ public class SelfManagementExperimenter {
     /**
      * The PerformancePlotter used to collect and plot results
      */
-    protected SelfManagementRewardPlotter plotter = null;
+    protected StaticSelfManagementRewardPlotter plotter = null;
     /**
      * Whether the performance should be visually plotted (by default they will)
      */
@@ -92,12 +89,12 @@ public class SelfManagementExperimenter {
      * The trialLength will be interpreted as the number of episodes, but it can be reinterpreted as a total number of steps per trial using the
      * {@link #toggleTrialLengthInterpretation(boolean)}.
      *
-     * @param testEnvironment the test {@link burlap.oomdp.singleagent.environment.Environment} in which experiments will be performed.
+     * @param testEnvironment the test {@link Environment} in which experiments will be performed.
      * @param nTrials         the number of trials
      * @param trialLength     the length of the trials (by default in episodes, but can be intereted as maximum step length)
      * @param agentFactories  factories to generate the agents to be tested.
      */
-    public SelfManagementExperimenter(Environment testEnvironment, int nTrials, int trialLength, LearningAgentFactory... agentFactories) {
+    public StaticSelfManagementExperimenter(Environment testEnvironment, int nTrials, int trialLength, LearningAgentFactory... agentFactories) {
 
         if (agentFactories.length == 0) {
             throw new RuntimeException("Zero agent factories provided. At least one must be given for an experiment");
@@ -127,22 +124,8 @@ public class SelfManagementExperimenter {
         }
 
         this.displayPlots = true;
-        this.plotter = new SelfManagementRewardPlotter(this.agentFactories[0].getAgentName(), chartWidth, chartHeight, columns, maxWindowHeight, trialMode, metrics);
-        this.plotter.setRefreshDelay(this.plotRefresh);
+        this.plotter = new StaticSelfManagementRewardPlotter(this.agentFactories[0].getAgentName(), chartWidth, chartHeight, columns, maxWindowHeight, trialMode, metrics);
         this.plotter.setSignificanceForCI(this.plotCISignificance);
-    }
-
-
-    /**
-     * Sets the delay in milliseconds between automatic plot refreshes
-     *
-     * @param delayInMS the delay in milliseconds
-     */
-    public void setPlotRefreshDelay(int delayInMS) {
-        this.plotRefresh = delayInMS;
-        if (this.plotter != null) {
-            this.plotter.setRefreshDelay(delayInMS);
-        }
     }
 
 
@@ -197,13 +180,13 @@ public class SelfManagementExperimenter {
                 trialMode = TrialMode.MOSTRECENTTTRIALONLY;
             }
 
-            this.plotter = new SelfManagementRewardPlotter(this.agentFactories[0].getAgentName(), 500, 250, 2, 500, trialMode);
+            this.plotter = new StaticSelfManagementRewardPlotter(this.agentFactories[0].getAgentName(), 500, 250, 2, 500, trialMode);
 
         }
 
 
         //this.domain.addActionObserverForAllAction(plotter);
-        this.environmentSever = new EnvironmentServer(this.testEnvironment, plotter);
+        this.environmentSever = new EnvironmentServer(this.testEnvironment);
 
         if (this.displayPlots) {
             this.plotter.startGUI();
@@ -244,13 +227,7 @@ public class SelfManagementExperimenter {
      */
     protected void runEpisodeBoundTrial(LearningAgentFactory agentFactory) {
 
-        //temporarily disable plotter data collection to avoid possible contamination for any actions taken by the agent generation
-        //(e.g., if there is pre-test training)
-        this.plotter.toggleDataCollection(false);
-
         LearningAgent agent = agentFactory.generateAgent();
-
-        this.plotter.toggleDataCollection(true); //turn it back on to begin
 
         this.plotter.startNewTrial();
 
@@ -261,7 +238,7 @@ public class SelfManagementExperimenter {
 
         for (int i = 0; i < this.trialLength; i++) {
             SelfManagementEpisodeAnalysis ea = (SelfManagementEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
-
+            this.plotter.populateAgentDatasets(ea);
             this.plotter.endEpisode();
             this.environmentSever.resetEnvironment();
 
@@ -359,14 +336,7 @@ public class SelfManagementExperimenter {
      * @param agentFactory the agent factory used to generate the agent to test.
      */
     protected void runStepBoundTrial(LearningAgentFactory agentFactory) {
-
-        //temporarily disable plotter data collection to avoid possible contamination for any actions taken by the agent generation
-        //(e.g., if there is pre-test training)
-        this.plotter.toggleDataCollection(false);
-
         LearningAgent agent = agentFactory.generateAgent();
-
-        this.plotter.toggleDataCollection(true); //turn it back on to begin
 
         this.plotter.startNewTrial();
 

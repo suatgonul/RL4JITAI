@@ -1,11 +1,7 @@
 package tez.experiment.performance;
 
+import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
-import burlap.oomdp.core.states.State;
-import burlap.oomdp.singleagent.GroundedAction;
-import burlap.oomdp.singleagent.environment.Environment;
-import burlap.oomdp.singleagent.environment.EnvironmentObserver;
-import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.jfree.chart.ChartFactory;
@@ -14,11 +10,8 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.DefaultDrawingSupplier;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.YIntervalSeries;
 import org.jfree.data.xy.YIntervalSeriesCollection;
-import tez.domain.ExtendedEnvironmentOutcome;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,7 +21,7 @@ import java.util.List;
 /**
  * Created by suatgonul on 4/27/2017.
  */
-public class SelfManagementRewardPlotter extends JFrame implements EnvironmentObserver {
+public class StaticSelfManagementRewardPlotter extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
@@ -57,41 +50,6 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
      * The name of the current agent being tested
      */
     protected String curAgentName;
-
-
-    /**
-     * All agent plot series for the the most recetent trial's cumulative reward per step
-     */
-    protected XYSeriesCollection allAgents_cumulativeRewardInAllSteps;
-
-    /**
-     * All agent plot series for the the most recetent trial's cumulative reward per episode
-     */
-    protected XYSeriesCollection allAgents_cumulativeRewardInAllEpisodes;
-
-    /**
-     * All agent plot series for the the most recetent trial's average reward per episode
-     */
-    protected XYSeriesCollection allAgents_averageRewardInEachEpisode;
-
-    /**
-     * All agent plot series for the the most recetent trial's median reward per episode
-     */
-    protected XYSeriesCollection allAgents_medianRewardInEachEpisode;
-
-    /**
-     * All agent plot series for the the most recetent trial's cumulative step per episode
-     */
-    protected XYSeriesCollection allAgents_cumulativeStepsInAllEpisodes;
-
-    /**
-     * All agent plot series for the most recetent trial's steps per episode
-     */
-    protected XYSeriesCollection allAgents_stepsInEachEpisode;
-
-    protected XYSeriesCollection allAgents_rewardInEachEpisode;
-    protected XYSeriesCollection allAgents_reactionInEachEpisode;
-    protected XYSeriesCollection allAgents_cumulativeReactionInAllEpisodes;
 
 
     /**
@@ -139,13 +97,6 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
      */
     protected TrialMode trialMode;
 
-
-    /**
-     * Whether the data from action observations received should be recoreded or not.
-     */
-    protected boolean collectData = false;
-
-
     /**
      * The last time step at which the plots' series data was updated
      */
@@ -168,20 +119,10 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
     protected int curEpisode = 0;
 
     /**
-     * the delay in milliseconds between which the charts are updated automatically
-     */
-    protected int delay = 1000;
-
-    /**
      * the significance level used for confidence intervals. The default is 0.05 (corresponding to a 95% CI).
      */
     protected double significance = 0.05;
 
-
-    /**
-     * Whether the current plots need their series data cleared for a new trial
-     */
-    protected boolean needsClearing = false;
 
     /**
      * Synchronization object to ensure proper threaded plot updating
@@ -200,23 +141,13 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
      * @param trialMode       which plots to use; most recent trial, average over all trials, or both. If both, the most recent plot will be inserted into the window first, then the average.
      * @param metrics         the metrics that should be plotted. The metrics will appear in the window in the order that they are specified (columns first)
      */
-    public SelfManagementRewardPlotter(String firstAgentName, int chartWidth, int chartHeight, int columns, int maxWindowHeight,
-                                       TrialMode trialMode, SelfManagementPerformanceMetric... metrics) {
+    public StaticSelfManagementRewardPlotter(String firstAgentName, int chartWidth, int chartHeight, int columns, int maxWindowHeight,
+                                             TrialMode trialMode, SelfManagementPerformanceMetric... metrics) {
 
         this.curAgentName = firstAgentName;
 
         this.agentTrials = new HashMap<String, List<Trial>>();
-        this.agentTrials.put(this.curAgentName, new ArrayList<SelfManagementRewardPlotter.Trial>());
-
-        allAgents_cumulativeRewardInAllSteps = new XYSeriesCollection();
-        allAgents_cumulativeRewardInAllEpisodes = new XYSeriesCollection();
-        allAgents_averageRewardInEachEpisode = new XYSeriesCollection();
-        allAgents_medianRewardInEachEpisode = new XYSeriesCollection();
-        allAgents_cumulativeStepsInAllEpisodes = new XYSeriesCollection();
-        allAgents_stepsInEachEpisode = new XYSeriesCollection();
-        allAgents_rewardInEachEpisode = new XYSeriesCollection();
-        allAgents_reactionInEachEpisode = new XYSeriesCollection();
-        allAgents_cumulativeReactionInAllEpisodes = new XYSeriesCollection();
+        this.agentTrials.put(this.curAgentName, new ArrayList<StaticSelfManagementRewardPlotter.Trial>());
 
         allAgents_cumulativeRewardInAllStepsAvg = new YIntervalSeriesCollection();
         allAgents_cumulativeRewardInAllEpisodesAvg = new YIntervalSeriesCollection();
@@ -252,23 +183,23 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
             this.metricsSet.add(m);
 
             if (m == SelfManagementPerformanceMetric.CUMULATIVEREWARDPERSTEP) {
-                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Cumulative Reward", "Time Step", "Cumulative Reward", allAgents_cumulativeRewardInAllSteps, allAgents_cumulativeRewardInAllStepsAvg);
+                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Cumulative Reward", "Time Step", "Cumulative Reward", allAgents_cumulativeRewardInAllStepsAvg);
             } else if (m == SelfManagementPerformanceMetric.CUMULATIVE_REWARD_PER_EPISODE) {
-                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Cumulative Reward", "Episode", "Cumulative Reward", allAgents_cumulativeRewardInAllEpisodes, allAgents_cumulativeRewardInAllEpisodesAvg);
+                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Cumulative Reward", "Episode", "Cumulative Reward", allAgents_cumulativeRewardInAllEpisodesAvg);
             } else if (m == SelfManagementPerformanceMetric.AVERAGEEPISODEREWARD) {
-                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Average Reward", "Episode", "Average Reward", allAgents_averageRewardInEachEpisode, allAgents_averageRewardInEachEpisodeAvg);
+                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Average Reward", "Episode", "Average Reward", allAgents_averageRewardInEachEpisodeAvg);
             } else if (m == SelfManagementPerformanceMetric.MEDIANEPISODEREWARD) {
-                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Median Reward", "Episode", "Median Reward", allAgents_medianRewardInEachEpisode, allAgents_medianRewardInEachEpisodeAvg);
+                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Median Reward", "Episode", "Median Reward", allAgents_medianRewardInEachEpisodeAvg);
             } else if (m == SelfManagementPerformanceMetric.CUMULATIVESTEPSPEREPISODE) {
-                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Cumulative Steps", "Episode", "Cumulative Steps", allAgents_cumulativeStepsInAllEpisodes, allAgents_cumulativeStepsInAllEpisodesAvg);
+                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Cumulative Steps", "Episode", "Cumulative Steps", allAgents_cumulativeStepsInAllEpisodesAvg);
             } else if (m == SelfManagementPerformanceMetric.STEPSPEREPISODE) {
-                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Number of Steps", "Episode", "Number of Steps", allAgents_stepsInEachEpisode, allAgents_stepsInEachEpisodeAvg);
+                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Number of Steps", "Episode", "Number of Steps", allAgents_stepsInEachEpisodeAvg);
             } else if (m == SelfManagementPerformanceMetric.REWARD_PER_EPISODE) {
-                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Episode Reward", "Episode", "Episode Reward", allAgents_rewardInEachEpisode, allAgents_rewardInEachEpisodeAvg);
+                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Episode Reward", "Episode", "Episode Reward", allAgents_rewardInEachEpisodeAvg);
             } else if (m == SelfManagementPerformanceMetric.USER_REACTION_PER_EPISODE) {
-                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Episode User Reaction", "Episode", "Episode User Reaction", allAgents_reactionInEachEpisode, allAgents_reactionInEachEpisodeAvg);
+                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Episode User Reaction", "Episode", "Episode User Reaction", allAgents_reactionInEachEpisodeAvg);
             } else if (m == SelfManagementPerformanceMetric.CUMULATIVE_REACTION) {
-                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Cumulative Reaction Ratio", "Episode", "Cumulative Reaction", allAgents_cumulativeReactionInAllEpisodes, allAgents_cumulativeReactionInAllEpisodesAvg);
+                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Cumulative Reaction", "Episode", "Cumulative Reaction", allAgents_cumulativeReactionInAllEpisodesAvg);
             }
         }
 
@@ -280,20 +211,7 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
         } else {
             this.add(plotContainer);
         }
-
-
     }
-
-
-    /**
-     * sets the delay in milliseconds between automatic refreshes of the plots
-     *
-     * @param delayInMS the refresh delay in milliseconds
-     */
-    public void setRefreshDelay(int delayInMS) {
-        this.delay = delayInMS;
-    }
-
 
     /**
      * Sets the significance used for confidence intervals.
@@ -305,42 +223,19 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
         this.significance = signifcance;
     }
 
-
-    /**
-     * Toggle whether performance data collected from the action observation is recorded or not
-     *
-     * @param collectData true if data collected should be plotted; false if not.
-     */
-    public void toggleDataCollection(boolean collectData) {
-        this.collectData = collectData;
-    }
-
-
     /**
      * Launches the GUI and automatic refresh thread.
      */
     public void startGUI() {
         this.pack();
         this.setVisible(true);
-        this.launchThread();
     }
 
-    public void observeEnvironmentActionInitiation(State o, GroundedAction action) {
-        //do nothing
-    }
-
-    synchronized public void observeEnvironmentInteraction(EnvironmentOutcome eo) {
-        if (!this.collectData) {
-            return;
+    public void populateAgentDatasets(EpisodeAnalysis ea) {
+        for (int i = 0; i < ea.rewardSequence.size(); i++) {
+            this.curTrial.stepIncrement(ea.rewardSequence.get(i));
+            this.curTimeStep++;
         }
-
-        this.curTrial.stepIncrement((ExtendedEnvironmentOutcome) eo);
-        this.curTimeStep++;
-
-    }
-
-    public void observeEnvironmentReset(Environment resetEnvironment) {
-        //do nothing
     }
 
     /**
@@ -356,10 +251,6 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
      * Informs the plotter that a new trial of the current agent is beginning.
      */
     synchronized public void startNewTrial() {
-        if (this.curTimeStep > 0) {
-            this.needsClearing = true;
-        }
-
         this.curTrial = new Trial();
         this.lastTimeStepUpdate = 0;
         this.lastEpisode = 0;
@@ -374,7 +265,6 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
 
 
         this.trialUpdateComplete.b = false;
-        this.updateTimeSeries();
         this.agentTrials.get(this.curAgentName).add(curTrial);
 
 
@@ -390,7 +280,6 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
             this.trialUpdateComplete.notifyAll();
 
         }
-
     }
 
 
@@ -411,11 +300,11 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
 
             @Override
             public void run() {
-                synchronized (SelfManagementRewardPlotter.this) {
-                    SelfManagementRewardPlotter.this.endTrialsForCurrentAgent();
-                    SelfManagementRewardPlotter.this.curAgentName = agentName;
-                    SelfManagementRewardPlotter.this.agentTrials.put(SelfManagementRewardPlotter.this.curAgentName, new ArrayList<SelfManagementRewardPlotter.Trial>());
-                    SelfManagementRewardPlotter.this.curAgentDatasets = new AgentDatasets(curAgentName);
+                synchronized (StaticSelfManagementRewardPlotter.this) {
+                    StaticSelfManagementRewardPlotter.this.endTrialsForCurrentAgent();
+                    StaticSelfManagementRewardPlotter.this.curAgentName = agentName;
+                    StaticSelfManagementRewardPlotter.this.agentTrials.put(StaticSelfManagementRewardPlotter.this.curAgentName, new ArrayList<StaticSelfManagementRewardPlotter.Trial>());
+                    StaticSelfManagementRewardPlotter.this.curAgentDatasets = new AgentDatasets(curAgentName);
                 }
             }
         });
@@ -431,8 +320,8 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
 
             @Override
             public void run() {
-                synchronized (SelfManagementRewardPlotter.this) {
-                    SelfManagementRewardPlotter.this.endTrialsForCurrentAgent();
+                synchronized (StaticSelfManagementRewardPlotter.this) {
+                    StaticSelfManagementRewardPlotter.this.endTrialsForCurrentAgent();
                 }
             }
         });
@@ -442,33 +331,24 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
      * Adds the most recent trial (if enabled) chart and trial average (if enabled) chart into the provided container.
      * The GridBagConstraints will aumatically be incremented to the next position after this method returns.
      *
-     * @param plotContainer        the contain in which to insert the plot(s).
-     * @param c                    the current grid bag contraint locaiton in which the plots should be inserted.
-     * @param columns              the number of columns to fill in the plot container
-     * @param chartWidth           the width of any single plot
-     * @param chartHeight          the height of any single plot
-     * @param title                the title to label thep plot; if average trial plots are enabled the word "Average" will be prepended to the title for the average plot.
-     * @param xlab                 the xlab axis of the plot
-     * @param ylab                 the y lab axis of the plot
-     * @param mostRecentCollection the XYSeriesCollection dataset with which the most recent trial plot is associated
-     * @param averageCollection    the YIntervalSeriesCollection dataset with which the trial average plot is associated
+     * @param plotContainer     the contain in which to insert the plot(s).
+     * @param c                 the current grid bag contraint locaiton in which the plots should be inserted.
+     * @param columns           the number of columns to fill in the plot container
+     * @param chartWidth        the width of any single plot
+     * @param chartHeight       the height of any single plot
+     * @param title             the title to label thep plot; if average trial plots are enabled the word "Average" will be prepended to the title for the average plot.
+     * @param xlab              the xlab axis of the plot
+     * @param ylab              the y lab axis of the plot
+     * @param averageCollection the YIntervalSeriesCollection dataset with which the trial average plot is associated
      */
     protected void insertChart(Container plotContainer, GridBagConstraints c, int columns, int chartWidth, int chartHeight,
-                               String title, String xlab, String ylab, XYSeriesCollection mostRecentCollection, YIntervalSeriesCollection averageCollection) {
-
-        if (this.trialMode.mostRecentTrialEnabled()) {
-            final JFreeChart chartCSR = ChartFactory.createXYLineChart(title, xlab, ylab, mostRecentCollection);
-            ChartPanel chartPanelCSR = new ChartPanel(chartCSR);
-            chartPanelCSR.setPreferredSize(new java.awt.Dimension(chartWidth, chartHeight));
-            plotContainer.add(chartPanelCSR, c);
-            this.updateGBConstraint(c, columns);
-        }
+                               String title, String xlab, String ylab, YIntervalSeriesCollection averageCollection) {
 
         if (this.trialMode.averagesEnabled()) {
             final JFreeChart chartCSRAvg = ChartFactory.createXYLineChart("Average " + title, xlab, ylab, averageCollection);
             ((XYPlot) chartCSRAvg.getPlot()).setRenderer(this.createDeviationRenderer());
             ChartPanel chartPanelCSRAvg = new ChartPanel(chartCSRAvg);
-            chartPanelCSRAvg.setPreferredSize(new java.awt.Dimension(chartWidth, chartHeight));
+            chartPanelCSRAvg.setPreferredSize(new Dimension(chartWidth, chartHeight));
             plotContainer.add(chartPanelCSRAvg, c);
             this.updateGBConstraint(c, columns);
         }
@@ -510,80 +390,6 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
 
 
     /**
-     * Launches the automatic plot refresh thread.
-     */
-    protected void launchThread() {
-        Thread refreshThread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                while (true) {
-                    SelfManagementRewardPlotter.this.updateTimeSeries();
-                    try {
-                        Thread.sleep(SelfManagementRewardPlotter.this.delay);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-            }
-        });
-
-        refreshThread.start();
-
-    }
-
-
-    /**
-     * Updates all the most recent trial time series with the latest data
-     */
-    synchronized protected void updateTimeSeries() {
-
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-
-                if (SelfManagementRewardPlotter.this.trialMode.mostRecentTrialEnabled()) {
-                    synchronized (SelfManagementRewardPlotter.this) {
-
-                        synchronized (SelfManagementRewardPlotter.this.trialUpdateComplete) {
-
-                            if (SelfManagementRewardPlotter.this.needsClearing) {
-                                SelfManagementRewardPlotter.this.curAgentDatasets.clearNonAverages();
-                                SelfManagementRewardPlotter.this.needsClearing = false;
-                            }
-
-                            if (SelfManagementRewardPlotter.this.curTimeStep > SelfManagementRewardPlotter.this.lastTimeStepUpdate) {
-                                SelfManagementRewardPlotter.this.updateCSRSeries();
-                                SelfManagementRewardPlotter.this.lastTimeStepUpdate = curTimeStep;
-                            }
-                            if (SelfManagementRewardPlotter.this.curEpisode > SelfManagementRewardPlotter.this.lastEpisode) {
-                                SelfManagementRewardPlotter.this.updateCERSeries();
-                                SelfManagementRewardPlotter.this.updateAERSeris();
-                                SelfManagementRewardPlotter.this.updateMERSeris();
-                                SelfManagementRewardPlotter.this.updateCSESeries();
-                                SelfManagementRewardPlotter.this.updateSESeries();
-                                SelfManagementRewardPlotter.this.updateRPESeries();
-                                SelfManagementRewardPlotter.this.updateURESeries();
-                                SelfManagementRewardPlotter.this.updateCRRSeries();
-
-                                SelfManagementRewardPlotter.this.lastEpisode = SelfManagementRewardPlotter.this.curEpisode;
-                            }
-
-
-                            SelfManagementRewardPlotter.this.trialUpdateComplete.b = true;
-                            SelfManagementRewardPlotter.this.trialUpdateComplete.notifyAll();
-
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-
-    /**
      * Informs the plotter that all trials for the current agent have been collected and causes the average plots to be set and displayed.
      */
     protected void endTrialsForCurrentAgent() {
@@ -595,8 +401,8 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
         }
 
 
-        List<Trial> trials = SelfManagementRewardPlotter.this.agentTrials.get(aName);
-        int[] n = SelfManagementRewardPlotter.this.minStepAndEpisodes(trials);
+        List<Trial> trials = StaticSelfManagementRewardPlotter.this.agentTrials.get(aName);
+        int[] n = StaticSelfManagementRewardPlotter.this.minStepAndEpisodes(trials);
 
 
         if (this.metricsSet.contains(SelfManagementPerformanceMetric.CUMULATIVEREWARDPERSTEP)) {
@@ -700,162 +506,6 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
             }
         }
         curAgentDatasets.fireAllAverages();
-    }
-
-
-    /**
-     * Updates the cumulative reward by step series. Does nothing if that metric is not being plotted.
-     */
-    protected void updateCSRSeries() {
-
-        if (!this.metricsSet.contains(SelfManagementPerformanceMetric.CUMULATIVEREWARDPERSTEP)) {
-            return;
-        }
-
-        int n = this.curTrial.trialRawData_cumulativeStepReward.size();
-        for (int i = this.lastTimeStepUpdate; i < n; i++) {
-            this.curAgentDatasets.agentDataset_cumulativeRewardInAllStepsSeries.add((double) i, this.curTrial.trialRawData_cumulativeStepReward.get(i), false);
-        }
-        if (n > this.lastTimeStepUpdate) {
-            this.curAgentDatasets.agentDataset_cumulativeRewardInAllStepsSeries.fireSeriesChanged();
-        }
-    }
-
-
-    /**
-     * Updates the cumulative reward by episode series.  Does nothing if that metric is not being plotted.
-     */
-    protected void updateCERSeries() {
-
-        if (!this.metricsSet.contains(SelfManagementPerformanceMetric.CUMULATIVE_REWARD_PER_EPISODE)) {
-            return;
-        }
-
-        int n = this.curTrial.trialRawData_cumulativeEpisodeReward.size();
-        for (int i = this.lastEpisode; i < n; i++) {
-            this.curAgentDatasets.agentDataset_cumulativeRewardInAllEpisodesSeries.add((double) i, this.curTrial.trialRawData_cumulativeEpisodeReward.get(i), false);
-        }
-        if (n > this.lastEpisode) {
-            this.curAgentDatasets.agentDataset_cumulativeRewardInAllEpisodesSeries.fireSeriesChanged();
-        }
-
-    }
-
-
-    /**
-     * Updates the average reward by episode series.  Does nothing if that metric is not being plotted.
-     */
-    protected void updateAERSeris() {
-
-        if (!this.metricsSet.contains(SelfManagementPerformanceMetric.AVERAGEEPISODEREWARD)) {
-            return;
-        }
-
-        int n = this.curTrial.trialRawData_averageEpisodeReward.size();
-        for (int i = this.lastEpisode; i < n; i++) {
-            this.curAgentDatasets.agentDataset_averageRewardInEachEpisodeSeries.add((double) i, this.curTrial.trialRawData_averageEpisodeReward.get(i), false);
-        }
-        if (n > this.lastEpisode) {
-            this.curAgentDatasets.agentDataset_averageRewardInEachEpisodeSeries.fireSeriesChanged();
-        }
-    }
-
-
-    /**
-     * Updates the median reward by episode series.  Does nothing if that metric is not being plotted.
-     */
-    protected void updateMERSeris() {
-
-        if (!this.metricsSet.contains(SelfManagementPerformanceMetric.MEDIANEPISODEREWARD)) {
-            return;
-        }
-
-        int n = this.curTrial.trialRawData_medianEpisodeReward.size();
-        for (int i = this.lastEpisode; i < n; i++) {
-            this.curAgentDatasets.agentDataset_medianRewardInEachEpisodeSeries.add((double) i, this.curTrial.trialRawData_medianEpisodeReward.get(i), false);
-        }
-        if (n > this.lastEpisode) {
-            this.curAgentDatasets.agentDataset_medianRewardInEachEpisodeSeries.fireSeriesChanged();
-        }
-    }
-
-
-    /**
-     * Updates the cumulative steps by episode series.  Does nothing if that metric is not being plotted.
-     */
-    protected void updateCSESeries() {
-
-        if (!this.metricsSet.contains(SelfManagementPerformanceMetric.CUMULATIVESTEPSPEREPISODE)) {
-            return;
-        }
-
-        int n = this.curTrial.trialRawData_cumulativeStepEpisode.size();
-        for (int i = this.lastEpisode; i < n; i++) {
-            this.curAgentDatasets.agentDataset_cumulativeStepsInAllEpisodesSeries.add((double) i, this.curTrial.trialRawData_cumulativeStepEpisode.get(i), false);
-        }
-        if (n > this.lastEpisode) {
-            this.curAgentDatasets.agentDataset_cumulativeStepsInAllEpisodesSeries.fireSeriesChanged();
-        }
-    }
-
-
-    /**
-     * Updates the steps by episode series.  Does nothing if that metric is not being plotted.
-     */
-    protected void updateSESeries() {
-        if (!this.metricsSet.contains(SelfManagementPerformanceMetric.STEPSPEREPISODE)) {
-            return;
-        }
-
-        int n = this.curTrial.trialRawData_stepEpisode.size();
-        for (int i = this.lastEpisode; i < n; i++) {
-            this.curAgentDatasets.agentDataset_stepsInEachEpisodeSeries.add((double) i, this.curTrial.trialRawData_stepEpisode.get(i), false);
-        }
-        if (n > this.lastEpisode) {
-            this.curAgentDatasets.agentDataset_stepsInEachEpisodeSeries.fireSeriesChanged();
-        }
-    }
-
-    protected void updateRPESeries() {
-        if (!this.metricsSet.contains(SelfManagementPerformanceMetric.REWARD_PER_EPISODE)) {
-            return;
-        }
-
-        int n = this.curTrial.trialRawData_rewardInEachEpisode.size();
-        for (int i = this.lastEpisode; i < n; i++) {
-            this.curAgentDatasets.agentDataset_rewardInEachEpisodeSeries.add((double) i, this.curTrial.trialRawData_rewardInEachEpisode.get(i), false);
-        }
-        if (n > this.lastEpisode) {
-            this.curAgentDatasets.agentDataset_rewardInEachEpisodeSeries.fireSeriesChanged();
-        }
-    }
-
-    protected void updateURESeries() {
-        if (!this.metricsSet.contains(SelfManagementPerformanceMetric.USER_REACTION_PER_EPISODE)) {
-            return;
-        }
-
-        int n = this.curTrial.trialRawData_userReactionInEachEpisode.size();
-        for (int i = this.lastEpisode; i < n; i++) {
-            this.curAgentDatasets.agentDataset_reactionInEachEpisodeSeries.add((double) i, this.curTrial.trialRawData_userReactionInEachEpisode.get(i), false);
-        }
-        if (n > this.lastEpisode) {
-            this.curAgentDatasets.agentDataset_reactionInEachEpisodeSeries.fireSeriesChanged();
-        }
-    }
-
-    protected void updateCRRSeries() {
-        if (!this.metricsSet.contains(SelfManagementPerformanceMetric.CUMULATIVE_REACTION)) {
-            return;
-        }
-
-        int n = this.curTrial.trialRawData_cumulativeReactionInAllEpisodes.size();
-        for (int i = this.lastEpisode; i < n; i++) {
-            this.curAgentDatasets.agentDataset_cumulativeReactionInAllEpisodesSeries.add((double) i, this.curTrial.trialRawData_cumulativeReactionInAllEpisodes.get(i), false);
-        }
-        if (n > this.lastEpisode) {
-            this.curAgentDatasets.agentDataset_cumulativeReactionInAllEpisodesSeries.fireSeriesChanged();
-        }
     }
 
     /**
@@ -986,12 +636,9 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
 
 
         /**
-         * Updates all datastructures with the reward received from the last step
-         *
-         * @param eeo the last environment outcome
+         * Updates all datastructures with
          */
-        public void stepIncrement(ExtendedEnvironmentOutcome eeo) {
-            double r = eeo.r;
+        public void stepIncrement(double r) {
             accumulate(this.trialRawData_cumulativeStepReward, r);
             this.curEpisodeReward += r;
             this.curEpisodeSteps++;
@@ -1050,43 +697,6 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
      * @author James MacGlashan
      */
     protected class AgentDatasets {
-
-
-        /**
-         * Most recent trial's cumulative reward per step series data
-         */
-        public XYSeries agentDataset_cumulativeRewardInAllStepsSeries;
-
-        /**
-         * Most recent trial's cumulative reward per step episode data
-         */
-        public XYSeries agentDataset_cumulativeRewardInAllEpisodesSeries;
-
-        /**
-         * Most recent trial's average reward per step episode data
-         */
-        public XYSeries agentDataset_averageRewardInEachEpisodeSeries;
-
-        /**
-         * Most recent trial's median reward per step episode data
-         */
-        public XYSeries agentDataset_medianRewardInEachEpisodeSeries;
-
-
-        /**
-         * Most recent trial's cumulative steps per step episode data
-         */
-        public XYSeries agentDataset_cumulativeStepsInAllEpisodesSeries;
-
-        /**
-         * Most recent trial's steps per step episode data
-         */
-        public XYSeries agentDataset_stepsInEachEpisodeSeries;
-
-        public XYSeries agentDataset_rewardInEachEpisodeSeries;
-        public XYSeries agentDataset_reactionInEachEpisodeSeries;
-        public XYSeries agentDataset_cumulativeReactionInAllEpisodesSeries;
-
         /**
          * All trial's average cumulative reward per step series data
          */
@@ -1126,33 +736,6 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
          * Initializes the datastructures for an agent with the given name
          */
         public AgentDatasets(String agentName) {
-            this.agentDataset_cumulativeRewardInAllStepsSeries = new XYSeries(agentName);
-            allAgents_cumulativeRewardInAllSteps.addSeries(this.agentDataset_cumulativeRewardInAllStepsSeries);
-
-            this.agentDataset_cumulativeRewardInAllEpisodesSeries = new XYSeries(agentName);
-            allAgents_cumulativeRewardInAllEpisodes.addSeries(this.agentDataset_cumulativeRewardInAllEpisodesSeries);
-
-            this.agentDataset_averageRewardInEachEpisodeSeries = new XYSeries(agentName);
-            allAgents_averageRewardInEachEpisode.addSeries(this.agentDataset_averageRewardInEachEpisodeSeries);
-
-            this.agentDataset_cumulativeStepsInAllEpisodesSeries = new XYSeries(agentName);
-            allAgents_cumulativeStepsInAllEpisodes.addSeries(this.agentDataset_cumulativeStepsInAllEpisodesSeries);
-
-            this.agentDataset_stepsInEachEpisodeSeries = new XYSeries(agentName);
-            allAgents_stepsInEachEpisode.addSeries(this.agentDataset_stepsInEachEpisodeSeries);
-
-            this.agentDataset_medianRewardInEachEpisodeSeries = new XYSeries(agentName);
-            allAgents_medianRewardInEachEpisode.addSeries(this.agentDataset_medianRewardInEachEpisodeSeries);
-
-            this.agentDataset_rewardInEachEpisodeSeries = new XYSeries(agentName);
-            allAgents_rewardInEachEpisode.addSeries(this.agentDataset_rewardInEachEpisodeSeries);
-
-            this.agentDataset_reactionInEachEpisodeSeries = new XYSeries(agentName);
-            allAgents_reactionInEachEpisode.addSeries(this.agentDataset_reactionInEachEpisodeSeries);
-
-            this.agentDataset_cumulativeReactionInAllEpisodesSeries = new XYSeries(agentName);
-            allAgents_cumulativeReactionInAllEpisodes.addSeries(this.agentDataset_cumulativeReactionInAllEpisodesSeries);
-
 
             this.agentDataset_cumulativeRewardInAllStepsAvgSeries = new YIntervalSeries(agentName);
             this.agentDataset_cumulativeRewardInAllStepsAvgSeries.setNotify(false);
@@ -1189,23 +772,6 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
             this.agentDataset_cumulativeReactionInallEpisodesAvgSeries = new YIntervalSeries(agentName);
             this.agentDataset_cumulativeReactionInallEpisodesAvgSeries.setNotify(false);
             allAgents_cumulativeReactionInAllEpisodesAvg.addSeries(this.agentDataset_cumulativeReactionInallEpisodesAvgSeries);
-        }
-
-
-        /**
-         * clears all the series data for the most recent trial.
-         */
-        public void clearNonAverages() {
-            this.agentDataset_cumulativeRewardInAllStepsSeries.clear();
-            this.agentDataset_cumulativeRewardInAllEpisodesSeries.clear();
-            this.agentDataset_averageRewardInEachEpisodeSeries.clear();
-            this.agentDataset_medianRewardInEachEpisodeSeries.clear();
-            this.agentDataset_cumulativeStepsInAllEpisodesSeries.clear();
-            this.agentDataset_stepsInEachEpisodeSeries.clear();
-            this.agentDataset_medianRewardInEachEpisodeSeries.clear();
-            this.agentDataset_rewardInEachEpisodeSeries.clear();
-            this.agentDataset_reactionInEachEpisodeSeries.clear();
-            this.agentDataset_cumulativeReactionInAllEpisodesSeries.clear();
         }
 
 

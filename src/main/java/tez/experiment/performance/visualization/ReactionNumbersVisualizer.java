@@ -14,18 +14,16 @@ import java.util.Map;
  */
 public class ReactionNumbersVisualizer extends Visualizer {
 
-    private static final String TOTAL_REACTION_POTENTIAL = "Total Reaction";
-    private static final String HIT_REACTION = "Hit Reaction";
-    //private static final String RANDOM_DECISION = "Random Decision";
+    private static final String TOTAL_REACTION_POTENTIAL = "Total Reaction Potential";
+    private static final String TOTAL_REACTION = "Total Reaction";
 
-    private static final String WINDOW_TITLE = "Total/Hit Reaction, Random Decision";
     private static final String CHART_TITLE = "";
     private static final String X_LABEL = "Episode";
     private static final String Y_LABEL = "";
 
     public ReactionNumbersVisualizer(Map<String, Object> visualizationMetadata) {
         super(visualizationMetadata);
-        visualizationMetadata.put(Visualizer.METADATA_WINDOW_TITLE, WINDOW_TITLE);
+        visualizationMetadata.put(Visualizer.METADATA_WINDOW_TITLE, "Reaction Numbers" + Visualizer.METADATA_LEARNING_ALGORITHM);
         visualizationMetadata.put(Visualizer.METADATA_X_LABEL, X_LABEL);
         visualizationMetadata.put(Visualizer.METADATA_Y_LABEL, Y_LABEL);
         this.setTitle((String) visualizationMetadata.get(METADATA_WINDOW_TITLE));
@@ -37,23 +35,26 @@ public class ReactionNumbersVisualizer extends Visualizer {
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         VisualizationData visualizationData = new VisualizationData(dataSet, renderer);
 
-        XYSeries totalReactionSeries = new XYSeries(TOTAL_REACTION_POTENTIAL);
-        XYSeries hitReactionSeries = new XYSeries(HIT_REACTION);
-        //XYSeries calorieIntakeEntrySeries = new XYSeries(RANDOM_DECISION);
+        XYSeries cumulativeReactionNumberSeries = new XYSeries(TOTAL_REACTION_POTENTIAL);
+        XYSeries cumulativeReactionHitSeries = new XYSeries(TOTAL_REACTION);
+
+        int cumulativeReactionPotential = 0;
+        int cumulativeReactionHit = 0;
 
         for (int i = 0; i < episodeAnalysisList.size(); i++) {
-            totalReactionSeries.add(i, (double) episodeAnalysisList.get(i).actionDeliveredDuringPhoneCheck / (double) episodeAnalysisList.get(i).phoneCheckNumber);
-            //hitReactionSeries.add(i, episodeAnalysisList.get(i).actionDeliveredDuringPhoneCheck);
-            //calorieIntakeEntrySeries.add(i, ((HabitEpisodeAnalysis) episodeAnalysisList.get(i)).isCalorieIntakeEntered() == true ? 20 : 0);
+            cumulativeReactionPotential += episodeAnalysisList.get(i).phoneCheckNumber;
+            cumulativeReactionHit += episodeAnalysisList.get(i).actionDeliveredDuringPhoneCheck;
+            cumulativeReactionHitSeries.add(i, cumulativeReactionHit);
+            cumulativeReactionNumberSeries.add(i, cumulativeReactionPotential);
         }
 
-        dataSet.addSeries(totalReactionSeries);
-        //dataSet.addSeries(hitReactionSeries);
+        dataSet.addSeries(cumulativeReactionNumberSeries);
+        dataSet.addSeries(cumulativeReactionHitSeries);
 
         renderer.setSeriesShapesVisible(0, false);
         renderer.setSeriesLinesVisible(0, true);
-        /*renderer.setSeriesShapesVisible(1, true);
-        renderer.setSeriesLinesVisible(1, true);*/
+        renderer.setSeriesShapesVisible(1, false);
+        renderer.setSeriesLinesVisible(1, true);
 
         return visualizationData;
     }

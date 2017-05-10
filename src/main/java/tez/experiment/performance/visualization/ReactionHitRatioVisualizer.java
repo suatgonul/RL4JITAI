@@ -14,21 +14,18 @@ import java.util.Map;
  */
 public class ReactionHitRatioVisualizer extends Visualizer {
 
-    private static final String TOTAL_REACTION_POTENTIAL = "Total Reaction";
-    private static final String HIT_REACTION = "Hit Reaction";
-    //private static final String RANDOM_DECISION = "Random Decision";
+    private static final String HIT_REACTION_RATIO = "Hit Reaction";
 
-    private static final String WINDOW_TITLE = "Total/Hit Reaction, Random Decision";
     private static final String CHART_TITLE = "";
     private static final String X_LABEL = "Episode";
     private static final String Y_LABEL = "";
 
     public ReactionHitRatioVisualizer(Map<String, Object> visualizationMetadata) {
         super(visualizationMetadata);
-        visualizationMetadata.put(Visualizer.METADATA_WINDOW_TITLE, Visualizer.METADATA_LEARNING_ALGORITHM);
+        visualizationMetadata.put(Visualizer.METADATA_WINDOW_TITLE, "Hit Ratio" + Visualizer.METADATA_LEARNING_ALGORITHM);
         visualizationMetadata.put(Visualizer.METADATA_X_LABEL, X_LABEL);
         visualizationMetadata.put(Visualizer.METADATA_Y_LABEL, Y_LABEL);
-        this.setTitle((String) visualizationMetadata.get(METADATA_WINDOW_TITLE));
+        this.setTitle((String) visualizationMetadata.get(Visualizer.METADATA_LEARNING_ALGORITHM));
     }
 
     @Override
@@ -37,17 +34,16 @@ public class ReactionHitRatioVisualizer extends Visualizer {
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         VisualizationData visualizationData = new VisualizationData(dataSet, renderer);
 
-        XYSeries reactionHitRatioSeries = new XYSeries(TOTAL_REACTION_POTENTIAL);
-        XYSeries hitReactionSeries = new XYSeries(HIT_REACTION);
-        //XYSeries calorieIntakeEntrySeries = new XYSeries(RANDOM_DECISION);
+        XYSeries reactionHitRatioSeries = new XYSeries(HIT_REACTION_RATIO);
+
 
         for (int i = 0; i < episodeAnalysisList.size(); i++) {
             reactionHitRatioSeries.add(i, 100 * (double) episodeAnalysisList.get(i).actionDeliveredDuringPhoneCheck / (double) episodeAnalysisList.get(i).phoneCheckNumber);
-            //hitReactionSeries.add(i, episodeAnalysisList.get(i).actionDeliveredDuringPhoneCheck);
+            //cumulativeReactionNumberSeries.add(i, episodeAnalysisList.get(i).actionDeliveredDuringPhoneCheck);
         }
 
         dataSet.addSeries(reactionHitRatioSeries);
-        //dataSet.addSeries(hitReactionSeries);
+        //dataSet.addSeries(cumulativeReactionNumberSeries);
 
         renderer.setSeriesShapesVisible(0, false);
         renderer.setSeriesLinesVisible(0, true);

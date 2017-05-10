@@ -14,9 +14,7 @@ import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.domain.SelfManagementRewardFunction;
 import tez.domain.algorithm.SelfManagementEligibilitySarsaLam;
-import tez.domain.algorithm.SelfManagementQLearning;
 import tez.domain.algorithm.SelfManagementSarsa;
-import tez.domain.algorithm.SelfManagementSarsaLam;
 import tez.experiment.performance.SelfManagementPerformanceMetric;
 import tez.simulator.RealWorld;
 
@@ -49,16 +47,31 @@ public class Experiment {
         domGen.setEnvironment(environment);
 
         LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
-        SelfManagementExperimenter exp = new SelfManagementExperimenter(environment,
+        /*SelfManagementExperimenter exp = new SelfManagementExperimenter(environment,
                 2, 10000, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 //SelfManagementPerformanceMetric.CUMULATIVESTEPSPEREPISODE,
                 //SelfManagementPerformanceMetric.CUMULATIVEREWARDPERSTEP,
-                SelfManagementPerformanceMetric.CUMULTAIVEREWARDPEREPISODE,
-                SelfManagementPerformanceMetric.AVERAGEEPISODEREWARD,
+                SelfManagementPerformanceMetric.CUMULATIVE_REWARD_PER_EPISODE,
+                //SelfManagementPerformanceMetric.AVERAGEEPISODEREWARD,
                 //SelfManagementPerformanceMetric.STEPSPEREPISODE,
                 //PerformanceMetric.MEDIANEPISODEREWARD,
+                SelfManagementPerformanceMetric.CUMULATIVE_REACTION,
+                SelfManagementPerformanceMetric.REWARD_PER_EPISODE,
+
+                SelfManagementPerformanceMetric.USER_REACTION_PER_EPISODE
+        );
+
+
+        //start experiment
+        exp.startExperiment();*/
+        StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
+                2, 100, learningCases);
+
+        exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
+                SelfManagementPerformanceMetric.CUMULATIVE_REWARD_PER_EPISODE,
+                SelfManagementPerformanceMetric.CUMULATIVE_REACTION,
                 SelfManagementPerformanceMetric.REWARD_PER_EPISODE,
                 SelfManagementPerformanceMetric.USER_REACTION_PER_EPISODE
         );
@@ -100,28 +113,6 @@ public class Experiment {
 
         qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {
-                return "Sarsa-Lam  Lambda_0.8 Gamma_0.1 LR_0.1";
-            }
-
-            public LearningAgent generateAgent() {
-                return new SelfManagementSarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8);
-            }
-        };
-        learningAlternatives.add(qLearningFactory);
-
-        qLearningFactory = new LearningAgentFactory() {
-            public String getAgentName() {
-                return "Sarsa-Lam  Lambda_0.8 Gamma_0.1 LR_1.0";
-            }
-
-            public LearningAgent generateAgent() {
-                return new SelfManagementSarsaLam(domain, 0.1, hashingFactory, 0, 1.0, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8);
-            }
-        };
-        learningAlternatives.add(qLearningFactory);
-
-        qLearningFactory = new LearningAgentFactory() {
-            public String getAgentName() {
                 return "Sarsa  Gamma_0.1 LR_0.1";
             }
 
@@ -130,17 +121,6 @@ public class Experiment {
             }
         };
         learningAlternatives.add(qLearningFactory);
-
-        qLearningFactory = new LearningAgentFactory() {
-            public String getAgentName() {
-                return "Q-learning  Gamma_0.1 LR_1.0";
-            }
-
-            public LearningAgent generateAgent() {
-                return new SelfManagementQLearning(domain, 0.1, hashingFactory, 0, 1.0, new GreedyQPolicy(), Integer.MAX_VALUE);
-            }
-        };
-        //learningAlternatives.add(qLearningFactory);
 
         return learningAlternatives.toArray(new LearningAgentFactory[0]);
     }

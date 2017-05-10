@@ -125,12 +125,6 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
 
 
     /**
-     * Synchronization object to ensure proper threaded plot updating
-     */
-    protected MutableBoolean trialUpdateComplete = new MutableBoolean(true);
-
-
-    /**
      * Initializes a performance plotter.
      *
      * @param firstAgentName  the name of the first agent whose performance will be measured.
@@ -262,24 +256,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
      * Informs the plotter that all data for the current trial as been collected.
      */
     public void endTrial() {
-
-
-        this.trialUpdateComplete.b = false;
         this.agentTrials.get(this.curAgentName).add(curTrial);
-
-
-        //wait until it's updated before allowing anything else to happen
-        synchronized (this.trialUpdateComplete) {
-            while (this.trialUpdateComplete.b == false) {
-                try {
-                    this.trialUpdateComplete.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            this.trialUpdateComplete.notifyAll();
-
-        }
     }
 
 
@@ -816,29 +793,4 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             this.agentDataset_cumulativeReactionInallEpisodesAvgSeries.setNotify(false);
         }
     }
-
-
-    /**
-     * A class for a mutable boolean
-     *
-     * @author James MacGlashan
-     */
-    protected class MutableBoolean {
-
-        /**
-         * The boolean value
-         */
-        public boolean b;
-
-        /**
-         * Initializes with the given Boolean value
-         *
-         * @param b
-         */
-        public MutableBoolean(boolean b) {
-            this.b = b;
-        }
-    }
-
-
 }

@@ -280,8 +280,6 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
         } else {
             this.add(plotContainer);
         }
-
-
     }
 
 

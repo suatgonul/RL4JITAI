@@ -15,11 +15,12 @@ import tez.domain.SelfManagementDomainGenerator;
 import tez.domain.SelfManagementRewardFunction;
 import tez.domain.algorithm.SelfManagementEligibilitySarsaLam;
 import tez.domain.algorithm.SelfManagementSarsa;
-import tez.experiment.performance.SelfManagementPerformanceMetric;
 import tez.simulator.RealWorld;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static tez.experiment.performance.SelfManagementPerformanceMetric.*;
 
 /**
  * Created by suatgonul on 12/22/2016.
@@ -67,13 +68,14 @@ public class Experiment {
         //start experiment
         exp.startExperiment();*/
         StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                2, 100, learningCases);
+                2, 10000, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
-                SelfManagementPerformanceMetric.CUMULATIVE_REWARD_PER_EPISODE,
-                SelfManagementPerformanceMetric.CUMULATIVE_REACTION,
-                SelfManagementPerformanceMetric.REWARD_PER_EPISODE,
-                SelfManagementPerformanceMetric.USER_REACTION_PER_EPISODE
+                CUMULATIVE_REWARD_PER_EPISODE,
+                CUMULATIVE_REACTION,
+                AVERAGEEPISODEREWARD,
+                REWARD_PER_EPISODE,
+                USER_REACTION_PER_EPISODE
         );
 
 

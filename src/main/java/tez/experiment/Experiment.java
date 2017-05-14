@@ -13,8 +13,8 @@ import tez.domain.DayTerminalFunction;
 import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.domain.SelfManagementRewardFunction;
-import tez.domain.algorithm.SelfManagementEligibilitySarsaLam;
-import tez.domain.algorithm.SelfManagementSarsa;
+import tez.algorithm.SelfManagementEligibilitySarsaLam;
+import tez.algorithm.SelfManagementSarsa;
 import tez.simulator.RealWorld;
 
 import java.util.ArrayList;

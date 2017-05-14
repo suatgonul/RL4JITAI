@@ -1,4 +1,4 @@
-package tez.domain.algorithm;
+package tez.algorithm;
 
 import burlap.behavior.singleagent.learning.tdmethods.SarsaLam;
 import burlap.behavior.valuefunction.QValue;

@@ -1,4 +1,4 @@
-package tez.domain.algorithm;
+package tez.algorithm;
 
 import burlap.behavior.policy.Policy;
 import burlap.behavior.policy.SolverDerivedPolicy;

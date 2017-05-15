@@ -3,13 +3,18 @@ package tez.experiment.performance;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
 import burlap.behavior.valuefunction.QValue;
+import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import tez.domain.SelfManagementDomainGenerator;
-import tez.simulator.context.Context;
+import tez.domain.SelfManagementState;
+import tez.persona.Activity;
+import tez.simulator.context.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static tez.domain.SelfManagementDomainGenerator.*;
 
 /**
  * Created by suatgonul on 4/26/2017.
@@ -43,11 +48,21 @@ public class SelfManagementEpisodeAnalysis extends EpisodeAnalysis {
         userReactions.add(userReaction);
         if (userReaction == true) {
             phoneCheckNumber++;
-            if(usingAction.actionName().equals(SelfManagementDomainGenerator.ACTION_INT_DELIVERY)) {
+            if (usingAction.actionName().equals(SelfManagementDomainGenerator.ACTION_INT_DELIVERY)) {
                 actionDeliveredDuringPhoneCheck++;
             }
         }
 
         super.recordTransitionTo(usingAction, nextState, r);
+    }
+
+    public StringBuilder transformActionsWithPositiveRewardToCSV() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < actionSequence.size(); i++) {
+            if (rewardSequence.get(i) > 0) {
+                sb = SelfManagementState.transformToCSV(stateSequence.get(i), actionSequence.get(i).action);
+            }
+        }
+        return sb;
     }
 }

@@ -26,8 +26,8 @@ public class SelfManagementDomainGenerator implements DomainGenerator {
 
     public static final String CLASS_STATE = "state";
 
-    public static final String ACTION_INT_DELIVERY = "intervention_delivery";
-    public static final String ACTION_NO_ACTION = "no_action";
+    public static final String ACTION_INT_DELIVERY = "INT";
+    public static final String ACTION_NO_ACTION = "NO_INT";
 
     private SelfManagementDomain.DomainComplexity complexity;
     private Domain domain;

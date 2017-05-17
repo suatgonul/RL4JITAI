@@ -8,6 +8,7 @@ import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.Action;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
@@ -30,14 +31,17 @@ public class StateClassifier {
     private static final String LEARNING_DATA_FOLDER = "D:\\mine\\odtu\\6\\tez\\codes\\data\\";
     private static final String FILE_ALL_AGENTS_ACTIONS_FILE_NAME = "all_items.csv";
     private static final String FILE_CURRENT_STATE_NAME = "current_state.csv";
+    private static final String FILE_PREDICTION_NAME = "prediction_result.csv";
 
     private List<LearningAgentFactory> agents;
+    private Domain domain;
     private ModelKeyV3 collaborativeModelKey = null;
     private File allAgentsActionsFile = null;
     private Map<String, ModelsV3> individualModels = null;
     private SMH2oApi h2o = new SMH2oApi();
 
-    public StateClassifier() throws CollaborativeLearningException {
+    public StateClassifier(Domain domain) throws CollaborativeLearningException {
+        this.domain = domain;
         allAgentsActionsFile = new File(LEARNING_DATA_FOLDER + FILE_ALL_AGENTS_ACTIONS_FILE_NAME);
         /*File parentFolder = allAgentsActionsFile.getParentFile();
         if (parentFolder != null) {
@@ -111,7 +115,7 @@ public class StateClassifier {
         ea.actionSequence.add(domain.getAction(ACTION_NO_ACTION).getGroundedAction());
 
 
-        StateClassifier sc = new StateClassifier();
+        StateClassifier sc = new StateClassifier(domain);
         sc.updateLearningModel(ea);
         sc.guessAction(null, s5);
     }
@@ -173,6 +177,8 @@ public class StateClassifier {
     public Action guessAction(LearningAgentFactory learningAgent, State state) throws CollaborativeLearningException {
         String tempFilePath = LEARNING_DATA_FOLDER + (learningAgent == null ? "" : learningAgent.getAgentName()) + FILE_CURRENT_STATE_NAME;
         File tempFile = new File(tempFilePath);
+        String predictionFilePath = LEARNING_DATA_FOLDER + (learningAgent == null ? "" : learningAgent.getAgentName()) + FILE_PREDICTION_NAME;
+        File predictionFile = new File(predictionFilePath);
 
         try {
             addHeadersToFile(new String[]{"Time", "DayType", "Location", "Activity", "PhoneUsage", "StateOfMind", "EmotionalStatus"}, tempFile);
@@ -197,25 +203,32 @@ public class StateClassifier {
             predict_params.predictionsFrame = SMH2oApi.stringToFrameKey("predictions");
 
             ModelMetricsListSchemaV3 modelMetrics = h2o.predict(predict_params);
-            //FramesV3 predictionsFramewSummary = h2o.frameSummary(modelMetrics.predictionsFrame);
             FramesV3 predictionParams = new FramesV3();
-            //SMH2oApi.copyFields(predictionParams, predictionsFramewSummary);
             predictionParams.column = "";
             predictionParams.columnCount = 3;
             predictionParams.frameId = modelMetrics.predictionsFrame;
-            //predictionParams._excludeFields = "frames/columns/data,frames/columns/domain,frames/columns/histogram_bins,frames/columns/percentiles";
-            FramesV3 predictions = h2o.frame(predictionParams);
-            FramesV3 predictionsWithColumn = h2o.frameColumn(modelMetrics.predictionsFrame, "predict");
-            //FramesV3 predictions = h2o.frame(modelMetrics.predictionsFrame);
+            predictionParams.path = predictionFilePath;
+            h2o.exportFrame(predictionParams);
 
-            System.out.println(predictions);
+            return readPredictionResult(predictionFile);
 
         } catch (IOException e) {
             throw new CollaborativeLearningException("Failed to classify state", e);
         } finally {
             removeFile(tempFile);
+            removeFile(predictionFile);
         }
-        return null;
+    }
+
+    private Action readPredictionResult(File predictionFile) throws CollaborativeLearningException {
+        try {
+            List<String> lines = FileUtils.readLines(predictionFile);
+            String actionLabel = lines.get(1).split(",")[0].replace("\"", "");
+            return domain.getAction(actionLabel);
+
+        } catch (IOException e) {
+            throw new CollaborativeLearningException("Failed to read prediction results from the file", e);
+        }
     }
 
     private void removeFile(File file) {
@@ -271,6 +284,4 @@ public class StateClassifier {
         }
         return null;
     }
-
-
 }

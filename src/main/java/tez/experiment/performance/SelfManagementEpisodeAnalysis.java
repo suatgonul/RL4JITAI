@@ -60,7 +60,7 @@ public class SelfManagementEpisodeAnalysis extends EpisodeAnalysis {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < actionSequence.size(); i++) {
             if (rewardSequence.get(i) > 0) {
-                sb = SelfManagementState.transformToCSV(stateSequence.get(i), actionSequence.get(i).action);
+                sb.append(SelfManagementState.transformToCSV(stateSequence.get(i), actionSequence.get(i).action).toString());
             }
         }
         return sb;

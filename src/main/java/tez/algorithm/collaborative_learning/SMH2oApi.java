@@ -20,35 +20,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by suat on 14-May-17.
  */
-public class H2oApi {
+public class SMH2oApi {
     public static String DEFAULT_URL = "http://localhost:54321/";
 
-    public H2oApi() {
+    public SMH2oApi() {
         this(DEFAULT_URL);
     }
-    public H2oApi(String url) {
+    public SMH2oApi(String url) {
         _url = url;
-    }
-
-    public H2oApi setUrl(String url) {
-        _url = url;
-        retrofit = null;
-        return this;
-    }
-
-    public H2oApi setTimeout(int t) {
-        timeout_s = t;
-        retrofit = null;
-        return this;
-    }
-
-    /**
-     * Set time interval for job polling in {@link #waitForJobCompletion(JobKeyV3)}.
-     *   @param millis time interval, in milliseconds
-     */
-    public H2oApi setJobPollInterval(int millis) {
-        pollInterval_ms = millis;
-        return this;
     }
 
     /**
@@ -83,268 +62,12 @@ public class H2oApi {
         return jobs == null? null : jobs.jobs[0];
     }
 
-
-    /**
-     * Returns the list of all REST API (v4) endpoints.
-     */
-    public EndpointsListV4 endpoints4() throws IOException {
-        Endpoints s = getService(Endpoints.class);
-        return s.listRoutes4().execute().body();
-    }
-    public EndpointsListV4 endpoints4(String __schema) throws IOException {
-        Endpoints s = getService(Endpoints.class);
-        return s.listRoutes4(__schema).execute().body();
-    }
-
-    /**
-     * Start a new Rapids session, and return the session id.
-     */
-    public SessionIdV4 newSession4() throws IOException {
-        Sessions s = getService(Sessions.class);
-        return s.newSession4().execute().body();
-    }
-    public SessionIdV4 newSession4(String _fields) throws IOException {
-        Sessions s = getService(Sessions.class);
-        return s.newSession4(_fields).execute().body();
-    }
-
-    /**
-     * Close the Rapids session.
-     */
-    public InitIDV3 endSession4(String sessionKey) throws IOException {
-        Sessions s = getService(Sessions.class);
-        return s.endSession(sessionKey).execute().body();
-    }
-    public InitIDV3 endSession4(String sessionKey, String _excludeFields) throws IOException {
-        Sessions s = getService(Sessions.class);
-        return s.endSession(sessionKey, _excludeFields).execute().body();
-    }
-
-    /**
-     * Return basic information about all models available to train.
-     */
-    public ModelsInfoV4 modelsInfo() throws IOException {
-        Modelsinfo s = getService(Modelsinfo.class);
-        return s.modelsInfo().execute().body();
-    }
-    public ModelsInfoV4 modelsInfo(String __schema) throws IOException {
-        Modelsinfo s = getService(Modelsinfo.class);
-        return s.modelsInfo(__schema).execute().body();
-    }
-
-    /**
-     * Create frame with random (uniformly distributed) data. You can specify how many columns of each type to make; and
-     * what the desired range for each column type.
-     */
-    public JobV4 createSimpleFrame() throws IOException {
-        Frames s = getService(Frames.class);
-        return s.createSimpleFrame().execute().body();
-    }
-    public JobV4 createSimpleFrame(CreateFrameSimpleIV4 params) throws IOException {
-        Frames s = getService(Frames.class);
-        return s.createSimpleFrame(
-                keyToString(params.dest),
-                params.seed,
-                params.nrows,
-                params.ncolsReal,
-                params.ncolsInt,
-                params.ncolsEnum,
-                params.ncolsBool,
-                params.ncolsStr,
-                params.ncolsTime,
-                params.realLb,
-                params.realUb,
-                params.intLb,
-                params.intUb,
-                params.enumNlevels,
-                params.boolP,
-                params.timeLb,
-                params.timeUb,
-                params.strLength,
-                params.missingFraction,
-                params.responseType,
-                params.responseLb,
-                params.responseUb,
-                params.responseP,
-                params.responseNlevels,
-                params._fields
-        ).execute().body();
-    }
-
-    /**
-     * Retrieve information about the current state of a job.
-     */
-    public JobV4 getJob4(String jobId) throws IOException {
-        Jobs s = getService(Jobs.class);
-        return s.getJob4(jobId).execute().body();
-    }
-    public JobV4 getJob4(String jobId, String _fields) throws IOException {
-        Jobs s = getService(Jobs.class);
-        return s.getJob4(jobId, _fields).execute().body();
-    }
-
-    /**
-     * Create a synthetic H2O Frame with random data. You can specify the number of rows/columns, as well as column types:
-     * integer, real, boolean, time, string, categorical. The frame may also have a dedicated "response" column, and some
-     * of the entries in the dataset may be created as missing.
-     */
-    public JobV3 createFrame() throws IOException {
-        CreateFrame s = getService(CreateFrame.class);
-        return s.run().execute().body();
-    }
-    public JobV3 createFrame(CreateFrameV3 params) throws IOException {
-        CreateFrame s = getService(CreateFrame.class);
-        return s.run(
-                keyToString(params.dest),
-                params.rows,
-                params.cols,
-                params.seed,
-                params.seedForColumnTypes,
-                params.randomize,
-                params.value,
-                params.realRange,
-                params.categoricalFraction,
-                params.factors,
-                params.integerFraction,
-                params.integerRange,
-                params.binaryFraction,
-                params.binaryOnesFraction,
-                params.timeFraction,
-                params.stringFraction,
-                params.missingFraction,
-                params.hasResponse,
-                params.responseFactors,
-                params.positiveResponse,
-                params._excludeFields
-        ).execute().body();
-    }
-
-    /**
-     * Split an H2O Frame.
-     */
-    public SplitFrameV3 splitFrame() throws IOException {
-        SplitFrame s = getService(SplitFrame.class);
-        return s.run().execute().body();
-    }
-    public SplitFrameV3 splitFrame(SplitFrameV3 params) throws IOException {
-        SplitFrame s = getService(SplitFrame.class);
-        return s.run(
-                keyToString(params.key),
-                keyToString(params.dataset),
-                params.ratios,
-                keyArrayToStringArray(params.destinationFrames)
-        ).execute().body();
-    }
-
-    /**
-     * Create interactions between categorical columns.
-     */
-    public JobV3 generateInteractions(int maxFactors) throws IOException {
-        Interaction s = getService(Interaction.class);
-        return s.run(maxFactors).execute().body();
-    }
-    public JobV3 generateInteractions(InteractionV3 params) throws IOException {
-        Interaction s = getService(Interaction.class);
-        return s.run(
-                keyToString(params.dest),
-                keyToString(params.sourceFrame),
-                params.factorColumns,
-                params.pairwise,
-                params.maxFactors,
-                params.minOccurrence,
-                params._excludeFields
-        ).execute().body();
-    }
-
-    /**
-     * Insert missing values.
-     */
-    public JobV3 _missingInserter_run(FrameKeyV3 dataset, double fraction) throws IOException {
-        MissingInserter s = getService(MissingInserter.class);
-        return s.run(keyToString(dataset), fraction).execute().body();
-    }
-    public JobV3 _missingInserter_run(MissingInserterV3 params) throws IOException {
-        MissingInserter s = getService(MissingInserter.class);
-        return s.run(
-                keyToString(params.dataset),
-                params.fraction,
-                params.seed,
-                params._excludeFields
-        ).execute().body();
-    }
-
-    /**
-     * Row-by-row discrete cosine transforms in 1D, 2D and 3D.
-     */
-    public JobV3 _dctTransformer_run(FrameKeyV3 dataset, int[] dimensions) throws IOException {
-        DCTTransformer s = getService(DCTTransformer.class);
-        return s.run(keyToString(dataset), dimensions).execute().body();
-    }
-    public JobV3 _dctTransformer_run(DCTTransformerV3 params) throws IOException {
-        DCTTransformer s = getService(DCTTransformer.class);
-        return s.run(
-                keyToString(params.dataset),
-                keyToString(params.destinationFrame),
-                params.dimensions,
-                params.inverse,
-                params._excludeFields
-        ).execute().body();
-    }
-
-    /**
-     * Tabulate one column vs another.
-     */
-    public TabulateV3 _tabulate_run(FrameKeyV3 dataset, ColSpecifierV3 predictor, ColSpecifierV3 response) throws IOException {
-        Tabulate s = getService(Tabulate.class);
-        return s.run(keyToString(dataset), colToString(predictor), colToString(response)).execute().body();
-    }
-    public TabulateV3 _tabulate_run(TabulateV3 params) throws IOException {
-        Tabulate s = getService(Tabulate.class);
-        return s.run(
-                keyToString(params.dataset),
-                colToString(params.predictor),
-                colToString(params.response),
-                colToString(params.weight),
-                params.nbinsPredictor,
-                params.nbinsResponse
-        ).execute().body();
-    }
-
     /**
      * Import raw data files into a single-column H2O Frame.
      */
     public ImportFilesV3 importFiles(String path) throws IOException {
         ImportFiles s = getService(ImportFiles.class);
         return s.importFiles(path).execute().body();
-    }
-    public ImportFilesV3 importFiles(String path, String pattern) throws IOException {
-        ImportFiles s = getService(ImportFiles.class);
-        return s.importFiles(path, pattern, "").execute().body();
-    }
-    public ImportFilesV3 importFiles(String path, String pattern, String _excludeFields) throws IOException {
-        ImportFiles s = getService(ImportFiles.class);
-        return s.importFiles(path, pattern, _excludeFields).execute().body();
-    }
-
-    /**
-     * Import SQL table into an H2O Frame.
-     */
-    public JobV3 importSqlTable(String connectionUrl, String username, String password) throws IOException {
-        ImportSQLTable s = getService(ImportSQLTable.class);
-        return s.importSQLTable(connectionUrl, username, password).execute().body();
-    }
-    public JobV3 importSqlTable(ImportSQLTableV99 params) throws IOException {
-        ImportSQLTable s = getService(ImportSQLTable.class);
-        return s.importSQLTable(
-                params.connectionUrl,
-                params.table,
-                params.selectQuery,
-                params.username,
-                params.password,
-                params.columns,
-                params.optimize,
-                params._excludeFields
-        ).execute().body();
     }
 
     /**
@@ -702,11 +425,11 @@ public class H2oApi {
      * Export a Frame to the given path with optional overwrite.
      */
     public FramesV3 exportFrame(FrameKeyV3 frameId) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.export(keyToString(frameId)).execute().body();
     }
     public FramesV3 exportFrame(FramesV3 params) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.export(
                 keyToString(params.frameId),
                 params.column,
@@ -726,11 +449,11 @@ public class H2oApi {
      * Return the summary metrics for a column, e.g. min, max, mean, sigma, percentiles, etc.
      */
     public FramesV3 frameColumnSummary(FrameKeyV3 frameId, String column) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.columnSummary(keyToString(frameId), column).execute().body();
     }
     public FramesV3 frameColumnSummary(FramesV3 params) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.columnSummary(
                 keyToString(params.frameId),
                 params.column,
@@ -750,11 +473,11 @@ public class H2oApi {
      * Return the domains for the specified categorical column ("null" if the column is not a categorical).
      */
     public FramesV3 frameColumnDomain(FrameKeyV3 frameId, String column) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.columnDomain(keyToString(frameId), column).execute().body();
     }
     public FramesV3 frameColumnDomain(FramesV3 params) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.columnDomain(
                 keyToString(params.frameId),
                 params.column,
@@ -774,11 +497,11 @@ public class H2oApi {
      * Return the specified column from a Frame.
      */
     public FramesV3 frameColumn(FrameKeyV3 frameId, String column) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.column(keyToString(frameId), column).execute().body();
     }
     public FramesV3 frameColumn(FramesV3 params) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.column(
                 keyToString(params.frameId),
                 params.column,
@@ -798,11 +521,11 @@ public class H2oApi {
      * Return all the columns from a Frame.
      */
     public FramesV3 frameColumns(FrameKeyV3 frameId) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.columns(keyToString(frameId)).execute().body();
     }
     public FramesV3 frameColumns(FramesV3 params) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.columns(
                 keyToString(params.frameId),
                 params.column,
@@ -822,11 +545,11 @@ public class H2oApi {
      * Return a Frame, including the histograms, after forcing computation of rollups.
      */
     public FramesV3 frameSummary(FrameKeyV3 frameId) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.summary(keyToString(frameId)).execute().body();
     }
     public FramesV3 frameSummary(FramesV3 params) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.summary(
                 keyToString(params.frameId),
                 params.column,
@@ -846,11 +569,11 @@ public class H2oApi {
      * Return the specified Frame.
      */
     public FramesV3 frame(FrameKeyV3 frameId) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.fetch(keyToString(frameId)).execute().body();
     }
     public FramesV3 frame(FramesV3 params) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.fetch(
                 keyToString(params.frameId),
                 params.column,
@@ -870,11 +593,11 @@ public class H2oApi {
      * Return all Frames in the H2O distributed K/V store.
      */
     public FramesV3 frames() throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.list().execute().body();
     }
     public FramesV3 frames(FramesV3 params) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.list(
                 keyToString(params.frameId),
                 params.column,
@@ -894,11 +617,11 @@ public class H2oApi {
      * Delete the specified Frame from the H2O distributed K/V store.
      */
     public FramesV3 deleteFrame(FrameKeyV3 frameId) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.delete(keyToString(frameId)).execute().body();
     }
     public FramesV3 deleteFrame(FramesV3 params) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.delete(
                 keyToString(params.frameId),
                 params.column,
@@ -918,11 +641,11 @@ public class H2oApi {
      * Delete all Frames from the H2O distributed K/V store.
      */
     public FramesV3 deleteAllFrames() throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.deleteAll().execute().body();
     }
     public FramesV3 deleteAllFrames(FramesV3 params) throws IOException {
-        Frames s = getService(Frames.class);
+        SMFrames s = getService(SMFrames.class);
         return s.deleteAll(
                 keyToString(params.frameId),
                 params.column,
@@ -4152,13 +3875,13 @@ public class H2oApi {
 
     private void initializeRetrofit() {
         Gson gson = new GsonBuilder()
-                .registerTypeAdapterFactory(new H2oApi.ModelV3TypeAdapter())
-                .registerTypeAdapter(KeyV3.class, new H2oApi.KeySerializer())
-                .registerTypeAdapter(ColSpecifierV3.class, new H2oApi.ColSerializer())
-                .registerTypeAdapter(ModelBuilderSchema.class, new H2oApi.ModelDeserializer())
-                .registerTypeAdapter(ModelSchemaBaseV3.class, new H2oApi.ModelSchemaDeserializer())
-                .registerTypeAdapter(ModelOutputSchemaV3.class, new H2oApi.ModelOutputDeserializer())
-                .registerTypeAdapter(ModelParametersSchemaV3.class, new H2oApi.ModelParametersDeserializer())
+                .registerTypeAdapterFactory(new SMH2oApi.ModelV3TypeAdapter())
+                .registerTypeAdapter(KeyV3.class, new SMH2oApi.KeySerializer())
+                .registerTypeAdapter(ColSpecifierV3.class, new SMH2oApi.ColSerializer())
+                .registerTypeAdapter(ModelBuilderSchema.class, new SMH2oApi.ModelDeserializer())
+                .registerTypeAdapter(ModelSchemaBaseV3.class, new SMH2oApi.ModelSchemaDeserializer())
+                .registerTypeAdapter(ModelOutputSchemaV3.class, new SMH2oApi.ModelOutputDeserializer())
+                .registerTypeAdapter(ModelParametersSchemaV3.class, new SMH2oApi.ModelParametersDeserializer())
                 .setLenient()
                 .create();
 

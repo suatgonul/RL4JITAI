@@ -1,6 +1,5 @@
 package tez.algorithm.collaborative_learning;
 
-import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -36,7 +35,7 @@ public class StateClassifier {
     private ModelKeyV3 collaborativeModelKey = null;
     private File allAgentsActionsFile = null;
     private Map<String, ModelsV3> individualModels = null;
-    private H2oApi h2o = new H2oApi();
+    private SMH2oApi h2o = new SMH2oApi();
 
     public StateClassifier() throws CollaborativeLearningException {
         allAgentsActionsFile = new File(LEARNING_DATA_FOLDER + FILE_ALL_AGENTS_ACTIONS_FILE_NAME);
@@ -136,7 +135,7 @@ public class StateClassifier {
             trainingDataImport = h2o.importFiles(allAgentsActionsFile.getAbsolutePath());
 
             // STEP 2: parse setup
-            ParseSetupV3 trainingDataParseSetup = h2o.guessParseSetup(H2oApi.stringArrayToKeyArray(trainingDataImport.destinationFrames, FrameKeyV3.class));
+            ParseSetupV3 trainingDataParseSetup = h2o.guessParseSetup(SMH2oApi.stringArrayToKeyArray(trainingDataImport.destinationFrames, FrameKeyV3.class));
 
             // STEP 3: correct the guesses
             String[] columnTypes = new String[]{"Time", "Enum", "Enum", "Enum", "Enum", "Enum", "Enum", "Enum"};
@@ -145,8 +144,8 @@ public class StateClassifier {
 
             // STEP 4: parse into columnar Frame
             ParseV3 trainingDataParseParams = new ParseV3();
-            H2oApi.copyFields(trainingDataParseParams, trainingDataParseSetup);
-            trainingDataParseParams.destinationFrame = H2oApi.stringToFrameKey(trainingDataParseSetup.destinationFrame + "");
+            SMH2oApi.copyFields(trainingDataParseParams, trainingDataParseSetup);
+            trainingDataParseParams.destinationFrame = SMH2oApi.stringToFrameKey(trainingDataParseSetup.destinationFrame + "");
             trainingDataParseParams.blocking = true;  // alternately, call h2o.waitForJobCompletion(trainingDataParseSetup.job)
             ParseV3 trainingParseBody = h2o.parse(trainingDataParseParams);
 
@@ -182,28 +181,31 @@ public class StateClassifier {
 
             ImportFilesV3 stateDataImport = h2o.importFiles(tempFile.getAbsolutePath());
 
-            ParseSetupV3 stateDataParseSetup = h2o.guessParseSetup(H2oApi.stringArrayToKeyArray(stateDataImport.destinationFrames, FrameKeyV3.class));
+            ParseSetupV3 stateDataParseSetup = h2o.guessParseSetup(SMH2oApi.stringArrayToKeyArray(stateDataImport.destinationFrames, FrameKeyV3.class));
             String[] columnTypes = new String[]{"Time", "Enum", "Enum", "Enum", "Enum", "Enum", "Enum"};
             stateDataParseSetup.columnTypes = columnTypes;
             stateDataParseSetup = h2o.guessParseSetup(stateDataParseSetup);
             ParseV3 stateDataParseParams = new ParseV3();
-            H2oApi.copyFields(stateDataParseParams, stateDataParseSetup);
-            stateDataParseParams.destinationFrame = H2oApi.stringToFrameKey(stateDataParseSetup.destinationFrame + "");
+            SMH2oApi.copyFields(stateDataParseParams, stateDataParseSetup);
+            stateDataParseParams.destinationFrame = SMH2oApi.stringToFrameKey(stateDataParseSetup.destinationFrame + "");
             stateDataParseParams.blocking = true;  // alternately, call h2o.waitForJobCompletion(stateDataParseSetup.job)
             h2o.parse(stateDataParseParams);
 
             ModelMetricsListSchemaV3 predict_params = new ModelMetricsListSchemaV3();
             predict_params.model = collaborativeModelKey;
             predict_params.frame = stateDataParseParams.destinationFrame;
-            predict_params.predictionsFrame = H2oApi.stringToFrameKey("predictions");
+            predict_params.predictionsFrame = SMH2oApi.stringToFrameKey("predictions");
 
             ModelMetricsListSchemaV3 modelMetrics = h2o.predict(predict_params);
-            FramesV3 predictionsFramewSummary = h2o.frameSummary(modelMetrics.predictionsFrame);
+            //FramesV3 predictionsFramewSummary = h2o.frameSummary(modelMetrics.predictionsFrame);
             FramesV3 predictionParams = new FramesV3();
-            //H2oApi.copyFields(predictionParams, predictionsFramewSummary);
+            //SMH2oApi.copyFields(predictionParams, predictionsFramewSummary);
+            predictionParams.column = "";
             predictionParams.columnCount = 3;
+            predictionParams.frameId = modelMetrics.predictionsFrame;
             //predictionParams._excludeFields = "frames/columns/data,frames/columns/domain,frames/columns/histogram_bins,frames/columns/percentiles";
             FramesV3 predictions = h2o.frame(predictionParams);
+            FramesV3 predictionsWithColumn = h2o.frameColumn(modelMetrics.predictionsFrame, "predict");
             //FramesV3 predictions = h2o.frame(modelMetrics.predictionsFrame);
 
             System.out.println(predictions);

@@ -55,14 +55,4 @@ public class SelfManagementEpisodeAnalysis extends EpisodeAnalysis {
 
         super.recordTransitionTo(usingAction, nextState, r);
     }
-
-    public StringBuilder transformActionsWithPositiveRewardToCSV() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < actionSequence.size(); i++) {
-            if (rewardSequence.get(i) > 0) {
-                sb.append(SelfManagementState.transformToCSV(stateSequence.get(i), actionSequence.get(i).action).toString());
-            }
-        }
-        return sb;
-    }
 }

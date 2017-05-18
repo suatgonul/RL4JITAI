@@ -8,18 +8,22 @@ import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.Action;
+import burlap.oomdp.singleagent.GroundedAction;
+import burlap.oomdp.statehashing.HashableState;
+import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
+import tez.domain.SelfManagementRewardFunction;
 import tez.domain.SelfManagementState;
 import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import water.bindings.pojos.*;
 
+import javax.xml.crypto.Data;
 import java.io.*;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static tez.domain.SelfManagementDomainGenerator.*;
 import static tez.domain.SelfManagementDomainGenerator.ATT_STATE_OF_MIND;
@@ -35,6 +39,9 @@ public class StateClassifier {
 
     private List<LearningAgentFactory> agents;
     private Domain domain;
+    private SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
+    private Map<HashableState, Map<String, Integer>> stateActionCounts = new HashMap<>();
+
     private ModelKeyV3 collaborativeModelKey = null;
     private File allAgentsActionsFile = null;
     private Map<String, ModelsV3> individualModels = null;
@@ -42,12 +49,6 @@ public class StateClassifier {
 
     public StateClassifier(Domain domain) throws CollaborativeLearningException {
         this.domain = domain;
-        allAgentsActionsFile = new File(LEARNING_DATA_FOLDER + FILE_ALL_AGENTS_ACTIONS_FILE_NAME);
-        /*File parentFolder = allAgentsActionsFile.getParentFile();
-        if (parentFolder != null) {
-            parentFolder.mkdirs();
-        }*/
-        addHeadersToFile(new String[]{"Time", "DayType", "Location", "Activity", "PhoneUsage", "StateOfMind", "EmotionalStatus", "Action"}, allAgentsActionsFile);
     }
 
     public static void main(String[] args) throws CollaborativeLearningException {
@@ -117,12 +118,76 @@ public class StateClassifier {
 
         StateClassifier sc = new StateClassifier(domain);
         sc.updateLearningModel(ea);
-        sc.guessAction(null, s5);
+        //sc.guessAction(null, s5);
     }
 
     public void updateLearningModel(SelfManagementEpisodeAnalysis ea) throws CollaborativeLearningException {
-        addDataToFile(ea.transformActionsWithPositiveRewardToCSV(), allAgentsActionsFile);
-        updateLearningModel();
+        updateStateActionCounts(ea);
+        allAgentsActionsFile = new File(LEARNING_DATA_FOLDER + FILE_ALL_AGENTS_ACTIONS_FILE_NAME);
+        addHeadersToFile(new String[]{"Time", "DayType", "Location", "Activity", "PhoneUsage", "StateOfMind", "EmotionalStatus", "Action"}, allAgentsActionsFile);
+        List<DataItem> dataItems = generateDataSetFromDataItems();
+        addDataToFile(transformDataItemsToCSV(dataItems), allAgentsActionsFile);
+        //updateLearningModel();
+    }
+
+    private void updateStateActionCounts(SelfManagementEpisodeAnalysis ea) {
+        for (int i = 0; i < ea.actionSequence.size(); i++) {
+            // do not keep the state as data item if no intervention is delivered
+            // i.e. keep only the states and actions where an intervention is delivered (as an indicator of preference)
+            if(ea.rewardSequence.get(i) == SelfManagementRewardFunction.getRewardNoIntervention()) {
+                continue;
+            }
+
+            HashableState hs = hashingFactory.hashState(ea.stateSequence.get(i));
+            GroundedAction a = ea.actionSequence.get(i);
+
+            Map<String, Integer> actionCounts = stateActionCounts.get(hs);
+            if (actionCounts == null) {
+                actionCounts = new HashMap<>();
+                stateActionCounts.put(hs, actionCounts);
+            }
+
+            Integer count = actionCounts.get(a.actionName());
+            if(count == null) {
+                count = 0;
+            }
+            count++;
+            actionCounts.put(a.actionName(), count);
+        }
+    }
+
+    private List<DataItem> generateDataSetFromDataItems() {
+        List<DataItem> dataItems = new ArrayList<>();
+        for(Map.Entry<HashableState, Map<String, Integer>> e: stateActionCounts.entrySet()) {
+            State s = e.getKey();
+            Map<String, Integer> actionCounts = e.getValue();
+
+            List<String> mostPreferredActions = new ArrayList<>();
+            int max = Integer.MIN_VALUE;
+            for(Map.Entry<String, Integer> e2 : actionCounts.entrySet()) {
+                if(e2.getValue() > max) {
+                    mostPreferredActions.clear();
+                    mostPreferredActions.add(e2.getKey());
+                    max = e2.getValue();
+                } else if(e2.getValue() == max) {
+                    mostPreferredActions.add(e2.getKey());
+                }
+            }
+
+            Random r = new Random();
+            String selectedAction = mostPreferredActions.get(r.nextInt(mostPreferredActions.size()));
+            DataItem dataItem = new DataItem(s, selectedAction);
+            dataItems.add(dataItem);
+        }
+        return dataItems;
+    }
+
+    private StringBuilder transformDataItemsToCSV(List<DataItem> dataItems) {
+        StringBuilder sb = new StringBuilder();
+        for(DataItem dataItem : dataItems) {
+            sb.append(SelfManagementState.transformToCSV(dataItem.getState(), dataItem.getActionName()));
+        }
+        return sb;
     }
 
     private void updateLearningModel() throws CollaborativeLearningException {

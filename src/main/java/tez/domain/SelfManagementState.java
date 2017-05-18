@@ -16,7 +16,7 @@ public class SelfManagementState {
         return transformToCSV(s, null);
     }
 
-    public static StringBuilder transformToCSV(State s, Action a) {
+    public static StringBuilder transformToCSV(State s, String a) {
         ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
         String time = o.getStringValForAttribute(ATT_ACTIVITY_TIME);
         int hour = Integer.valueOf(time.split(":")[0]);
@@ -38,7 +38,7 @@ public class SelfManagementState {
                 .append(emotionalStatus);
         if (a != null) {
             sb.append(",")
-                    .append(a.getName());
+                    .append(a);
         }
         sb.append("\n");
         return sb;

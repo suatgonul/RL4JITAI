@@ -16,9 +16,12 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
+import tez.algorithm.collaborative_learning.CollaborativeLearningException;
+import tez.algorithm.collaborative_learning.StateClassifier;
 import tez.domain.ExtendedEnvironmentOutcome;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.domain.SelfManagementRewardFunction;
+import tez.domain.action.SelfManagementAction;
 import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez.model.Constants;
 
@@ -30,14 +33,16 @@ import java.util.List;
  * Created by suatgonul on 5/1/2017.
  */
 public class SelfManagementEligibilitySarsaLam extends SarsaLam {
+    private boolean useStateClassifier = false;
     private List<State> deliveredInterventions;
 
-    public SelfManagementEligibilitySarsaLam(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize, double lambda) {
+    public SelfManagementEligibilitySarsaLam(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize, double lambda, boolean useStateClassifier) {
         super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, maxEpisodeSize, lambda);
         if (learningPolicy instanceof SolverDerivedPolicy) {
             ((SolverDerivedPolicy) learningPolicy).setSolver(this);
         }
-     }
+        this.useStateClassifier = useStateClassifier;
+    }
 
     @Override
     public EpisodeAnalysis runLearningEpisode(Environment env, int maxSteps) {
@@ -67,6 +72,14 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
             HashableState nextState = this.stateHash(eo.op);
             GroundedAction nextAction = (GroundedAction) learningPolicy.getAction(nextState.s);
+            if (((SelfManagementAction) nextAction.action).getSelectedBy() == SelfManagementAction.SelectedBy.RANDOM) {
+                try {
+                    nextAction = StateClassifier.getInstance().guessAction(curState.s).getGroundedAction();
+                } catch (CollaborativeLearningException e) {
+                    throw new RuntimeException(e.getMessage(), e);
+                }
+            }
+
             QValue nextQ = this.getQ(nextState, nextAction);
             double nextQV = nextQ.q;
 
@@ -105,7 +118,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                 // intervention delivery action do not positively reward a previous trace if it did not provide a
                 // positive result.
                 if (eeo.getUserReaction() && et.q.a.actionName().equals(Constants.ACTION_INT_DELIVERY)) {
-                    if(!et.isUseful()) {
+                    if (!et.isUseful()) {
                         double tempDelta = SelfManagementRewardFunction.getRewardNonReactionToIntervention() + (discount * nextQV) - curQ.q;
                         et.q.q = et.q.q + (learningRate * et.eligibility * tempDelta);
                         et.eligibility = et.eligibility * lambda * discount;
@@ -136,13 +149,13 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
                 SelfManagementEligibilityTrace et;
 
-                if(eeo.getUserReaction()) {
-                    if(action.actionName().equals(SelfManagementDomainGenerator.ACTION_INT_DELIVERY)) {
+                if (eeo.getUserReaction()) {
+                    if (action.actionName().equals(SelfManagementDomainGenerator.ACTION_INT_DELIVERY)) {
                         curQ.q = curQ.q + (learningRate * delta);
                         et = new SelfManagementEligibilityTrace(curState, curQ, lambda * discount, true);
                         interference = "NoN"; //no need
 
-                    } else if(deliveredInterventions.size() > 0) {
+                    } else if (deliveredInterventions.size() > 0) {
                         // override delta for the simulated action
                         Action intDeliveryAction = null;
                         for (Action a : actions) {
@@ -190,7 +203,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
             action = nextAction;
             curQ = nextQ;
 
-            if(eeo.getUserReaction()) {
+            if (eeo.getUserReaction()) {
                 deliveredInterventions = new ArrayList<>();
             }
 

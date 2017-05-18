@@ -17,6 +17,7 @@ import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.domain.SelfManagementRewardFunction;
 import tez.domain.SelfManagementState;
+import tez.domain.action.SelfManagementAction;
 import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import water.bindings.pojos.*;
@@ -47,8 +48,13 @@ public class StateClassifier {
     private Map<String, ModelsV3> individualModels = null;
     private SMH2oApi h2o = new SMH2oApi();
 
-    public StateClassifier(Domain domain) throws CollaborativeLearningException {
-        this.domain = domain;
+    private static StateClassifier instance = null;
+
+    public static StateClassifier getInstance() {
+        if(instance == null) {
+            instance = new StateClassifier();
+        }
+        return instance;
     }
 
     public static void main(String[] args) throws CollaborativeLearningException {
@@ -116,18 +122,28 @@ public class StateClassifier {
         ea.actionSequence.add(domain.getAction(ACTION_NO_ACTION).getGroundedAction());
 
 
-        StateClassifier sc = new StateClassifier(domain);
+        StateClassifier sc = new StateClassifier();
+        sc.setDomain(domain);
         sc.updateLearningModel(ea);
-        //sc.guessAction(null, s5);
+        sc.guessAction(s5);
+    }
+
+    private StateClassifier() {
+
+    }
+
+    public void setDomain(Domain domain) {
+        this.domain = domain;
     }
 
     public void updateLearningModel(SelfManagementEpisodeAnalysis ea) throws CollaborativeLearningException {
         updateStateActionCounts(ea);
+        clearDataDirectory();
         allAgentsActionsFile = new File(LEARNING_DATA_FOLDER + FILE_ALL_AGENTS_ACTIONS_FILE_NAME);
         addHeadersToFile(new String[]{"Time", "DayType", "Location", "Activity", "PhoneUsage", "StateOfMind", "EmotionalStatus", "Action"}, allAgentsActionsFile);
         List<DataItem> dataItems = generateDataSetFromDataItems();
         addDataToFile(transformDataItemsToCSV(dataItems), allAgentsActionsFile);
-        //updateLearningModel();
+        updateLearningModel();
     }
 
     private void updateStateActionCounts(SelfManagementEpisodeAnalysis ea) {
@@ -239,10 +255,15 @@ public class StateClassifier {
         }
     }
 
-    public Action guessAction(LearningAgentFactory learningAgent, State state) throws CollaborativeLearningException {
-        String tempFilePath = LEARNING_DATA_FOLDER + (learningAgent == null ? "" : learningAgent.getAgentName()) + FILE_CURRENT_STATE_NAME;
+    public Action guessAction(State state) throws CollaborativeLearningException {
+        // if there isn't a learning model do not suggest any action
+        if(allAgentsActionsFile == null) {
+            return null;
+        }
+
+        String tempFilePath = LEARNING_DATA_FOLDER + UUID.randomUUID().toString() + FILE_CURRENT_STATE_NAME;
         File tempFile = new File(tempFilePath);
-        String predictionFilePath = LEARNING_DATA_FOLDER + (learningAgent == null ? "" : learningAgent.getAgentName()) + FILE_PREDICTION_NAME;
+        String predictionFilePath = LEARNING_DATA_FOLDER + UUID.randomUUID().toString() + FILE_PREDICTION_NAME;
         File predictionFile = new File(predictionFilePath);
 
         try {
@@ -289,7 +310,9 @@ public class StateClassifier {
         try {
             List<String> lines = FileUtils.readLines(predictionFile);
             String actionLabel = lines.get(1).split(",")[0].replace("\"", "");
-            return domain.getAction(actionLabel);
+            SelfManagementAction a = (SelfManagementAction) domain.getAction(actionLabel);
+            a.setSelectedBy(SelfManagementAction.SelectedBy.STATE_CLASSIFIER);
+            return a;
 
         } catch (IOException e) {
             throw new CollaborativeLearningException("Failed to read prediction results from the file", e);
@@ -342,11 +365,12 @@ public class StateClassifier {
         }
     }
 
-
-    public Action classifiyState(State state) {
-        if (collaborativeModelKey == null) {
-            return null;
+    private void clearDataDirectory() throws CollaborativeLearningException {
+        File dataDirectory = new File(LEARNING_DATA_FOLDER);
+        try {
+            FileUtils.cleanDirectory(dataDirectory);
+        } catch (IOException e) {
+            throw new CollaborativeLearningException("Failed to clear the data directory", e);
         }
-        return null;
     }
 }

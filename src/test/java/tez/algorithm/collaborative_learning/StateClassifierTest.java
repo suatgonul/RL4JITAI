@@ -81,7 +81,8 @@ public class StateClassifierTest {
         episodeAnalysis.actionSequence.add(domain.getAction(ACTION_NO_ACTION).getGroundedAction());
         episodeAnalysis.actionSequence.add(domain.getAction(ACTION_NO_ACTION).getGroundedAction());
 
-        stateClassifier = new StateClassifier(domain);
+        stateClassifier = StateClassifier.getInstance();
+        stateClassifier.setDomain(domain);
         hashableStateFactory = new SimpleHashableStateFactory();
     }
 

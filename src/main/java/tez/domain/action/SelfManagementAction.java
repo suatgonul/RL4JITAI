@@ -16,6 +16,7 @@ import java.util.List;
  */
 public abstract class SelfManagementAction extends SimpleAction implements FullActionModel {
     private Environment environment;
+    private SelectedBy selectedBy;
 
     public SelfManagementAction(String name, Domain domain) {
         super(name, domain);
@@ -23,6 +24,14 @@ public abstract class SelfManagementAction extends SimpleAction implements FullA
 
     public void setEnvironment(Environment environment) {
         this.environment = environment;
+    }
+
+    public SelectedBy getSelectedBy() {
+        return selectedBy;
+    }
+
+    public void setSelectedBy(SelectedBy selectedBy) {
+        this.selectedBy = selectedBy;
     }
 
     @Override
@@ -33,5 +42,9 @@ public abstract class SelfManagementAction extends SimpleAction implements FullA
 
     public List<TransitionProbability> getTransitions(State s, GroundedAction groundedAction) {
         return null;
+    }
+
+    public enum SelectedBy {
+        QLEARNING, STATE_CLASSIFIER, RANDOM
     }
 }

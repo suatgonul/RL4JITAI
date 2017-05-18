@@ -9,6 +9,9 @@ import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
+import tez.algorithm.SelfManagementGreedyQPolicy;
+import tez.algorithm.collaborative_learning.CollaborativeLearningException;
+import tez.algorithm.collaborative_learning.StateClassifier;
 import tez.domain.DayTerminalFunction;
 import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
@@ -29,7 +32,7 @@ public class Experiment {
 
     private Environment environment;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws CollaborativeLearningException {
         Experiment exp = new Experiment();
         exp.runExperiment();
     }
@@ -38,14 +41,17 @@ public class Experiment {
         return this.environment;
     }
 
-    private void runExperiment() {
+    private void runExperiment() throws CollaborativeLearningException {
 
         TerminalFunction tf = new DayTerminalFunction();
         RewardFunction rf = new SelfManagementRewardFunction();
         SelfManagementDomainGenerator domGen = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
         Domain domain = domGen.generateDomain();
-        environment = new RealWorld(domain, rf, tf, "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
+        //environment = new RealWorld(domain, rf, tf, "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
+        environment = new RealWorld(domain, rf, tf, "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
         domGen.setEnvironment(environment);
+        StateClassifier stateClassifier = StateClassifier.getInstance();
+        stateClassifier.setDomain(domain);
 
         LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
         /*SelfManagementExperimenter exp = new SelfManagementExperimenter(environment,
@@ -68,7 +74,7 @@ public class Experiment {
         //start experiment
         exp.startExperiment();*/
         StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                2, 10000, learningCases);
+                1, 1000, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 CUMULATIVE_REWARD_PER_EPISODE,
@@ -95,7 +101,20 @@ public class Experiment {
 
             @Override
             public LearningAgent generateAgent() {
-                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8);
+                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, true);
+            }
+        };
+        learningAlternatives.add(qLearningFactory);
+
+        qLearningFactory = new LearningAgentFactory() {
+            @Override
+            public String getAgentName() {
+                return "Sarsa-Elig-Lam  Lambda_0.8 Gamma_0.1 LR_ 0.1";
+            }
+
+            @Override
+            public LearningAgent generateAgent() {
+                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8, false);
             }
         };
         learningAlternatives.add(qLearningFactory);
@@ -108,7 +127,7 @@ public class Experiment {
 
             @Override
             public LearningAgent generateAgent() {
-                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 1.0, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8);
+                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 1.0, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8, false);
             }
         };
         learningAlternatives.add(qLearningFactory);

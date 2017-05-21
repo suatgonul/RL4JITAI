@@ -11,6 +11,7 @@ import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import power2dm.reporting.visualization.VisualizationMetadata;
+import tez.algorithm.collaborative_learning.StateClassifier;
 import tez.domain.SelfManagementDomain;
 import tez.experiment.debug.Reporter;
 import tez.experiment.performance.*;
@@ -238,11 +239,11 @@ public class StaticSelfManagementExperimenter {
 
         for (int i = 0; i < this.trialLength; i++) {
             SelfManagementEpisodeAnalysis ea = (SelfManagementEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
+            episodeAnalysisList.add(ea);
+
             this.plotter.populateAgentDatasets(ea);
             this.plotter.endEpisode();
             this.environmentSever.resetEnvironment();
-
-            episodeAnalysisList.add(ea);
 
             if (ea instanceof SelfManagementEpisodeAnalysis) {
                 if (i < 50 || i > episodeAnalysisList.size() - 50) {
@@ -313,6 +314,8 @@ public class StaticSelfManagementExperimenter {
                 }
             }
         }
+
+        StateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
 
         reporter.finalizeReporting();
 

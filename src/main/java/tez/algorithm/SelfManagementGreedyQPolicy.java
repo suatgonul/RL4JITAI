@@ -37,7 +37,7 @@ public class SelfManagementGreedyQPolicy extends GreedyQPolicy {
         }
         int selected = rand.nextInt(maxActions.size());
         //return translated action parameters if the action is parameterized with objects in a object identifier independent domain
-        SelfManagementAction a = (SelfManagementAction) maxActions.get(selected).a;
+        SelfManagementSimpleGroundedAction a = (SelfManagementSimpleGroundedAction) maxActions.get(selected).a;
         a.setSelectedBy(selectedBy);
         AbstractGroundedAction srcA = maxActions.get(selected).a;
         return AbstractObjectParameterizedGroundedAction.Helper.translateParameters(srcA, maxActions.get(selected).s, s);

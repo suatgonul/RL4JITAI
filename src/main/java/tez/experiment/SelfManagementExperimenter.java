@@ -255,7 +255,7 @@ public class SelfManagementExperimenter {
         this.plotter.startNewTrial();
 
         List<SelfManagementEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
-        Reporter reporter = new Reporter(agentFactory.getAgentName() + ".txt");
+        Reporter reporter = new Reporter("output/" + agentFactory.getAgentName() + ".txt");
         reporter.report("New Trial");
         StringBuilder sb;
 
@@ -266,6 +266,9 @@ public class SelfManagementExperimenter {
             this.environmentSever.resetEnvironment();
 
             episodeAnalysisList.add(ea);
+            if(agentFactory.getAgentName().contains("colla")) {
+                System.out.println("Episode: " + (i+1));
+            }
 
             if (ea instanceof SelfManagementEpisodeAnalysis) {
                 if (i < 50 || i > episodeAnalysisList.size() - 50) {

@@ -3,12 +3,17 @@ package tez.domain.action;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TransitionProbability;
 import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.FullActionModel;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.common.SimpleAction;
+import burlap.oomdp.singleagent.common.SimpleGroundedAction;
 import burlap.oomdp.singleagent.environment.Environment;
+import tez.algorithm.SelfManagementSimpleGroundedAction;
 import tez.simulator.RealWorld;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -42,6 +47,12 @@ public abstract class SelfManagementAction extends SimpleAction implements FullA
 
     public List<TransitionProbability> getTransitions(State s, GroundedAction groundedAction) {
         return null;
+    }
+
+    @Override
+    public List<GroundedAction> getAllApplicableGroundedActions(State s) {
+        GroundedAction ga = new SelfManagementSimpleGroundedAction(this);
+        return this.applicableInState(s, ga) ? Arrays.asList(ga) : new ArrayList<GroundedAction>(0);
     }
 
     public enum SelectedBy {

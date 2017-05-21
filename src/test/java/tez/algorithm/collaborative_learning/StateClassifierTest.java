@@ -35,7 +35,7 @@ public class StateClassifierTest {
     private static State s, s2, s3, s4, s5;
 
     @BeforeClass
-    public static void initialize() throws CollaborativeLearningException {
+    public static void initialize() {
         SelfManagementDomainGenerator smdg = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
         Domain domain = smdg.generateDomain();
         ObjectClass oc = new ObjectClass(domain, CLASS_STATE);

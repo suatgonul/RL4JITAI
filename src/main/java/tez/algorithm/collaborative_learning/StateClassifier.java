@@ -8,9 +8,12 @@ import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.Action;
-import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
+import com.google.gson.*;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import tez.domain.SelfManagementDomain;
@@ -22,12 +25,10 @@ import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import water.bindings.pojos.*;
 
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.util.*;
 
 import static tez.domain.SelfManagementDomainGenerator.*;
-import static tez.domain.SelfManagementDomainGenerator.ATT_STATE_OF_MIND;
 
 /**
  * Created by suat on 13-May-17.
@@ -37,32 +38,36 @@ public class StateClassifier {
     private static final String FILE_ALL_AGENTS_ACTIONS_FILE_NAME = "all_items.csv";
     private static final String FILE_CURRENT_STATE_NAME = "current_state.csv";
     private static final String FILE_PREDICTION_NAME = "prediction_result.csv";
+    private static final String FRAME_PREDICTION_RESULT = "prediction_result_frame";
 
+    private static Client client = Client.create();
+    private static WebResource webResource = client.resource("http://localhost:54321/3/Frames/" + FRAME_PREDICTION_RESULT + "?column_offset=0&column_count=20");
+
+    private static StateClassifier instance = null;
     private List<LearningAgentFactory> agents;
     private Domain domain;
     private SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
     private Map<HashableState, Map<String, Integer>> stateActionCounts = new HashMap<>();
-
     private ModelKeyV3 collaborativeModelKey = null;
     private File allAgentsActionsFile = null;
     private Map<String, ModelsV3> individualModels = null;
     private SMH2oApi h2o = new SMH2oApi();
 
-    private static StateClassifier instance = null;
+    private StateClassifier() {
+
+    }
 
     public static StateClassifier getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new StateClassifier();
         }
         return instance;
     }
 
-    public static void main(String[] args) throws CollaborativeLearningException {
+    public static void main(String[] args) {
+        // POST method
         /*Client client = Client.create();
-
         WebResource webResource = client.resource("http://localhost:54321/3/Predictions/models/DRF_model_okhttp_1494720676293_2057/frames/testData.hex");
-        Form input = new Form();
-        input.putSingle("predictions_frame", "prediction-f31feea9-626b-4831-99d7-95f19c2fa07f");
 
         // POST method
         ClientResponse response = webResource.accept("application/json")
@@ -124,19 +129,16 @@ public class StateClassifier {
 
         StateClassifier sc = new StateClassifier();
         sc.setDomain(domain);
-        sc.updateLearningModel(ea);
-        sc.guessAction(s5);
-    }
-
-    private StateClassifier() {
-
+        //sc.updateLearningModel(Arrays.asList(new SelfManagementEligibilityEpisodeAnalysis[]{ea}));
+        //sc.guessAction(s5);
+        sc.guessActionShortcut(s5);
     }
 
     public void setDomain(Domain domain) {
         this.domain = domain;
     }
 
-    public void updateLearningModel(SelfManagementEpisodeAnalysis ea) throws CollaborativeLearningException {
+    public void updateLearningModel(List<SelfManagementEpisodeAnalysis> ea) {
         updateStateActionCounts(ea);
         clearDataDirectory();
         allAgentsActionsFile = new File(LEARNING_DATA_FOLDER + FILE_ALL_AGENTS_ACTIONS_FILE_NAME);
@@ -146,46 +148,52 @@ public class StateClassifier {
         updateLearningModel();
     }
 
-    private void updateStateActionCounts(SelfManagementEpisodeAnalysis ea) {
-        for (int i = 0; i < ea.actionSequence.size(); i++) {
-            // do not keep the state as data item if no intervention is delivered
-            // i.e. keep only the states and actions where an intervention is delivered (as an indicator of preference)
-            if(ea.rewardSequence.get(i) == SelfManagementRewardFunction.getRewardNoIntervention()) {
-                continue;
-            }
+    private void updateStateActionCounts(List<SelfManagementEpisodeAnalysis> eaList) {
+        for (int t = 0; t < eaList.size(); t++) {
+            SelfManagementEpisodeAnalysis ea = eaList.get(t);
+            for (int i = 0; i < ea.actionSequence.size(); i++) {
+                // do not keep the state as data item if no intervention is delivered
+                // i.e. keep only the states and actions where an intervention is delivered (as an indicator of preference)
+                double r = ea.rewardSequence.get(i);
+                String actionName = ea.actionSequence.get(i).actionName();
 
-            HashableState hs = hashingFactory.hashState(ea.stateSequence.get(i));
-            GroundedAction a = ea.actionSequence.get(i);
+                if (r == SelfManagementRewardFunction.getRewardNoIntervention()) {
+                    continue;
+                } else if (r == SelfManagementRewardFunction.getRewardNonReactionToIntervention()) {
+                    actionName = ACTION_NO_ACTION;
+                }
 
-            Map<String, Integer> actionCounts = stateActionCounts.get(hs);
-            if (actionCounts == null) {
-                actionCounts = new HashMap<>();
-                stateActionCounts.put(hs, actionCounts);
-            }
+                HashableState s = hashingFactory.hashState(ea.stateSequence.get(i));
+                Map<String, Integer> actionCounts = stateActionCounts.get(s);
+                if (actionCounts == null) {
+                    actionCounts = new HashMap<>();
+                    stateActionCounts.put(s, actionCounts);
+                }
 
-            Integer count = actionCounts.get(a.actionName());
-            if(count == null) {
-                count = 0;
+                Integer count = actionCounts.get(actionName);
+                if (count == null) {
+                    count = 0;
+                }
+                count++;
+                actionCounts.put(actionName, count);
             }
-            count++;
-            actionCounts.put(a.actionName(), count);
         }
     }
 
     private List<DataItem> generateDataSetFromDataItems() {
         List<DataItem> dataItems = new ArrayList<>();
-        for(Map.Entry<HashableState, Map<String, Integer>> e: stateActionCounts.entrySet()) {
+        for (Map.Entry<HashableState, Map<String, Integer>> e : stateActionCounts.entrySet()) {
             State s = e.getKey();
             Map<String, Integer> actionCounts = e.getValue();
 
             List<String> mostPreferredActions = new ArrayList<>();
             int max = Integer.MIN_VALUE;
-            for(Map.Entry<String, Integer> e2 : actionCounts.entrySet()) {
-                if(e2.getValue() > max) {
+            for (Map.Entry<String, Integer> e2 : actionCounts.entrySet()) {
+                if (e2.getValue() > max) {
                     mostPreferredActions.clear();
                     mostPreferredActions.add(e2.getKey());
                     max = e2.getValue();
-                } else if(e2.getValue() == max) {
+                } else if (e2.getValue() == max) {
                     mostPreferredActions.add(e2.getKey());
                 }
             }
@@ -200,13 +208,13 @@ public class StateClassifier {
 
     private StringBuilder transformDataItemsToCSV(List<DataItem> dataItems) {
         StringBuilder sb = new StringBuilder();
-        for(DataItem dataItem : dataItems) {
+        for (DataItem dataItem : dataItems) {
             sb.append(SelfManagementState.transformToCSV(dataItem.getState(), dataItem.getActionName()));
         }
         return sb;
     }
 
-    private void updateLearningModel() throws CollaborativeLearningException {
+    private void updateLearningModel() {
         try {
             h2o.deleteAllFrames();
             h2o.deleteAllKeys();
@@ -243,6 +251,7 @@ public class StateClassifier {
             drfParams.responseColumn = responseColumn;
 
             DRFV3 drfBody = h2o.train_drf(drfParams);
+            System.out.println("Trained");
 
             // STEP 6: poll for completion
             JobV3 job = h2o.waitForJobCompletion(drfBody.job.key);
@@ -255,9 +264,9 @@ public class StateClassifier {
         }
     }
 
-    public Action guessAction(State state) throws CollaborativeLearningException {
+    /*public Action guessAction(State state) {
         // if there isn't a learning model do not suggest any action
-        if(allAgentsActionsFile == null) {
+        if (collaborativeModelKey == null || allAgentsActionsFile == null) {
             return null;
         }
 
@@ -296,7 +305,8 @@ public class StateClassifier {
             predictionParams.path = predictionFilePath;
             h2o.exportFrame(predictionParams);
 
-            return readPredictionResult(predictionFile);
+            Action guessedAction = readPredictionResult(predictionFile);
+            return guessedAction;
 
         } catch (IOException e) {
             throw new CollaborativeLearningException("Failed to classify state", e);
@@ -304,11 +314,103 @@ public class StateClassifier {
             removeFile(tempFile);
             removeFile(predictionFile);
         }
+    }*/
+
+    private static int guessCount = 0;
+    private static int guessInt = 0;
+    public Action guessActionShortcut(State state) {
+        // if there isn't a learning model do not suggest any action
+        if (collaborativeModelKey == null || allAgentsActionsFile == null) {
+            return null;
+        }
+
+        String id = UUID.randomUUID().toString();
+        String tempFilePath = LEARNING_DATA_FOLDER + id + FILE_CURRENT_STATE_NAME;
+        File tempFile = new File(tempFilePath);
+
+        try {
+            addHeadersToFile(new String[]{"Time", "DayType", "Location", "Activity", "PhoneUsage", "StateOfMind", "EmotionalStatus"}, tempFile);
+            StringBuilder stateAsCSV = SelfManagementState.transformToCSV(state);
+            addDataToFile(stateAsCSV, tempFile);
+
+            ImportFilesV3 stateDataImport = h2o.importFiles(tempFile.getAbsolutePath());
+            ParseV3 stateDataParseParams = new ParseV3();
+            stateDataParseParams.destinationFrame = SMH2oApi.stringToFrameKey(FRAME_PREDICTION_RESULT);
+            stateDataParseParams.sourceFrames = SMH2oApi.stringArrayToKeyArray(stateDataImport.destinationFrames, FrameKeyV3.class);
+            stateDataParseParams.parseType = ApiParseTypeValuesProvider.CSV;
+            stateDataParseParams.numberColumns = 7;
+            stateDataParseParams.separator = 44;
+            stateDataParseParams.singleQuotes = false;
+            stateDataParseParams.columnNames = new String[]{"Time", "DayType", "Location", "Activity", "PhoneUsage", "StateOfMind", "EmotionalStatus"};
+            stateDataParseParams.columnTypes = new String[]{"Time", "Enum", "Enum", "Enum", "Enum", "Enum", "Enum"};
+            stateDataParseParams.checkHeader = 1;
+            stateDataParseParams.blocking = true;  // alternately, call h2o.waitForJobCompletion(stateDataParseSetup.job)
+            stateDataParseParams.chunkSize = 1024 * 1024;
+
+            h2o.parse(stateDataParseParams);
+
+            ModelMetricsListSchemaV3 predict_params = new ModelMetricsListSchemaV3();
+            predict_params.model = collaborativeModelKey;
+            predict_params.frame = stateDataParseParams.destinationFrame;
+            predict_params.predictionsFrame = SMH2oApi.stringToFrameKey(FRAME_PREDICTION_RESULT);
+
+            ModelMetricsListSchemaV3 modelMetrics = h2o.predict(predict_params);
+            ClientResponse response = webResource.accept("application/json")
+                    .get(ClientResponse.class);
+
+            String output = response.getEntity(String.class);
+            Action guessedAction = parseActionFromPredictionResponse(output);
+            guessCount++;
+            if(guessedAction.getName().equals(ACTION_INT_DELIVERY)) {
+                System.out.println(guessCount + " - " + ++guessInt + ") guessed action: " + guessedAction.getName());
+            }
+            return guessedAction;
+
+        } catch (IOException e) {
+            throw new CollaborativeLearningException("Failed to classify state", e);
+        } finally {
+            removeFile(tempFile);
+        }
     }
 
-    private Action readPredictionResult(File predictionFile) throws CollaborativeLearningException {
+    private Action parseActionFromPredictionResponse (String response) {
+        JsonParser jsonParser = new JsonParser();
+        JsonObject jsonObject = jsonParser.parse(response).getAsJsonObject();
+        JsonArray columns = jsonObject.get("frames").getAsJsonArray().get(0).getAsJsonObject().get("columns").getAsJsonArray();
+        for(int i=0; i<columns.size(); i++) {
+            JsonObject column = columns.get(i).getAsJsonObject();
+            String columnLabel = columns.get(i).getAsJsonObject().get("label").getAsString();
+            if(columnLabel.equals(ACTION_INT_DELIVERY)) {
+                double prediction = column.get("data").getAsJsonArray().get(0).getAsDouble();
+                if(prediction > 0.5) {
+                    return domain.getAction(ACTION_INT_DELIVERY);
+                } else {
+                    return domain.getAction(ACTION_NO_ACTION);
+                }
+            }
+        }
+        throw new CollaborativeLearningException("No action selected from prediction response");
+    }
+
+/*    private Action readPredictionResult(File predictionFile) {
         try {
-            List<String> lines = FileUtils.readLines(predictionFile);
+            List<String> lines = new ArrayList<>();
+            boolean predictionFileComplete = false;
+            while (!predictionFileComplete) {
+                if (!predictionFile.exists()) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    lines = FileUtils.readLines(predictionFile);
+                    if (lines.size() == 2) {
+                        predictionFileComplete = true;
+                    }
+                }
+            }
+
             String actionLabel = lines.get(1).split(",")[0].replace("\"", "");
             SelfManagementAction a = (SelfManagementAction) domain.getAction(actionLabel);
             a.setSelectedBy(SelfManagementAction.SelectedBy.STATE_CLASSIFIER);
@@ -318,12 +420,16 @@ public class StateClassifier {
             throw new CollaborativeLearningException("Failed to read prediction results from the file", e);
         }
     }
-
+*/
     private void removeFile(File file) {
-        file.delete();
+        try {
+            FileUtils.forceDelete(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void addDataToFile(StringBuilder data, File file) throws CollaborativeLearningException {
+    private void addDataToFile(StringBuilder data, File file) {
         FileWriter fw = null;
         BufferedWriter bw = null;
         try {
@@ -352,20 +458,31 @@ public class StateClassifier {
         }
     }
 
-    private void addHeadersToFile(String[] columnLabels, File file) throws CollaborativeLearningException {
+    private void addHeadersToFile(String[] columnLabels, File file) {
         StringBuilder labelRow = new StringBuilder();
         for (int i = 0; i < columnLabels.length - 1; i++) {
             labelRow.append(columnLabels[i]).append(",");
         }
         labelRow.append(columnLabels[columnLabels.length - 1]).append("\n");
+
+        FileOutputStream fos = null;
         try {
-            IOUtils.write(labelRow.toString(), new FileOutputStream(file));
+            fos = new FileOutputStream(file);
+            IOUtils.write(labelRow.toString(), fos);
         } catch (IOException e) {
             throw new CollaborativeLearningException("Failed to write header row to file", e);
+        } finally {
+            if(fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
-    private void clearDataDirectory() throws CollaborativeLearningException {
+    private void clearDataDirectory() {
         File dataDirectory = new File(LEARNING_DATA_FOLDER);
         try {
             FileUtils.cleanDirectory(dataDirectory);

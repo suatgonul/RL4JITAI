@@ -12,6 +12,7 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import power2dm.reporting.visualization.VisualizationMetadata;
 import tez.domain.SelfManagementDomain;
+import tez.domain.action.SelfManagementAction;
 import tez.experiment.debug.Reporter;
 import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
@@ -266,9 +267,6 @@ public class SelfManagementExperimenter {
             this.environmentSever.resetEnvironment();
 
             episodeAnalysisList.add(ea);
-            if(agentFactory.getAgentName().contains("colla")) {
-                System.out.println("Episode: " + (i+1));
-            }
 
             if (ea instanceof SelfManagementEpisodeAnalysis) {
                 if (i < 50 || i > episodeAnalysisList.size() - 50) {
@@ -329,7 +327,8 @@ public class SelfManagementExperimenter {
                         if (ea instanceof SelfManagementEligibilityEpisodeAnalysis) {
                             //System.out.println(ea.userReactions.get(j) == true ? " (X)" : "" + " Inter: " + ((SelfManagementEligibilityEpisodeAnalysis) ea).interferenceList.get(j));
                             String interference = ((SelfManagementEligibilityEpisodeAnalysis) ea).interferenceList.get(j);
-                            sb.append(ea.userReactions.get(j) == true ? " (X) Inter: " + interference : "" + " Inter: " + interference);
+                            SelfManagementAction.SelectedBy selectedBy = ((SelfManagementEligibilityEpisodeAnalysis) ea).selectedByList.get(j);
+                            sb.append(ea.userReactions.get(j) == true ? " (X) Inter: " + interference : "" + " Inter: " + interference + " Selected by: " + selectedBy);
                         } else {
                             //System.out.println(ea.userReactions.get(j) == true ? " (X)" : "");
                             sb.append(ea.userReactions.get(j) == true ? " (X)" : "");

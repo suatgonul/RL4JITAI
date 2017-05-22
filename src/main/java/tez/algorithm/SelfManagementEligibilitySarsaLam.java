@@ -22,11 +22,12 @@ import tez.domain.SelfManagementDomainGenerator;
 import tez.domain.SelfManagementRewardFunction;
 import tez.domain.action.SelfManagementAction;
 import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
-import tez.model.Constants;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import static tez.domain.SelfManagementDomainGenerator.*;
 
 /**
  * Created by suatgonul on 5/1/2017.
@@ -59,10 +60,19 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
         GroundedAction action = (GroundedAction) learningPolicy.getAction(curState.s);
         QValue curQ = this.getQ(curState, action);
 
-
         while (!env.isInTerminalState() && (eStepCounter < maxSteps || maxSteps == -1)) {
 
-            if (action.actionName().equals(Constants.ACTION_INT_DELIVERY)) {
+            List<QValue> currentQVals = copyCurrentQVals(this.qIndex.get(curState).qEntry);
+            SelfManagementAction.SelectedBy selectedBy = ((SelfManagementSimpleGroundedAction) action).getSelectedBy();
+            if (useStateClassifier && selectedBy == SelfManagementAction.SelectedBy.RANDOM) {
+                Action guessedAction = StateClassifier.getInstance().guessActionShortcut(curState.s);
+                if (guessedAction != null) {
+                    action = guessedAction.getGroundedAction();
+                    selectedBy = SelfManagementAction.SelectedBy.STATE_CLASSIFIER;
+                }
+            }
+
+            if (action.actionName().equals(ACTION_INT_DELIVERY)) {
                 deliveredInterventions.add(curState);
             }
 
@@ -71,13 +81,6 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
             HashableState nextState = this.stateHash(eo.op);
             GroundedAction nextAction = (GroundedAction) learningPolicy.getAction(nextState.s);
-            if (useStateClassifier && ((SelfManagementSimpleGroundedAction) nextAction).getSelectedBy() == SelfManagementAction.SelectedBy.RANDOM) {
-                Action guessedAction = StateClassifier.getInstance().guessActionShortcut(curState.s);
-                //Action guessedAction = StateClassifier.getInstance().guessAction(curState.s);
-                if (guessedAction != null) {
-                    nextAction = guessedAction.getGroundedAction();
-                }
-            }
 
             QValue nextQ = this.getQ(nextState, nextAction);
             double nextQV = nextQ.q;
@@ -116,7 +119,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                 // if the user reaction is positive at the current state and if the current trace includes an
                 // intervention delivery action do not positively reward a previous trace if it did not provide a
                 // positive result.
-                if (eeo.getUserReaction() && et.q.a.actionName().equals(Constants.ACTION_INT_DELIVERY)) {
+                if (eeo.getUserReaction() && et.q.a.actionName().equals(ACTION_INT_DELIVERY)) {
                     if (!et.isUseful()) {
                         double tempDelta = SelfManagementRewardFunction.getRewardNonReactionToIntervention() + (discount * nextQV) - curQ.q;
                         et.q.q = et.q.q + (learningRate * et.eligibility * tempDelta);
@@ -149,7 +152,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                 SelfManagementEligibilityTrace et;
 
                 if (eeo.getUserReaction()) {
-                    if (action.actionName().equals(SelfManagementDomainGenerator.ACTION_INT_DELIVERY)) {
+                    if (action.actionName().equals(ACTION_INT_DELIVERY)) {
                         curQ.q = curQ.q + (learningRate * delta);
                         et = new SelfManagementEligibilityTrace(curState, curQ, lambda * discount, true);
                         interference = "NoN"; //no need
@@ -158,7 +161,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                         // override delta for the simulated action
                         Action intDeliveryAction = null;
                         for (Action a : actions) {
-                            if (a.getName().equals(SelfManagementDomainGenerator.ACTION_INT_DELIVERY)) {
+                            if (a.getName().equals(ACTION_INT_DELIVERY)) {
                                 intDeliveryAction = a;
                             }
                         }
@@ -184,7 +187,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                 traces.add(et);
 
                 if (action.action.isPrimitive() || !this.shouldAnnotateOptions) {
-                    ea.recordTransitionTo(action, nextState.s, r, qIndex.get(curState).qEntry, eeo.getUserContext(), eeo.getUserReaction(), interference);
+                    ea.recordTransitionTo(action, nextState.s, r, currentQVals, eeo.getUserContext(), eeo.getUserReaction(), interference, selectedBy);
                 } else {
                     ea.appendAndMergeEpisodeAnalysis(((Option) action.action).getLastExecutionResults());
                 }
@@ -217,5 +220,13 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
         episodeHistory.offer(ea);
 
         return ea;
+    }
+
+    protected List<QValue> copyCurrentQVals(List<QValue> qValues) {
+        List<QValue> copyList = new ArrayList<>();
+        for (QValue qv : qValues) {
+            copyList.add(new QValue(qv));
+        }
+        return copyList;
     }
 }

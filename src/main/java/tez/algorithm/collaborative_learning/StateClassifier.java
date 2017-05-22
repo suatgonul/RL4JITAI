@@ -361,9 +361,9 @@ public class StateClassifier {
             String output = response.getEntity(String.class);
             Action guessedAction = parseActionFromPredictionResponse(output);
             guessCount++;
-            if(guessedAction.getName().equals(ACTION_INT_DELIVERY)) {
+            //if(guessedAction.getName().equals(ACTION_INT_DELIVERY)) {
                 System.out.println(guessCount + " - " + ++guessInt + ") guessed action: " + guessedAction.getName());
-            }
+            //}
             return guessedAction;
 
         } catch (IOException e) {

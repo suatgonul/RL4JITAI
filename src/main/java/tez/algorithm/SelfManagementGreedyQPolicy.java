@@ -21,7 +21,7 @@ public class SelfManagementGreedyQPolicy extends GreedyQPolicy {
         List <QValue> maxActions = new ArrayList<QValue>();
         maxActions.add(qValues.get(0));
         double maxQ = qValues.get(0).q;
-        SelfManagementAction.SelectedBy selectedBy = SelfManagementAction.SelectedBy.RANDOM;
+        SelfManagementAction.SelectedBy selectedBy = SelfManagementAction.SelectedBy.QLEARNING;
         for(int i = 1; i < qValues.size(); i++){
             QValue q = qValues.get(i);
             if(q.q == maxQ){

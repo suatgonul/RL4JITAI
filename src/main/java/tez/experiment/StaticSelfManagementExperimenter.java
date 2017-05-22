@@ -10,9 +10,11 @@ import burlap.debugtools.DPrint;
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
+import org.apache.commons.io.FileUtils;
 import power2dm.reporting.visualization.VisualizationMetadata;
 import tez.algorithm.collaborative_learning.StateClassifier;
 import tez.domain.SelfManagementDomain;
+import tez.domain.action.SelfManagementAction;
 import tez.experiment.debug.Reporter;
 import tez.experiment.performance.*;
 import tez.experiment.performance.visualization.ReactionHitRatioVisualizer;
@@ -21,6 +23,8 @@ import tez.experiment.performance.visualization.Visualizer;
 import tez.simulator.RealWorld;
 import tez.simulator.context.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,6 +87,7 @@ public class StaticSelfManagementExperimenter {
      * Whether the experimenter has completed.
      */
     protected boolean completedExperiment = false;
+    private int tempLength;
 
 
     /**
@@ -104,6 +109,7 @@ public class StaticSelfManagementExperimenter {
         this.testEnvironment = testEnvironment;
         this.nTrials = nTrials;
         this.trialLength = trialLength;
+        this.tempLength = trialLength;
         this.agentFactories = agentFactories;
     }
 
@@ -193,6 +199,7 @@ public class StaticSelfManagementExperimenter {
             this.plotter.startGUI();
         }
 
+        cleanOutputDirectory();
         for (int i = 0; i < this.agentFactories.length; i++) {
 
             if (i > 0) {
@@ -216,9 +223,7 @@ public class StaticSelfManagementExperimenter {
         }
 
         this.plotter.endAllAgents();
-
         this.completedExperiment = true;
-
     }
 
     /**
@@ -233,20 +238,28 @@ public class StaticSelfManagementExperimenter {
         this.plotter.startNewTrial();
 
         List<SelfManagementEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
-        Reporter reporter = new Reporter(agentFactory.getAgentName() + ".txt");
+        Reporter reporter = new Reporter("output/" + agentFactory.getAgentName() + ".txt");
         reporter.report("New Trial");
         StringBuilder sb;
 
+        /*if (agentFactory.getAgentName().contains("colla")) {
+            this.trialLength = 50;
+        } else {
+            this.trialLength = tempLength;
+        }*/
         for (int i = 0; i < this.trialLength; i++) {
             SelfManagementEpisodeAnalysis ea = (SelfManagementEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
             episodeAnalysisList.add(ea);
+            if (agentFactory.getAgentName().contains("colla")) {
+                System.out.println("Episode: " + (i + 1));
+            }
 
             this.plotter.populateAgentDatasets(ea);
             this.plotter.endEpisode();
             this.environmentSever.resetEnvironment();
 
             if (ea instanceof SelfManagementEpisodeAnalysis) {
-                if (i < 50 || i > episodeAnalysisList.size() - 50) {
+                if (i < 50 || i > this.trialLength - 50) {
                     //System.out.println("Episode " + (i + 1));
                     reporter.report("Episode " + (i + 1));
                     for (int j = 0; j < ea.rewardSequence.size(); j++) {
@@ -304,7 +317,8 @@ public class StaticSelfManagementExperimenter {
                         if (ea instanceof SelfManagementEligibilityEpisodeAnalysis) {
                             //System.out.println(ea.userReactions.get(j) == true ? " (X)" : "" + " Inter: " + ((SelfManagementEligibilityEpisodeAnalysis) ea).interferenceList.get(j));
                             String interference = ((SelfManagementEligibilityEpisodeAnalysis) ea).interferenceList.get(j);
-                            sb.append(ea.userReactions.get(j) == true ? " (X) Inter: " + interference : "" + " Inter: " + interference);
+                            SelfManagementAction.SelectedBy selectedBy = ((SelfManagementEligibilityEpisodeAnalysis) ea).selectedByList.get(j);
+                            sb.append(ea.userReactions.get(j) == true ? " (X) Inter: " + interference + " Selected by:" + selectedBy : "" + " Inter: " + interference + " Selected by: " + selectedBy);
                         } else {
                             //System.out.println(ea.userReactions.get(j) == true ? " (X)" : "");
                             sb.append(ea.userReactions.get(j) == true ? " (X)" : "");
@@ -355,5 +369,11 @@ public class StaticSelfManagementExperimenter {
 
     }
 
-
+    private void cleanOutputDirectory() {
+        try {
+            FileUtils.cleanDirectory(new File("output"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

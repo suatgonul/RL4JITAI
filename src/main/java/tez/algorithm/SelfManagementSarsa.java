@@ -17,7 +17,9 @@ import burlap.oomdp.statehashing.HashableStateFactory;
 import tez.domain.ExtendedEnvironmentOutcome;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by suatgonul on 5/1/2017.
@@ -44,6 +46,7 @@ public class SelfManagementSarsa extends SarsaLam {
 
         GroundedAction action = (GroundedAction) learningPolicy.getAction(curState.s);
         QValue curQ = this.getQ(curState, action);
+        List<QValue> currentQVals = copyCurrentQVals(this.qIndex.get(curState).qEntry);
 
 
         while (!env.isInTerminalState() && (eStepCounter < maxSteps || maxSteps == -1)) {
@@ -68,7 +71,7 @@ public class SelfManagementSarsa extends SarsaLam {
 
             if (action.action.isPrimitive() || !this.shouldAnnotateOptions) {
                 ExtendedEnvironmentOutcome eeo = (ExtendedEnvironmentOutcome) eo;
-                ea.recordTransitionTo(action, nextState.s, r, qIndex.get(curState).qEntry, eeo.getUserContext(), eeo.getUserReaction());
+                ea.recordTransitionTo(action, nextState.s, r, currentQVals, eeo.getUserContext(), eeo.getUserReaction());
             } else {
                 ea.appendAndMergeEpisodeAnalysis(((Option) action.action).getLastExecutionResults());
             }
@@ -101,5 +104,13 @@ public class SelfManagementSarsa extends SarsaLam {
         episodeHistory.offer(ea);
 
         return ea;
+    }
+
+    protected List<QValue> copyCurrentQVals(List<QValue> qValues) {
+        List<QValue> copyList = new ArrayList<>();
+        for (QValue qv : qValues) {
+            copyList.add(new QValue(qv));
+        }
+        return copyList;
     }
 }

@@ -3,6 +3,7 @@ package tez.experiment.performance;
 import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
+import tez.domain.action.SelfManagementAction;
 import tez.simulator.context.Context;
 
 import java.util.ArrayList;
@@ -13,14 +14,18 @@ import java.util.List;
  */
 public class SelfManagementEligibilityEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
     public List<String> interferenceList;
+    public List<SelfManagementAction.SelectedBy> selectedByList;
+
 
     public SelfManagementEligibilityEpisodeAnalysis(State initialState) {
         super(initialState);
         interferenceList = new ArrayList<>();
+        selectedByList = new ArrayList<>();
     }
 
-    public void recordTransitionTo(GroundedAction usingAction, State nextState, double r, List<QValue> qValues, Context userContext, boolean userReaction, String interference) {
+    public void recordTransitionTo(GroundedAction usingAction, State nextState, double r, List<QValue> qValues, Context userContext, boolean userReaction, String interference, SelfManagementAction.SelectedBy selectedBy) {
         interferenceList.add(interference);
+        selectedByList.add(selectedBy);
         super.recordTransitionTo(usingAction, nextState, r, qValues, userContext, userReaction);
     }
 }

@@ -38,12 +38,7 @@ public class SelfManagementEpisodeAnalysis extends EpisodeAnalysis {
     }
 
     public void recordTransitionTo(GroundedAction usingAction, State nextState, double r, List<QValue> qValues, Context userContext, boolean userReaction) {
-        List<QValue> copyList = new ArrayList<>();
-        for (QValue qv : qValues) {
-            copyList.add(new QValue(qv));
-        }
-
-        qValuesForStates.add(copyList);
+        qValuesForStates.add(qValues);
         userContexts.add(userContext);
         userReactions.add(userReaction);
         if (userReaction == true) {

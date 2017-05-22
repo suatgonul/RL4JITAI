@@ -73,7 +73,7 @@ public class Experiment {
         //start experiment
         exp.startExperiment();*/
         StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                2, 50, learningCases);
+                2, 1000, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 CUMULATIVE_REWARD_PER_EPISODE,
@@ -95,6 +95,19 @@ public class Experiment {
         LearningAgentFactory qLearningFactory = new LearningAgentFactory() {
             @Override
             public String getAgentName() {
+                return "Sarsa-Elig-Lam  Lambda_0.8 Gamma_0.1 LR_ 0.1";
+            }
+
+            @Override
+            public LearningAgent generateAgent() {
+                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, false);
+            }
+        };
+        learningAlternatives.add(qLearningFactory);
+
+        qLearningFactory = new LearningAgentFactory() {
+            @Override
+            public String getAgentName() {
                 return "Sarsa-Elig-Lam  Lambda_0.8 Gamma_0.1 LR_ 0.1 collaborative";
             }
 
@@ -104,19 +117,6 @@ public class Experiment {
             }
         };
         learningAlternatives.add(qLearningFactory);
-
-        qLearningFactory = new LearningAgentFactory() {
-            @Override
-            public String getAgentName() {
-                return "Sarsa-Elig-Lam  Lambda_0.8 Gamma_0.1 LR_ 0.1";
-            }
-
-            @Override
-            public LearningAgent generateAgent() {
-                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8, false);
-            }
-        };
-        //learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             @Override

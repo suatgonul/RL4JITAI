@@ -12,7 +12,7 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import org.apache.commons.io.FileUtils;
 import power2dm.reporting.visualization.VisualizationMetadata;
-import tez.algorithm.collaborative_learning.StateClassifier;
+import tez.algorithm.collaborative_learning.H2OStateClassifier;
 import tez.domain.SelfManagementDomain;
 import tez.domain.action.SelfManagementAction;
 import tez.experiment.debug.Reporter;
@@ -329,7 +329,7 @@ public class StaticSelfManagementExperimenter {
             }
         }
 
-        StateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
+        H2OStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
 
         reporter.finalizeReporting();
 

@@ -12,7 +12,7 @@ import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import tez.algorithm.SelfManagementEligibilitySarsaLam;
 import tez.algorithm.SelfManagementGreedyQPolicy;
 import tez.algorithm.SelfManagementSarsa;
-import tez.algorithm.collaborative_learning.StateClassifier;
+import tez.algorithm.collaborative_learning.H2OStateClassifier;
 import tez.domain.DayTerminalFunction;
 import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
@@ -49,8 +49,8 @@ public class Experiment {
         //environment = new RealWorld(domain, rf, tf, "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
         environment = new RealWorld(domain, rf, tf, "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
         domGen.setEnvironment(environment);
-        StateClassifier stateClassifier = StateClassifier.getInstance();
-        stateClassifier.setDomain(domain);
+        H2OStateClassifier h2OStateClassifier = H2OStateClassifier.getInstance();
+        h2OStateClassifier.setDomain(domain);
 
         LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
         /*SelfManagementExperimenter exp = new SelfManagementExperimenter(environment,

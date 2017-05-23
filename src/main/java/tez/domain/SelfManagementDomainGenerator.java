@@ -14,15 +14,15 @@ import tez.domain.action.SelfManagementAction;
  * Created by suatgonul on 4/20/2017.
  */
 public class SelfManagementDomainGenerator implements DomainGenerator {
-    public static final String ATT_HOUR_OF_DAY = "hourOfDay";
-    public static final String ATT_QUARTER_HOUR_OF_DAY = "quarterHourOfDay";
-    public static final String ATT_ACTIVITY_TIME = "activityTime";
-    public static final String ATT_LOCATION = "location";
-    public static final String ATT_DAY_TYPE = "dayType";
-    public static final String ATT_ACTIVITY = "activity";
-    public static final String ATT_PHONE_USAGE = "phoneUsage";
-    public static final String ATT_STATE_OF_MIND = "stateOfMind";
-    public static final String ATT_EMOTIONAL_STATUS = "emotionalStatus";
+    public static final String ATT_HOUR_OF_DAY = "HourOfDay";
+    public static final String ATT_QUARTER_HOUR_OF_DAY = "QuarterHourOfDay";
+    public static final String ATT_ACTIVITY_TIME = "Time";
+    public static final String ATT_LOCATION = "Location";
+    public static final String ATT_DAY_TYPE = "DayType";
+    public static final String ATT_ACTIVITY = "Activity";
+    public static final String ATT_PHONE_USAGE = "PhoneUsage";
+    public static final String ATT_STATE_OF_MIND = "StateOfMind";
+    public static final String ATT_EMOTIONAL_STATUS = "EmotionalStatus";
 
     public static final String CLASS_STATE = "state";
 

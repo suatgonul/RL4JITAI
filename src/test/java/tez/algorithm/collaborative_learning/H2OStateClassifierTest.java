@@ -28,8 +28,8 @@ import static tez.domain.SelfManagementDomainGenerator.ACTION_NO_ACTION;
 /**
  * Created by suat on 17-May-17.
  */
-public class StateClassifierTest {
-    private static StateClassifier stateClassifier;
+public class H2OStateClassifierTest {
+    private static H2OStateClassifier h2OStateClassifier;
     private static SelfManagementEpisodeAnalysis episodeAnalysis;
     private static HashableStateFactory hashableStateFactory;
     private static State s, s2, s3, s4, s5;
@@ -81,20 +81,20 @@ public class StateClassifierTest {
         episodeAnalysis.actionSequence.add(domain.getAction(ACTION_NO_ACTION).getGroundedAction());
         episodeAnalysis.actionSequence.add(domain.getAction(ACTION_NO_ACTION).getGroundedAction());
 
-        stateClassifier = StateClassifier.getInstance();
-        stateClassifier.setDomain(domain);
+        h2OStateClassifier = H2OStateClassifier.getInstance();
+        h2OStateClassifier.setDomain(domain);
         hashableStateFactory = new SimpleHashableStateFactory();
     }
 
     @Test
     public void stateActionCountUpdateMap() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
-        Method method = stateClassifier.getClass().getDeclaredMethod("updateStateActionCounts", SelfManagementEpisodeAnalysis.class);
+        Method method = h2OStateClassifier.getClass().getDeclaredMethod("updateStateActionCounts", SelfManagementEpisodeAnalysis.class);
         method.setAccessible(true);
-        method.invoke(stateClassifier, episodeAnalysis);
+        method.invoke(h2OStateClassifier, episodeAnalysis);
 
-        Field f = stateClassifier.getClass().getDeclaredField("stateActionCounts");
+        Field f = h2OStateClassifier.getClass().getDeclaredField("stateActionCounts");
         f.setAccessible(true);
-        Map<HashableState, Map<String, Integer>> stateActionCounts = (Map<HashableState, Map<String, Integer>>) f.get(stateClassifier);
+        Map<HashableState, Map<String, Integer>> stateActionCounts = (Map<HashableState, Map<String, Integer>>) f.get(h2OStateClassifier);
 
         int count = stateActionCounts.get(hashableStateFactory.hashState(s2)).get(ACTION_NO_ACTION);
         Assert.assertEquals(count, 2);

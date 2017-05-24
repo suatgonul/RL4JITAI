@@ -13,6 +13,7 @@ import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import org.apache.commons.io.FileUtils;
 import power2dm.reporting.visualization.VisualizationMetadata;
 import tez.algorithm.collaborative_learning.H2OStateClassifier;
+import tez.algorithm.collaborative_learning.SparkStateClassifier;
 import tez.domain.SelfManagementDomain;
 import tez.domain.action.SelfManagementAction;
 import tez.experiment.debug.Reporter;
@@ -247,11 +248,16 @@ public class StaticSelfManagementExperimenter {
         } else {
             this.trialLength = tempLength;
         }*/
+        long trialStartTime = System.currentTimeMillis();
+        long elapsedTrialTime = 0;
         for (int i = 0; i < this.trialLength; i++) {
+            long episodeStarttime = System.currentTimeMillis();
             SelfManagementEpisodeAnalysis ea = (SelfManagementEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
             episodeAnalysisList.add(ea);
             if (agentFactory.getAgentName().contains("colla")) {
-                System.out.println("Episode: " + (i + 1));
+                elapsedTrialTime += (System.currentTimeMillis()-episodeStarttime);
+                System.out.println("Episode: " + (i + 1) + " completed in " + (System.currentTimeMillis()-episodeStarttime) + " milliseconds");
+                System.out.println("Elapsed trial time: " + elapsedTrialTime + " milliseconds");
             }
 
             this.plotter.populateAgentDatasets(ea);
@@ -328,8 +334,12 @@ public class StaticSelfManagementExperimenter {
                 }
             }
         }
+        System.out.println("Trial completed in " + (System.currentTimeMillis() - trialStartTime) + " milliseconds");
 
-        H2OStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
+        long updateStartTime = System.currentTimeMillis();
+        //H2OStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
+        SparkStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
+        System.out.println("Model update completed in " + (System.currentTimeMillis() - updateStartTime) + " milliseconds");
 
         reporter.finalizeReporting();
 

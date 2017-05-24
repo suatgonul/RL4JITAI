@@ -1,6 +1,7 @@
 package tez.algorithm.collaborative_learning;
 
 import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import tez.domain.SelfManagementRewardFunction;
@@ -19,6 +20,8 @@ public abstract class StateClassifier {
     private SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
 
     public abstract void updateLearningModel(List<SelfManagementEpisodeAnalysis> ea);
+
+    public abstract Action guessAction(State state);
 
     protected void updateStateActionCounts(List<SelfManagementEpisodeAnalysis> eaList) {
         for (int t = 0; t < eaList.size(); t++) {

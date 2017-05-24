@@ -12,7 +12,9 @@ import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import tez.algorithm.SelfManagementEligibilitySarsaLam;
 import tez.algorithm.SelfManagementGreedyQPolicy;
 import tez.algorithm.SelfManagementSarsa;
+import tez.algorithm.SelfManagementSarsaLam;
 import tez.algorithm.collaborative_learning.H2OStateClassifier;
+import tez.algorithm.collaborative_learning.SparkStateClassifier;
 import tez.domain.DayTerminalFunction;
 import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
@@ -49,8 +51,10 @@ public class Experiment {
         //environment = new RealWorld(domain, rf, tf, "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
         environment = new RealWorld(domain, rf, tf, "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
         domGen.setEnvironment(environment);
-        H2OStateClassifier h2OStateClassifier = H2OStateClassifier.getInstance();
-        h2OStateClassifier.setDomain(domain);
+        //H2OStateClassifier h2OStateClassifier = H2OStateClassifier.getInstance();
+        //h2OStateClassifier.setDomain(domain);
+        SparkStateClassifier sparkClassifier = SparkStateClassifier.getInstance();
+        sparkClassifier.setDomain(domain);
 
         LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
         /*SelfManagementExperimenter exp = new SelfManagementExperimenter(environment,
@@ -95,7 +99,20 @@ public class Experiment {
         LearningAgentFactory qLearningFactory = new LearningAgentFactory() {
             @Override
             public String getAgentName() {
-                return "Sarsa-Elig-Lam  Lambda_0.8 Gamma_0.1 LR_ 0.1";
+                return "Sarsa-Lam  Lambda_0.8 Gamma_0.1 LR_0.1";
+            }
+
+            @Override
+            public LearningAgent generateAgent() {
+                return new SelfManagementSarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8);
+            }
+        };
+        learningAlternatives.add(qLearningFactory);
+
+        qLearningFactory = new LearningAgentFactory() {
+            @Override
+            public String getAgentName() {
+                return "Sarsa-Elig-Lam  Lambda_0.8 Gamma_0.1 LR_0.1";
             }
 
             @Override
@@ -108,7 +125,7 @@ public class Experiment {
         qLearningFactory = new LearningAgentFactory() {
             @Override
             public String getAgentName() {
-                return "Sarsa-Elig-Lam  Lambda_0.8 Gamma_0.1 LR_ 0.1 collaborative";
+                return "Sarsa-Elig-Lam  Lambda_0.8 Gamma_0.1 LR_0.1 collaborative";
             }
 
             @Override
@@ -117,19 +134,6 @@ public class Experiment {
             }
         };
         learningAlternatives.add(qLearningFactory);
-
-        qLearningFactory = new LearningAgentFactory() {
-            @Override
-            public String getAgentName() {
-                return "Sarsa-Elig-Lam  Lambda_0.8 Gamma_0.1 LR_1.0";
-            }
-
-            @Override
-            public LearningAgent generateAgent() {
-                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 1.0, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8, false);
-            }
-        };
-        //learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {

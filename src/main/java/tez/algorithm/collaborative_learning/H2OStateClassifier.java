@@ -126,7 +126,7 @@ public class H2OStateClassifier extends StateClassifier {
         sc.setDomain(domain);
         //sc.updateLearningModel(Arrays.asList(new SelfManagementEligibilityEpisodeAnalysis[]{ea}));
         //sc.guessAction(s5);
-        sc.guessActionShortcut(s5);
+        sc.guessAction(s5);
     }
 
     public void setDomain(Domain domain) {
@@ -254,7 +254,8 @@ public class H2OStateClassifier extends StateClassifier {
         }
     }
 
-    public Action guessActionShortcut(State state) {
+    @Override
+    public Action guessAction(State state) {
         // if there isn't a learning model do not suggest any action
         if (collaborativeModelKey == null || allAgentsActionsFile == null) {
             return null;

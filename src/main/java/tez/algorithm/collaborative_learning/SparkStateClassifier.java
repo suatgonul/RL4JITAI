@@ -6,29 +6,30 @@ import burlap.oomdp.core.objects.MutableObjectInstance;
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.Action;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
+import org.apache.spark.SparkContext;
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.classification.RandomForestClassifier;
-import org.apache.spark.ml.feature.*;
-import org.apache.spark.sql.*;
-import org.apache.spark.sql.types.DataType;
+import org.apache.spark.ml.feature.IndexToString;
+import org.apache.spark.ml.feature.StringIndexer;
+import org.apache.spark.ml.feature.StringIndexerModel;
+import org.apache.spark.ml.feature.VectorAssembler;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
-import scala.Array;
-import scala.reflect.ClassTag;
 import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import static org.apache.spark.sql.functions.col;
 import static tez.domain.SelfManagementDomainGenerator.*;
 
 
@@ -38,6 +39,27 @@ import static tez.domain.SelfManagementDomainGenerator.*;
 public class SparkStateClassifier extends StateClassifier {
 
     private static SparkStateClassifier instance = null;
+    private Domain domain;
+    private SparkSession spark;
+    private Dataset<Row> stateActionData;
+    private PipelineModel rdfClassifier;
+
+    private SparkStateClassifier() {
+        System.setProperty("hadoop.home.dir", "D:\\tools\\spark-2.1.1-bin-hadoop2.7\\hadoop");
+        //System.setProperty("SPARK_JAVA_OPTS", "-Xmx14g");
+        SparkConf conf = new SparkConf()
+                .setMaster("local")
+                .set("spark.executor.memory", "4g")
+                .set("spark.driver.memory", "4g")
+                .setAppName("StateClassifier");
+        SparkContext context = new SparkContext(conf);
+        //context.setCheckpointDir("D:\\mine\\odtu\\6\\tez\\codes\\spark_checkpoint");
+        spark = SparkSession
+                .builder()
+                .config(conf)
+                .sparkContext(context)
+                .getOrCreate();
+    }
 
     public static SparkStateClassifier getInstance() {
         if (instance == null) {
@@ -69,11 +91,11 @@ public class SparkStateClassifier extends StateClassifier {
         o = s2.getObjectsOfClass(CLASS_STATE).get(0);
         o.setValue(ATT_LOCATION, 1);
 
-        SparkConf conf = new SparkConf().setMaster("local[2]").set("spark.executor.memory", "1g");
+        SparkConf conf = new SparkConf().setMaster("local[4]").set("spark.executor.memory", "4g");
         SparkSession spark = SparkSession
                 .builder()
                 .config(conf)
-                .appName("JavaPipelineExample")
+                .appName("StateClassifier")
                 .getOrCreate();
 
         StructType testDataStruct = new StructType()
@@ -101,6 +123,17 @@ public class SparkStateClassifier extends StateClassifier {
         Dataset<Row> sbsDf = spark.createDataFrame(sbs, StateBean.class);
         sbsDf.printSchema();
         sbsDf.show();
+
+        DataItem di1 = new DataItem(s, "INT");
+        DataItem di2 = new DataItem(s2, "NO_INT");
+        List<StateActionBean> sabList = new ArrayList<>();
+        sabList.add(new StateActionBean(di1));
+        sabList.add(new StateActionBean(di2));
+        Dataset<Row> sabsDf = spark.createDataFrame(sabList, StateActionBean.class);
+        sabsDf.printSchema();
+        sabsDf.show();
+
+        System.exit(1);
 
         Dataset<Row> testData = spark.read()
                 .schema(testDataStruct)
@@ -165,7 +198,85 @@ public class SparkStateClassifier extends StateClassifier {
 
     }
 
+    public void setDomain(Domain domain) {
+        this.domain = domain;
+    }
+
     @Override
     public void updateLearningModel(List<SelfManagementEpisodeAnalysis> ea) {
+        updateStateActionCounts(ea);
+        List<DataItem> dataItems = generateDataSetFromDataItems();
+        List<StateActionBean> stateActionBeans = new ArrayList<>();
+        for (DataItem dataItem : dataItems) {
+            stateActionBeans.add(new StateActionBean(dataItem));
+        }
+        stateActionData = spark.createDataFrame(stateActionBeans, StateActionBean.class);
+        stateActionData.cache();
+
+        StringIndexerModel dayTypeIndexer = new StringIndexer()
+                .setInputCol("dayType")
+                .setOutputCol("DayTypeIndex")
+                .fit(stateActionData);
+
+        StringIndexerModel locationIndexer = new StringIndexer()
+                .setInputCol("location")
+                .setOutputCol("LocationIndex")
+                .fit(stateActionData);
+
+        StringIndexerModel activityIndexer = new StringIndexer()
+                .setInputCol("activity")
+                .setOutputCol("ActivityIndex")
+                .fit(stateActionData);
+
+        StringIndexerModel phoneUsageIndexer = new StringIndexer()
+                .setInputCol("phoneUsage")
+                .setOutputCol("PhoneUsageIndex")
+                .fit(stateActionData);
+
+        StringIndexerModel stateOfMindIndexer = new StringIndexer()
+                .setInputCol("stateOfMind")
+                .setOutputCol("StateOfMindIndex")
+                .fit(stateActionData);
+
+        StringIndexerModel emotionalStatusIndexer = new StringIndexer()
+                .setInputCol("emotionalStatus")
+                .setOutputCol("EmotionalStatusIndex")
+                .fit(stateActionData);
+
+        StringIndexerModel actionIndexer = new StringIndexer()
+                .setInputCol("action")
+                .setOutputCol("ActionIndex")
+                .fit(stateActionData);
+
+        VectorAssembler featureVectorAssembler = new VectorAssembler()
+                .setInputCols(new String[]{"time", "DayTypeIndex", "LocationIndex", "ActivityIndex", "PhoneUsageIndex",
+                        "StateOfMindIndex", "EmotionalStatusIndex"})
+                .setOutputCol("features");
+
+        RandomForestClassifier rf = new RandomForestClassifier()
+                .setPredictionCol("prediction")
+                .setLabelCol("ActionIndex")
+                .setFeaturesCol("features");
+
+        IndexToString labelConverter = new IndexToString()
+                .setInputCol("prediction")
+                .setOutputCol("predictedLabel")
+                .setLabels(actionIndexer.labels());
+
+        Pipeline pipeline = new Pipeline()
+                .setStages(new PipelineStage[]{actionIndexer, dayTypeIndexer, locationIndexer, activityIndexer, phoneUsageIndexer, stateOfMindIndexer, emotionalStatusIndexer, featureVectorAssembler, rf, labelConverter});
+
+        rdfClassifier = pipeline.fit(stateActionData);
+    }
+
+    @Override
+    public Action guessAction(State state) {
+        List<StateBean> testData = Arrays.asList(new StateBean[]{new StateBean(state)});
+        Dataset<Row> testDataSet = spark.createDataFrame(testData, StateBean.class);
+        Dataset<Row> predictions = rdfClassifier.transform(testDataSet);
+        predictions.col("predictedLabel");
+        Row predictionResult = predictions.collectAsList().get(0);
+        String predictedAction = predictionResult.getString(predictionResult.fieldIndex("predictedLabel"));
+        return domain.getAction(predictedAction);
     }
 }

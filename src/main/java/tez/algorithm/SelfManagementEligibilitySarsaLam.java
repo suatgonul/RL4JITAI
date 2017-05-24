@@ -17,6 +17,7 @@ import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
 import tez.algorithm.collaborative_learning.H2OStateClassifier;
+import tez.algorithm.collaborative_learning.SparkStateClassifier;
 import tez.domain.ExtendedEnvironmentOutcome;
 import tez.domain.SelfManagementRewardFunction;
 import tez.domain.action.SelfManagementAction;
@@ -64,7 +65,8 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
             List<QValue> currentQVals = copyCurrentQVals(this.qIndex.get(curState).qEntry);
             SelfManagementAction.SelectedBy selectedBy = ((SelfManagementSimpleGroundedAction) action).getSelectedBy();
             if (useStateClassifier && selectedBy == SelfManagementAction.SelectedBy.RANDOM) {
-                Action guessedAction = H2OStateClassifier.getInstance().guessActionShortcut(curState.s);
+                //Action guessedAction = H2OStateClassifier.getInstance().guessAction(curState.s);
+                Action guessedAction = SparkStateClassifier.getInstance().guessAction(curState.s);
                 if (guessedAction != null) {
                     action = guessedAction.getGroundedAction();
                     selectedBy = SelfManagementAction.SelectedBy.STATE_CLASSIFIER;

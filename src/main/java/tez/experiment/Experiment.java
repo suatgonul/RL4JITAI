@@ -18,6 +18,7 @@ import tez.domain.DayTerminalFunction;
 import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.domain.SelfManagementRewardFunction;
+import tez.environment.real.RealWorld;
 import tez.environment.simulator.SimulatedWorld;
 
 import java.util.ArrayList;
@@ -48,7 +49,8 @@ public class Experiment {
         SelfManagementDomainGenerator domGen = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
         Domain domain = domGen.generateDomain();
         //environment = new SimulatedWorld(domain, rf, tf, "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
-        environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob");
+        //environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob");
+        environment = new RealWorld(domain, rf, tf, 1, 100);
         domGen.setEnvironment(environment);
         //H2OStateClassifier h2OStateClassifier = H2OStateClassifier.getInstance();
         //h2OStateClassifier.setDomain(domain);

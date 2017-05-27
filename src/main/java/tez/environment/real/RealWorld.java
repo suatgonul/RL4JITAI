@@ -47,6 +47,11 @@ public class RealWorld extends SelfManagementEnvironment {
     public RealWorld(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, Object... params) {
         super(domain, rf, tf, stateChangeFrequency, params);
         currentTime = DateTime.now();
+
+        publishDummyContextToTopic();
+        System.out.println("Publishing dummy context data");
+        subscribeToUserContextChanges();
+        System.out.println("Subscribed to user context changes");
     }
 
     public static void main(String[] args) {
@@ -55,12 +60,7 @@ public class RealWorld extends SelfManagementEnvironment {
         TerminalFunction tf = new DayTerminalFunction();
         RewardFunction rf = new SelfManagementRewardFunction();
 
-        RealWorld realWorld = new RealWorld(domain, rf, tf, 1, 1000);
-        realWorld.publishDummyContextToTopic();
-        System.out.println("Publishing");
-        realWorld.subscribeToUserContextChanges();
-        System.out.println("Subscribed");
-        realWorld.startProcessingContextChanges();
+        new RealWorld(domain, rf, tf, 1, 1000);
     }
 
     @Override
@@ -72,9 +72,21 @@ public class RealWorld extends SelfManagementEnvironment {
 
     @Override
     public State getNextState() {
+        synchronized (changedContexts) {
+            if (changedContexts.size() == 0) {
+                try {
+                    System.out.println("Processing will stop");
+                    changedContexts.wait();
+                    System.out.println("Processing continues");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         currentContext = changedContexts.poll();
+        System.out.println("Polled context");
         State s = getStateFromCurrentContext();
-        System.out.println();
         return s;
     }
 
@@ -170,26 +182,8 @@ public class RealWorld extends SelfManagementEnvironment {
         context.setPhoneUsage(PhoneUsage.valueOf(contextJson.get("phoneUsage").getAsString()));
         context.setEmotionalStatus(EmotionalStatus.valueOf(contextJson.get("emotionalStatus").getAsString()));
         context.setStateOfMind(StateOfMind.valueOf(contextJson.get("stateOfMind").getAsString()));
-        System.out.println("new context parsed");
+        System.out.println("New context parsed from consumer record");
         return context;
-    }
-
-    private void startProcessingContextChanges() {
-        while (true) {
-            synchronized (changedContexts) {
-                if (changedContexts.size() == 0) {
-                    try {
-                        System.out.println("Processing will stop");
-                        changedContexts.wait();
-                        System.out.println("Processing continues");
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            Context context = changedContexts.poll();
-            System.out.println("Polled context");
-        }
     }
 
     private void publishDummyContextToTopic() {

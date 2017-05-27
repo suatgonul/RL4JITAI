@@ -14,6 +14,7 @@ import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import tez.domain.*;
+import tez.environment.SelfManagementEnvironment;
 import tez.environment.context.*;
 import tez.persona.Activity;
 import tez.persona.TimePlan;
@@ -28,36 +29,40 @@ import static tez.domain.SelfManagementDomainGenerator.*;
 /**
  * Created by suatgonul on 12/2/2016.
  */
-public class SimulatedWorld extends SimulatedEnvironment {
+public class SimulatedWorld extends SelfManagementEnvironment {
     private String personaFolder;
-    private int stateChangeFrequency;
 
-    private int dayOffset;
-    private DateTime previousTime;
-    private Activity previousActivity;
-    private TimePlan currentTimePlan;
-    private DateTime currentTime;
-    private Activity currentActivity;
-    private boolean lastActivity;
-    private boolean lastUserReaction;
-    private DateTime lastInterventionCheckTime;
+    protected int dayOffset;
+    protected DateTime previousTime;
+    protected boolean lastUserReaction;
+    protected DateTime lastInterventionCheckTime;
+    protected TimePlan currentTimePlan;
+    protected Activity previousActivity;
+    protected Activity currentActivity;
+    protected boolean lastActivity;
 
-    public SimulatedWorld(Domain domain, RewardFunction rf, TerminalFunction tf, String personaFolder, int stateChangeFrequency) {
+    public SimulatedWorld(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String personaFolder) {
+        super(domain, rf, tf, stateChangeFrequency, personaFolder);
+        episodeInit();
+        this.curState = stateGenerator.generateState();
+    }
+
+    /*public SimulatedWorld(Domain domain, RewardFunction rf, TerminalFunction tf, String personaFolder, int stateChangeFrequency) {
         super(domain, rf, tf);
         ((SelfManagementRewardFunction) rf).setEnvironment(this);
         this.personaFolder = personaFolder;
         this.stateChangeFrequency = stateChangeFrequency;
         dayOffset = 1;
-        episodeInit(dayOffset);
-        //stateGenerator = new ConstantStateGenerator(getStateFromCurrentContext());
+        episodeInit();
         stateGenerator = new SelfManagementStateGenerator(this);
         super.resetEnvironment();
-    }
+    }*/
 
-    public SelfManagementDomain getDomain() {
-        return (SelfManagementDomain) domain;
+    @Override
+    protected void initParameters(Object... params) {
+        this.personaFolder = (String) params[0];
+        dayOffset = 1;
     }
-
 
     /**
      * Main orchestrator call for executing a single step of an episode. Within this method, by calling the executeIn
@@ -109,6 +114,7 @@ public class SimulatedWorld extends SimulatedEnvironment {
     /**
      * Increase the time in real world by considering the start of the next activity and state time period
      */
+    @Override
     public State getNextState() {
         advanceTimePlan();
         State state = getStateFromCurrentContext();
@@ -133,6 +139,7 @@ public class SimulatedWorld extends SimulatedEnvironment {
         }
     }
 
+    @Override
     public State getStateFromCurrentContext() {
         SelfManagementDomain smdomain = (SelfManagementDomain) domain;
         State s;
@@ -271,11 +278,12 @@ public class SimulatedWorld extends SimulatedEnvironment {
 
     @Override
     public void resetEnvironment() {
-        episodeInit(++dayOffset);
+        dayOffset++;
+        episodeInit();
         super.resetEnvironment();
     }
 
-    private void episodeInit(int dayOffset) throws WorldSimulationException {
+    protected void episodeInit() throws WorldSimulationException {
         // initialize time plan
         PersonaParser personaParser = new PersonaParser();
         String personaPath;
@@ -300,24 +308,6 @@ public class SimulatedWorld extends SimulatedEnvironment {
         lastActivity = false;
         // reset the time for reaction to the last intervention
         lastInterventionCheckTime = null;
-    }
-
-    private DayType getDayType(int dayOffset) {
-        if (dayOffset - 1 % 7 < 5) {
-            return DayType.WEEKDAY;
-        } else {
-            return DayType.WEEKEND;
-        }
-    }
-
-    private String getQuarterStateRepresentation() {
-        int minute = currentTime.getMinuteOfHour();
-        int quarterIndex = minute / 15;
-        int quarterOffset = minute % 15;
-        if (quarterOffset > 7) {
-            quarterIndex++;
-        }
-        return currentTime.getHourOfDay() + "" + quarterIndex;
     }
 
     public boolean getLastUserReaction() {

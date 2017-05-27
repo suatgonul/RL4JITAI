@@ -1,15 +1,26 @@
 package tez.environment.context;
 
+import org.joda.time.LocalTime;
+
 /**
  * Created by suatgonul on 12/24/2016.
  */
 public class Context {
+    private LocalTime time;
     private Location location;
     private PhysicalActivity physicalActivity;
     private EmotionalStatus emotionalStatus;
     private StateOfMind stateOfMind;
     private PhoneUsage phoneUsage;
     private boolean phoneCheckSuitability;
+
+    public void setTime(LocalTime time) {
+        this.time = time;
+    }
+
+    public LocalTime getTime() {
+        return time;
+    }
 
     public Location getLocation() {
         return location;
@@ -61,6 +72,7 @@ public class Context {
 
     public Context copy() {
         Context context = new Context();
+        context.setTime(getTime());
         context.setPhoneUsage(getPhoneUsage());
         context.setEmotionalStatus(getEmotionalStatus());
         context.setStateOfMind(getStateOfMind());

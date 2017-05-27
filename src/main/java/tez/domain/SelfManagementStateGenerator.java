@@ -2,6 +2,7 @@ package tez.domain;
 
 import burlap.oomdp.auxiliary.StateGenerator;
 import burlap.oomdp.core.states.State;
+import tez.environment.SelfManagementEnvironment;
 import tez.environment.simulator.SimulatedWorld;
 
 /**
@@ -9,14 +10,14 @@ import tez.environment.simulator.SimulatedWorld;
  */
 public class SelfManagementStateGenerator implements StateGenerator {
 
-    private SimulatedWorld simulatedWorld;
+    private SelfManagementEnvironment selfManagementEnvironment;
 
-    public SelfManagementStateGenerator(SimulatedWorld simulatedWorld) {
-        this.simulatedWorld = simulatedWorld;
+    public SelfManagementStateGenerator(SelfManagementEnvironment selfManagementEnvironment) {
+        this.selfManagementEnvironment = selfManagementEnvironment;
     }
 
     @Override
     public State generateState() {
-        return simulatedWorld.getStateFromCurrentContext();
+        return selfManagementEnvironment.getStateFromCurrentContext();
     }
 }

@@ -1,8 +1,8 @@
 package tez.persona.parser;
 
 import org.joda.time.DateTime;
+import tez.environment.context.*;
 import tez.persona.Activity;
-import tez.simulator.context.*;
 
 import java.util.Arrays;
 import java.util.List;

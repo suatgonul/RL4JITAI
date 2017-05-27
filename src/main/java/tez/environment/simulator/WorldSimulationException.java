@@ -1,4 +1,4 @@
-package tez.simulator;
+package tez.environment.simulator;
 
 /**
  * Created by suatgonul on 12/20/2016.

@@ -1,4 +1,4 @@
-package tez.simulator;
+package tez.environment.simulator;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TerminalFunction;
@@ -14,11 +14,11 @@ import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import tez.domain.*;
+import tez.environment.context.*;
 import tez.persona.Activity;
 import tez.persona.TimePlan;
 import tez.persona.parser.PersonaParser;
 import tez.persona.parser.PersonaParserException;
-import tez.simulator.context.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ import static tez.domain.SelfManagementDomainGenerator.*;
 /**
  * Created by suatgonul on 12/2/2016.
  */
-public class RealWorld extends SimulatedEnvironment {
+public class SimulatedWorld extends SimulatedEnvironment {
     private String personaFolder;
     private int stateChangeFrequency;
 
@@ -42,7 +42,7 @@ public class RealWorld extends SimulatedEnvironment {
     private boolean lastUserReaction;
     private DateTime lastInterventionCheckTime;
 
-    public RealWorld(Domain domain, RewardFunction rf, TerminalFunction tf, String personaFolder, int stateChangeFrequency) {
+    public SimulatedWorld(Domain domain, RewardFunction rf, TerminalFunction tf, String personaFolder, int stateChangeFrequency) {
         super(domain, rf, tf);
         ((SelfManagementRewardFunction) rf).setEnvironment(this);
         this.personaFolder = personaFolder;

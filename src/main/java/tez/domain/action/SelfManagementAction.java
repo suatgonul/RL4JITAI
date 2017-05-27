@@ -3,14 +3,12 @@ package tez.domain.action;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TransitionProbability;
 import burlap.oomdp.core.states.State;
-import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.FullActionModel;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.common.SimpleAction;
-import burlap.oomdp.singleagent.common.SimpleGroundedAction;
 import burlap.oomdp.singleagent.environment.Environment;
 import tez.algorithm.SelfManagementSimpleGroundedAction;
-import tez.simulator.RealWorld;
+import tez.environment.simulator.SimulatedWorld;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +40,7 @@ public abstract class SelfManagementAction extends SimpleAction implements FullA
     @Override
     protected State performActionHelper(State s, GroundedAction groundedAction) {
         // advance the environment state
-        return ((RealWorld) environment).getNextState();
+        return ((SimulatedWorld) environment).getNextState();
     }
 
     public List<TransitionProbability> getTransitions(State s, GroundedAction groundedAction) {

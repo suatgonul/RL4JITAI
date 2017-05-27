@@ -2,8 +2,7 @@ package tez.domain;
 
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.State;
-import burlap.oomdp.singleagent.Action;
-import tez.simulator.context.*;
+import tez.environment.context.*;
 
 import static tez.domain.SelfManagementDomainGenerator.*;
 import static tez.domain.SelfManagementDomainGenerator.ATT_EMOTIONAL_STATUS;

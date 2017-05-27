@@ -12,17 +12,16 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import org.apache.commons.io.FileUtils;
 import power2dm.reporting.visualization.VisualizationMetadata;
-import tez.algorithm.collaborative_learning.H2OStateClassifier;
 import tez.algorithm.collaborative_learning.SparkStateClassifier;
 import tez.domain.SelfManagementDomain;
 import tez.domain.action.SelfManagementAction;
+import tez.environment.context.*;
 import tez.experiment.debug.Reporter;
 import tez.experiment.performance.*;
 import tez.experiment.performance.visualization.ReactionHitRatioVisualizer;
 import tez.experiment.performance.visualization.ReactionNumbersVisualizer;
 import tez.experiment.performance.visualization.Visualizer;
-import tez.simulator.RealWorld;
-import tez.simulator.context.*;
+import tez.environment.simulator.SimulatedWorld;
 
 import java.io.File;
 import java.io.IOException;
@@ -286,7 +285,7 @@ public class StaticSelfManagementExperimenter {
 
                         //if (hourOfDay > 16) {
 
-                        SelfManagementDomain smDomain = ((RealWorld) environmentSever.getEnvironmentDelegate()).getDomain();
+                        SelfManagementDomain smDomain = ((SimulatedWorld) environmentSever.getEnvironmentDelegate()).getDomain();
                         SelfManagementDomain.DomainComplexity complexity = smDomain.getComplexity();
 
                         if (complexity == SelfManagementDomain.DomainComplexity.EASY) {

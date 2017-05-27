@@ -13,6 +13,7 @@ import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import power2dm.reporting.visualization.VisualizationMetadata;
 import tez.domain.SelfManagementDomain;
 import tez.domain.action.SelfManagementAction;
+import tez.environment.context.*;
 import tez.experiment.debug.Reporter;
 import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
@@ -21,8 +22,7 @@ import tez.experiment.performance.SelfManagementRewardPlotter;
 import tez.experiment.performance.visualization.ReactionHitRatioVisualizer;
 import tez.experiment.performance.visualization.ReactionNumbersVisualizer;
 import tez.experiment.performance.visualization.Visualizer;
-import tez.simulator.RealWorld;
-import tez.simulator.context.*;
+import tez.environment.simulator.SimulatedWorld;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -290,7 +290,7 @@ public class SelfManagementExperimenter {
 
                         //if (hourOfDay > 16) {
 
-                        SelfManagementDomain smDomain = ((RealWorld) environmentSever.getEnvironmentDelegate()).getDomain();
+                        SelfManagementDomain smDomain = ((SimulatedWorld) environmentSever.getEnvironmentDelegate()).getDomain();
                         SelfManagementDomain.DomainComplexity complexity = smDomain.getComplexity();
 
                         if (complexity == SelfManagementDomain.DomainComplexity.EASY) {

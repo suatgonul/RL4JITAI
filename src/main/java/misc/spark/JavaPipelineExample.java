@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tez.spark;
+package misc.spark;
 
 /**
  * Created by suat on 21-May-17.

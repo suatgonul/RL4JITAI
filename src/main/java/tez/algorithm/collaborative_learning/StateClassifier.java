@@ -53,6 +53,7 @@ public abstract class StateClassifier {
                 actionCounts.put(actionName, count);
             }
         }
+        System.out.println("Number of distinct states: " + stateActionCounts.keySet().size());
     }
 
     protected List<DataItem> generateDataSetFromDataItems() {

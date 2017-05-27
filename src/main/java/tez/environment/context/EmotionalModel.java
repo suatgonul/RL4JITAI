@@ -1,6 +1,6 @@
-package tez.simulator.context;
+package tez.environment.context;
 
-import tez.simulator.WorldSimulationException;
+import tez.environment.simulator.WorldSimulationException;
 
 import java.util.ArrayList;
 import java.util.List;

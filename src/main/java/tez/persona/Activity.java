@@ -1,7 +1,7 @@
 package tez.persona;
 
 import org.joda.time.DateTime;
-import tez.simulator.context.Context;
+import tez.environment.context.Context;
 
 /**
  * Created by suatgonul on 12/2/2016

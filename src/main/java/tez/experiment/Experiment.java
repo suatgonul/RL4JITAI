@@ -13,13 +13,12 @@ import tez.algorithm.SelfManagementEligibilitySarsaLam;
 import tez.algorithm.SelfManagementGreedyQPolicy;
 import tez.algorithm.SelfManagementSarsa;
 import tez.algorithm.SelfManagementSarsaLam;
-import tez.algorithm.collaborative_learning.H2OStateClassifier;
 import tez.algorithm.collaborative_learning.SparkStateClassifier;
 import tez.domain.DayTerminalFunction;
 import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.domain.SelfManagementRewardFunction;
-import tez.simulator.RealWorld;
+import tez.environment.simulator.SimulatedWorld;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,8 +47,8 @@ public class Experiment {
         RewardFunction rf = new SelfManagementRewardFunction();
         SelfManagementDomainGenerator domGen = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
         Domain domain = domGen.generateDomain();
-        //environment = new RealWorld(domain, rf, tf, "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
-        environment = new RealWorld(domain, rf, tf, "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
+        //environment = new SimulatedWorld(domain, rf, tf, "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
+        environment = new SimulatedWorld(domain, rf, tf, "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
         domGen.setEnvironment(environment);
         //H2OStateClassifier h2OStateClassifier = H2OStateClassifier.getInstance();
         //h2OStateClassifier.setDomain(domain);

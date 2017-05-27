@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import tez.persona.Activity;
 import tez.persona.TimePlan;
-import tez.simulator.context.Context;
+import tez.environment.context.Context;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

@@ -1,4 +1,4 @@
-package tez.spark;
+package misc.spark;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.ml.Pipeline;

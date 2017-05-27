@@ -4,7 +4,7 @@ import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import tez.domain.action.SelfManagementAction;
-import tez.simulator.context.Context;
+import tez.environment.context.Context;
 
 import java.util.ArrayList;
 import java.util.List;

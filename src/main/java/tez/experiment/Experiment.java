@@ -49,8 +49,8 @@ public class Experiment {
         SelfManagementDomainGenerator domGen = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
         Domain domain = domGen.generateDomain();
         //environment = new SimulatedWorld(domain, rf, tf, "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
-        //environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob");
-        environment = new RealWorld(domain, rf, tf, 1, 100);
+        environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob");
+        //environment = new RealWorld(domain, rf, tf, 1, 100);
         domGen.setEnvironment(environment);
         //H2OStateClassifier h2OStateClassifier = H2OStateClassifier.getInstance();
         //h2OStateClassifier.setDomain(domain);
@@ -78,7 +78,7 @@ public class Experiment {
         //start experiment
         exp.startExperiment();*/
         StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                2, 3, learningCases);
+                10, 10000, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 CUMULATIVE_REWARD_PER_EPISODE,

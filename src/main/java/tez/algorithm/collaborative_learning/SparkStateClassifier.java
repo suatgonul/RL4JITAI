@@ -26,6 +26,7 @@ import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -267,6 +268,11 @@ public class SparkStateClassifier extends StateClassifier {
                 .setStages(new PipelineStage[]{actionIndexer, dayTypeIndexer, locationIndexer, activityIndexer, phoneUsageIndexer, stateOfMindIndexer, emotionalStatusIndexer, featureVectorAssembler, rf, labelConverter});
 
         rdfClassifier = pipeline.fit(stateActionData);
+        try {
+            rdfClassifier.write().overwrite().save("rdfClassifier");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

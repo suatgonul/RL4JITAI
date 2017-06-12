@@ -8,6 +8,7 @@ import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.RewardFunction;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -25,9 +26,7 @@ import tez.domain.*;
 import tez.environment.SelfManagementEnvironment;
 import tez.environment.context.*;
 
-import java.util.Arrays;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -42,6 +41,7 @@ public class RealWorld extends SelfManagementEnvironment {
     private int trialLength;
 
     private Context currentContext;
+    private Context recentlyProcessedContext;
     private BlockingQueue<Context> changedContexts;
 
     public RealWorld(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, Object... params) {
@@ -173,16 +173,58 @@ public class RealWorld extends SelfManagementEnvironment {
 
 
     private Context getContext(ConsumerRecord<String, String> consumerRecord) {
+        Context context;
+        if (recentlyProcessedContext == null) {
+            context = new Context();
+        } else {
+            context = recentlyProcessedContext.copy();
+        }
+
         JsonParser jsonParser = new JsonParser();
         JsonObject contextJson = jsonParser.parse(consumerRecord.value()).getAsJsonObject();
-        Context context = new Context();
-        context.setTime(LocalTime.parse(contextJson.get("time").getAsString()));
-        context.setLocation(Location.valueOf(contextJson.get("location").getAsString()));
-        context.setPhysicalActivity(PhysicalActivity.valueOf(contextJson.get("activity").getAsString()));
-        context.setPhoneUsage(PhoneUsage.valueOf(contextJson.get("phoneUsage").getAsString()));
-        context.setEmotionalStatus(EmotionalStatus.valueOf(contextJson.get("emotionalStatus").getAsString()));
-        context.setStateOfMind(StateOfMind.valueOf(contextJson.get("stateOfMind").getAsString()));
+
+        //TODO get time from the consumer record
+
+        // check the schema id of the received context information
+        if (contextJson.has("phoneUsage")) {
+            String value = contextJson.get("phoneUsage").getAsString();
+            if (value.contentEquals("screen_on")) {
+                context.setPhoneUsage(PhoneUsage.APPS_ACTIVE);
+            } else if (value.contentEquals("screen_off")) {
+                context.setPhoneUsage(PhoneUsage.SCREEN_OFF);
+            } else {
+                context.setPhoneUsage(PhoneUsage.TALKING);
+            }
+
+        } else if (contextJson.has("activityLevel")) {
+            // TODO parse none-low-high values
+
+        } else if (contextJson.has("header")) {
+            String contextType = contextJson.get("header").getAsJsonObject().get("schema_id").getAsJsonObject().get("name").getAsString();
+            if (contextType.contentEquals("funf-location")) {
+
+            } else if (contextType.contentEquals("funf-wifi")) {
+                // get location from wifi
+                Iterator<JsonElement> it = contextJson.get("body").getAsJsonObject().get("values").getAsJsonArray().iterator();
+                boolean foundLocation = false;
+                while (it.hasNext()) {
+                    String wifi = it.next().getAsJsonObject().get("SSID").getAsString();
+                    if (wifi.startsWith("srdc")) {
+                        context.setLocation(Location.OFFICE);
+                        foundLocation = true;
+                    } else if (wifi.contentEquals("gsev")) {
+                        context.setLocation(Location.HOME);
+                        foundLocation = true;
+                    }
+                }
+                if (!foundLocation) {
+                    context.setLocation(Location.OUTSIDE);
+                }
+            }
+        }
+
         System.out.println("New context parsed from consumer record");
+        recentlyProcessedContext = context;
         return context;
     }
 

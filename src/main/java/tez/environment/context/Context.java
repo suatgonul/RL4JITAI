@@ -14,12 +14,22 @@ public class Context {
     private PhoneUsage phoneUsage;
     private boolean phoneCheckSuitability;
 
-    public void setTime(LocalTime time) {
-        this.time = time;
+    public Context() {
+        this.time = LocalTime.now();
+        this.location = Location.HOME;
+        this.physicalActivity = PhysicalActivity.SEDENTARY;
+        this.emotionalStatus = EmotionalStatus.NEUTRAL;
+        this.stateOfMind = StateOfMind.CALM;
+        this.phoneUsage = PhoneUsage.SCREEN_OFF;
+        this.phoneCheckSuitability = false;
     }
 
     public LocalTime getTime() {
         return time;
+    }
+
+    public void setTime(LocalTime time) {
+        this.time = time;
     }
 
     public Location getLocation() {

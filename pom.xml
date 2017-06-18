@@ -7,8 +7,10 @@
     <groupId>rltrials</groupId>
     <artifactId>rltrials</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
 
     <build>
+        <finalName>learningserver</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -18,6 +20,21 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.1.1</version>
+                <configuration>
+                    <webXml>web/WEB-INF/web.xml</webXml>
+                </configuration>
+                <!--<configuration>
+                    <webResources>
+                        <resource>
+                            <warSourceDirectory>WebContent</warSourceDirectory>
+                            <failOnMissingWebXml>false</failOnMissingWebXml>
+                        </resource>
+                    </webResources>
+                </configuration>-->
             </plugin>
         </plugins>
     </build>
@@ -123,6 +140,12 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
             <version>0.10.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jaxrs</artifactId>
+            <version>3.1.3.Final</version>
         </dependency>
 
         <dependency>

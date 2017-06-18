@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.VectorAssembler","timestamp":1497490609964,"sparkVersion":"2.1.1","uid":"vecAssembler_18853f912407","paramMap":{"inputCols":["time","DayTypeIndex","LocationIndex","ActivityIndex","PhoneUsageIndex","StateOfMindIndex","EmotionalStatusIndex"],"outputCol":"features"}}

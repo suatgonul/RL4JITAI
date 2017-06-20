@@ -3,7 +3,7 @@ package webapp.model;
 /**
  * Created by suat on 17-Jun-17.
  */
-public class DeviceToken {
+public class DeviceTokenInfo {
     private String deviceIdentifier;
     private String registrationToken;
 

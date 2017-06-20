@@ -6,6 +6,7 @@ package webapp.model;
 public class ReactionResult {
     private String interventionId;
     private String reaction;
+    private String deviceIdentifier;
 
     public String getInterventionId() {
         return interventionId;
@@ -21,5 +22,13 @@ public class ReactionResult {
 
     public void setReaction(String reaction) {
         this.reaction = reaction;
+    }
+
+    public String getDeviceIdentifier() {
+        return deviceIdentifier;
+    }
+
+    public void setDeviceIdentifier(String deviceIdentifier) {
+        this.deviceIdentifier = deviceIdentifier;
     }
 }

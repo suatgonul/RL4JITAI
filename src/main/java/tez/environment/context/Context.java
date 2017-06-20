@@ -6,6 +6,7 @@ import org.joda.time.LocalTime;
  * Created by suatgonul on 12/24/2016.
  */
 public class Context {
+    private String deviceIdentifier;
     private LocalTime time;
     private Location location;
     private PhysicalActivity physicalActivity;
@@ -22,6 +23,11 @@ public class Context {
         this.stateOfMind = StateOfMind.CALM;
         this.phoneUsage = PhoneUsage.SCREEN_OFF;
         this.phoneCheckSuitability = false;
+    }
+
+    public Context(String deviceIdentifier) {
+        this();
+        this.deviceIdentifier = deviceIdentifier;
     }
 
     public LocalTime getTime() {
@@ -80,6 +86,14 @@ public class Context {
         this.phoneCheckSuitability = phoneCheckSuitability;
     }
 
+    public String getDeviceIdentifier() {
+        return deviceIdentifier;
+    }
+
+    public void setDeviceIdentifier(String deviceIdentifier) {
+        this.deviceIdentifier = deviceIdentifier;
+    }
+
     public Context copy() {
         Context context = new Context();
         context.setTime(getTime());
@@ -89,6 +103,7 @@ public class Context {
         context.setLocation(getLocation());
         context.setPhysicalActivity(getPhysicalActivity());
         context.setPhoneCheckSuitability(getPhoneCheckSuitability());
+        context.setDeviceIdentifier(getDeviceIdentifier());
         return context;
     }
 }

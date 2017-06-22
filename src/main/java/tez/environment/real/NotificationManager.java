@@ -12,7 +12,8 @@ public class NotificationManager {
     private static NotificationManager instance;
 
     private FirebaseClient firebaseClient;
-    private Map<String, LinkedList<NotificationMetadata>> sentNotifications;
+    private Map<String, LinkedList<NotificationMetadata>> sentNotifications = new HashMap<>();
+    private Map<String, Boolean> recentReactions = new HashMap<>();
 
     private NotificationManager() {
         firebaseClient = new FirebaseClient();
@@ -54,13 +55,35 @@ public class NotificationManager {
     public void processUserReaction(ReactionResult reactionResult) {
         NotificationMetadata notificationMetadata = getNotification(reactionResult.getDeviceIdentifier(), reactionResult.getInterventionId());
         notificationMetadata.setReaction(reactionResult.getReaction());
+        refreshRecentReaction(reactionResult.getDeviceIdentifier(), reactionResult.getReaction());
         System.out.println("Notification metadata processed for: " + reactionResult.getInterventionId());
     }
 
-    public String getLastNotificationResult(String deviceIdentifier) {
+    public void refreshRecentReaction(String deviceIdentifier, String reaction) {
+        synchronized (recentReactions) {
+            if(reaction.contentEquals("Positive")) {
+                recentReactions.put(deviceIdentifier, true);
+            }
+        }
+    }
+
+    public boolean checkRecentReaction(String deviceIdentifier) {
+        synchronized (recentReactions) {
+            boolean reaction;
+            if(recentReactions.containsKey(deviceIdentifier)) {
+                reaction = recentReactions.get(deviceIdentifier);
+            } else {
+                reaction = false;
+            }
+            recentReactions.put(deviceIdentifier, false);
+            return reaction;
+        }
+    }
+
+    public NotificationMetadata getLastNotification(String deviceIdentifier) {
         synchronized (sentNotifications) {
             LinkedList<NotificationMetadata> notifications = getNotificationsForUser(deviceIdentifier);
-            return notifications.getLast().getReaction();
+            return notifications.getLast();
         }
     }
 

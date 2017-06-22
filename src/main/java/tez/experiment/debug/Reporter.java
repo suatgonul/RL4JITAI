@@ -22,6 +22,7 @@ public class Reporter {
         this.reportMode = ReportMode.FILE;
         this.outputFile = new File(filePath);
         try {
+            outputFile.getParentFile().mkdirs();
             fw = new FileWriter(outputFile, true);
             bw = new BufferedWriter(fw);
         } catch (IOException e) {
@@ -40,6 +41,7 @@ public class Reporter {
     private void writeToFile(String string) {
         try {
             bw.append(string + "\n");
+            bw.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,6 +1,5 @@
 package tez.experiment.real;
 
-import breeze.optimize.linear.LinearProgram;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
 import burlap.oomdp.core.Domain;
@@ -8,6 +7,7 @@ import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
+import org.apache.log4j.Logger;
 import tez.algorithm.SelfManagementEligibilitySarsaLam;
 import tez.algorithm.SelfManagementGreedyQPolicy;
 import tez.algorithm.collaborative_learning.SparkStateClassifier;
@@ -16,17 +16,24 @@ import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.domain.SelfManagementRewardFunction;
 import tez.environment.real.RealWorld;
+import tez.environment.real.UserRegistry;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static tez.util.LogUtil.log_info;
 
 /**
  * Created by suat on 19-Jun-17.
  */
 public class RealExperimentManager {
     private static RealExperimentManager instance;
-    private Map<String, Environment> environments;
+    private static final Logger log = Logger.getLogger(RealExperimentManager.class);
+
+    private Map<String, Environment> environments = new HashMap<>();
+    private Map<String, Boolean> experiments = new HashMap<>();
 
     private RealExperimentManager() {
 
@@ -39,18 +46,37 @@ public class RealExperimentManager {
         return instance;
     }
 
-    public boolean experiementStarted(String deviceIdentifier) {
-        return environments.get(deviceIdentifier) != null;
+    private boolean experiementStarted(String deviceIdentifier) {
+        Boolean started = experiments.get(deviceIdentifier);
+        if(started == null) {
+            return false;
+        }
+        return started;
     }
 
     public void runExperiment(String deviceIdentifier) {
+        boolean settingsConfigured = UserRegistry.getInstance().isSettingsConfigured(deviceIdentifier);
+        if(settingsConfigured) {
+            boolean isControl = UserRegistry.getInstance().getUser(deviceIdentifier).isControl();
+            if(!isControl && !experiementStarted(deviceIdentifier)) {
+                log_info(log, deviceIdentifier, "RL experiment will start");
+                runRLExperiment(deviceIdentifier);
+            } else {
+                log_info(log, deviceIdentifier,"Control experiment will start");
+            }
+            experiments.put(deviceIdentifier, true);
+        } else {
+            log_info(log, deviceIdentifier,"Settings are not configured" );
+        }
+    }
 
+    private void runRLExperiment(String deviceIdentifier) {
         SelfManagementDomainGenerator smdg = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
         Domain domain = smdg.generateDomain();
         TerminalFunction tf = new DayTerminalFunction();
         RewardFunction rf = new SelfManagementRewardFunction();
 
-        RealWorld environment = new RealWorld(domain, rf, tf, 1, 1000, deviceIdentifier);
+        RealWorld environment = new RealWorld(domain, rf, tf, 1, deviceIdentifier);
         smdg.setEnvironment(environment);
         environments.put(deviceIdentifier, environment);
 

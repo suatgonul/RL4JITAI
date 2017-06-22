@@ -1,5 +1,6 @@
 package tez.environment.real;
 
+import org.apache.log4j.Logger;
 import webapp.model.DeviceTokenInfo;
 import webapp.model.WifiInfo;
 
@@ -9,6 +10,8 @@ import java.util.*;
  * Created by suat on 19-Jun-17.
  */
 public class UserRegistry {
+    private static final Logger log = Logger.getLogger(UserRegistry.class);
+
     // keys are device identifiers
     private Map<String, UserData> users = Collections.synchronizedMap(new HashMap<>());
 
@@ -22,7 +25,7 @@ public class UserRegistry {
     }
 
     private UserRegistry() {
-        UserData ud = new UserData();
+        /*UserData ud = new UserData();
         ud.setControl(true);
         ud.setWifiName("gsev");
         ud.setRegistrationToken("cxKcMfmf-aE:APA91bE8ZKbbOOrd2ayt2ISvInWnqqdEJ-30a32pWap6oV7avfj4H_wbewYRrtxXd0HvLjXctcvm0T4HL5VQf3bz-BIDtV4ZugJyRH3kKYs_4J3uU4WSCa30ogkQT3X8k2sMjvcdLlTm");
@@ -32,7 +35,7 @@ public class UserRegistry {
         ud2.setRegistrationToken("regtok2");
         ud2.setDeviceIdentifier("devid_2");
         users.put(ud.getDeviceIdentifier(), ud);
-        users.put(ud2.getDeviceIdentifier(), ud2);
+        users.put(ud2.getDeviceIdentifier(), ud2);*/
     }
 
     public void addWifiInfo(WifiInfo wifiInfo) {
@@ -47,9 +50,9 @@ public class UserRegistry {
         userData.setRegistrationToken(deviceTokenInfo.getRegistrationToken());
     }
 
-    public void setControlGroup(String deviceIdentifier, String control) {
+    public void setControlGroup(String deviceIdentifier, Boolean control) {
         UserData userData = createUserIfNotExists(deviceIdentifier);
-        userData.setControl(Boolean.valueOf(control));
+        userData.setControl(control);
     }
 
     public boolean isSettingsConfigured(String deviceIdentifier) {
@@ -57,7 +60,7 @@ public class UserRegistry {
         if(userData.getWifiName() == null) {
             return false;
         }
-        if(userData.isControl() == null) {
+        if(userData.isControlSet() == false) {
             return false;
         }
         return true;
@@ -73,11 +76,14 @@ public class UserRegistry {
 
     public List<UserData> getControlGroup() {
         List<UserData> controlGroup = new ArrayList<>();
-        for(UserData userData : users.values()) {
-            if(userData.isControl()) {
-                controlGroup.add(userData);
+        if(users.size() > 0) {
+            for (UserData userData : users.values()) {
+                if (isSettingsConfigured(userData.getDeviceIdentifier()) && userData.isControl()) {
+                    controlGroup.add(userData);
+                }
             }
         }
+        log.info("Control group size: " + controlGroup.size());
         return controlGroup;
     }
 
@@ -92,10 +98,11 @@ public class UserRegistry {
     }
 
     public class UserData {
-        String deviceIdentifier;
-        String registrationToken;
-        String wifiName;
-        Boolean isControl;
+        private String deviceIdentifier;
+        private String registrationToken;
+        private String wifiName;
+        private boolean isControl = false;
+        private boolean isControlSet = false;
 
         public String getDeviceIdentifier() {
             return deviceIdentifier;
@@ -121,12 +128,17 @@ public class UserRegistry {
             this.wifiName = wifiName;
         }
 
-        public Boolean isControl() {
+        public boolean isControl() {
             return isControl;
         }
 
-        public void setControl(Boolean control) {
+        public void setControl(boolean control) {
+            isControlSet = true;
             isControl = control;
+        }
+
+        public boolean isControlSet() {
+            return isControlSet;
         }
     }
 }

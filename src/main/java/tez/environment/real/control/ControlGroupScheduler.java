@@ -63,8 +63,8 @@ public class ControlGroupScheduler {
         triggers.add(trigger2);
         triggers.add(trigger3);
         triggers.add(trigger4);
+        //triggers.add(trigger5);
 
-        Scheduler scheduler;
         try {
             scheduler = new StdSchedulerFactory().getScheduler();
             scheduler.start();

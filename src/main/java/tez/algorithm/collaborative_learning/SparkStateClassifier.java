@@ -7,6 +7,7 @@ import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.Action;
+import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.ml.Pipeline;
@@ -40,6 +41,8 @@ import static tez.domain.SelfManagementDomainGenerator.*;
 public class SparkStateClassifier extends StateClassifier {
 
     private static SparkStateClassifier instance = null;
+    private static final Logger log = Logger.getLogger(SparkStateClassifier.class);
+
     private Domain domain;
     private SparkSession spark;
     private Dataset<Row> stateActionData;
@@ -67,6 +70,11 @@ public class SparkStateClassifier extends StateClassifier {
             instance = new SparkStateClassifier();
         }
         return instance;
+    }
+
+    public void loadRandomForestClassifier(String path) {
+        rdfClassifier = PipelineModel.load(path);
+        log.info("Pipeline loaded");
     }
 
     public static void main(String[] args) {

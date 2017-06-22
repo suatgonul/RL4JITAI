@@ -1,6 +1,5 @@
 package tez.experiment.real;
 
-import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.auxiliary.performance.ExperimentalEnvironment;
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.learning.LearningAgent;
@@ -10,31 +9,21 @@ import burlap.debugtools.DPrint;
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
-import org.apache.commons.io.FileUtils;
-import power2dm.reporting.visualization.VisualizationMetadata;
 import tez.algorithm.collaborative_learning.SparkStateClassifier;
 import tez.domain.SelfManagementDomain;
 import tez.domain.action.SelfManagementAction;
 import tez.environment.context.*;
-import tez.environment.simulator.SimulatedWorld;
+import tez.environment.real.RealWorld;
 import tez.experiment.debug.Reporter;
 import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez.experiment.performance.SelfManagementPerformanceMetric;
-import tez.experiment.performance.StaticSelfManagementRewardPlotter;
-import tez.experiment.performance.visualization.ReactionHitRatioVisualizer;
-import tez.experiment.performance.visualization.ReactionNumbersVisualizer;
-import tez.experiment.performance.visualization.Visualizer;
 
-import java.io.File;
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import static tez.domain.SelfManagementDomainGenerator.*;
-import static tez.domain.SelfManagementDomainGenerator.ACTION_INT_DELIVERY;
-import static tez.domain.SelfManagementDomainGenerator.ATT_EMOTIONAL_STATUS;
 
 /**
  * Created by suat on 19-Jun-17.
@@ -214,7 +203,7 @@ public class RealExperimenter {
 
                     //if (hourOfDay > 16) {
 
-                    SelfManagementDomain smDomain = ((SimulatedWorld) environmentSever.getEnvironmentDelegate()).getDomain();
+                    SelfManagementDomain smDomain = ((RealWorld) environmentSever.getEnvironmentDelegate()).getDomain();
                     SelfManagementDomain.DomainComplexity complexity = smDomain.getComplexity();
 
                     if (complexity == SelfManagementDomain.DomainComplexity.EASY) {

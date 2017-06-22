@@ -16,23 +16,27 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
-import tez.algorithm.collaborative_learning.H2OStateClassifier;
+import org.apache.log4j.Logger;
 import tez.algorithm.collaborative_learning.SparkStateClassifier;
 import tez.domain.ExtendedEnvironmentOutcome;
 import tez.domain.SelfManagementRewardFunction;
 import tez.domain.action.SelfManagementAction;
+import tez.environment.real.RealWorld;
+import tez.experiment.debug.StepPrinter;
 import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static tez.domain.SelfManagementDomainGenerator.*;
+import static tez.domain.SelfManagementDomainGenerator.ACTION_INT_DELIVERY;
 
 /**
  * Created by suatgonul on 5/1/2017.
  */
 public class SelfManagementEligibilitySarsaLam extends SarsaLam {
+    private static final Logger log = Logger.getLogger(SelfManagementEligibilitySarsaLam.class);
+
     private boolean useStateClassifier = false;
     private List<State> deliveredInterventions;
 
@@ -72,6 +76,11 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                     selectedBy = SelfManagementAction.SelectedBy.STATE_CLASSIFIER;
                 }
             }
+
+            if(env instanceof RealWorld) {
+                log.info(((RealWorld) env).getDeviceIdentifier() + " Action " + action.actionName() + " selected");
+            }
+
 
             if (action.actionName().equals(ACTION_INT_DELIVERY)) {
                 deliveredInterventions.add(curState);
@@ -145,6 +154,8 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
             }
 
+            log.info("Eligibility values calculated");
+
             String interference = "N";
             if (!foundCurrentQTrace) {
                 //then update and add it
@@ -186,9 +197,11 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                 }
 
                 traces.add(et);
+                log.info("Backward rewarding is done");
 
                 if (action.action.isPrimitive() || !this.shouldAnnotateOptions) {
                     ea.recordTransitionTo(action, nextState.s, r, currentQVals, eeo.getUserContext(), eeo.getUserReaction(), interference, selectedBy);
+                    StepPrinter.printStep(action, curState.s, r, currentQVals, eeo.getUserContext(), eeo.getUserReaction(), interference, selectedBy);
                 } else {
                     ea.appendAndMergeEpisodeAnalysis(((Option) action.action).getLastExecutionResults());
                 }
@@ -200,6 +213,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
             }
 
+            log.info("Moving to next step");
 
             //move on
             curState = nextState;

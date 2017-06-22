@@ -106,4 +106,16 @@ public class Context {
         context.setDeviceIdentifier(getDeviceIdentifier());
         return context;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(")
+                .append(getTime()).append(", ")
+                .append(getLocation()).append(", ")
+                .append(getPhysicalActivity()).append(", ")
+                .append(getPhoneUsage())
+                .append(")");
+        return sb.toString();
+    }
 }

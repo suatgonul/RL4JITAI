@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static tez.util.LogUtil.log_info;
+import static tez.util.LogUtil.*;
 
 /**
  * Created by suat on 19-Jun-17.
@@ -30,7 +30,7 @@ public class FirebaseClient {
     }
 
     public void sendNotificationToUsers(List<String> deviceIdentifiers) {
-        log.info("Sending notification to users");
+        log_generic(log, "Sending notification to users");
         for (String deviceIdentifier : deviceIdentifiers) {
             log_info(log, deviceIdentifier, "Sending notification");
             JsonObject notification = createData(deviceIdentifier);

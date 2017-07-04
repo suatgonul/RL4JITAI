@@ -63,13 +63,13 @@ public class ContextChangeListener {
                 consumer.subscribe(Arrays.asList(topicName));
 
                 //print the topic name
-                log.info("Subscribed to topic " + topicName);
+                log_generic(log, "Subscribed to topic " + topicName);
                 int i = 0;
 
                 while (true) {
                     ConsumerRecords<String, String> records = consumer.poll(5000);
                     if (records.count() > 0) {
-                        log.info("Update size: " + records.count());
+                        log_generic(log, "Update size: " + records.count());
                     }
 
                     // process the updates

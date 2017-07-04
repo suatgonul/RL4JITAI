@@ -26,6 +26,7 @@ import org.apache.spark.sql.types.StructType;
 import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
+import tez.util.LogUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -74,7 +75,7 @@ public class SparkStateClassifier extends StateClassifier {
 
     public void loadRandomForestClassifier(String path) {
         rdfClassifier = PipelineModel.load(path);
-        log.info("Pipeline loaded");
+        LogUtil.log_generic(log, "Pipeline loaded");
     }
 
     public static void main(String[] args) {

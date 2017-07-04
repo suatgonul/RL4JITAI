@@ -78,7 +78,7 @@ public class Experiment {
         //start experiment
         exp.startExperiment();*/
         StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                10, 10000, learningCases);
+                30, 1000, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 CUMULATIVE_REWARD_PER_EPISODE,

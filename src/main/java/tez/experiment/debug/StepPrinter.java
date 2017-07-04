@@ -55,6 +55,6 @@ public class StepPrinter {
         sb.append(") A:" + actionNo + ", R:" + r);
         sb.append(userReaction == true ? " (X) Inter: " + interference + " Selected by:" + selectedBy : "" + " Inter: " + interference + " Selected by: " + selectedBy);
 
-        log.info(context.getDeviceIdentifier() + sb.toString());
+        LogUtil.log_info(log, context.getDeviceIdentifier(), sb.toString());
     }
 }

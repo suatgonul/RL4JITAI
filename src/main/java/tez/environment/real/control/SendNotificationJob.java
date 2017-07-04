@@ -8,6 +8,7 @@ import org.quartz.JobExecutionException;
 import tez.environment.real.FirebaseClient;
 import tez.environment.real.NotificationManager;
 import tez.environment.real.UserRegistry;
+import tez.util.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ public class SendNotificationJob implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        log.info("Notification job started");
+        LogUtil.log_generic(log, "Notification job started");
         List<UserRegistry.UserData> controlGroup = UserRegistry.getInstance().getControlGroup();
         List<String> deviceIdentifiers = new ArrayList<>();
 
@@ -28,6 +29,6 @@ public class SendNotificationJob implements Job {
             deviceIdentifiers.add(userData.getDeviceIdentifier());
         }
         NotificationManager.getInstance().sendNotificationToUsers(deviceIdentifiers);
-        log.info("Notification job ended");
+        LogUtil.log_generic(log, "Notification job ended");
     }
 }

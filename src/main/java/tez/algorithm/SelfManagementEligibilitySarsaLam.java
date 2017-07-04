@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static tez.domain.SelfManagementDomainGenerator.ACTION_INT_DELIVERY;
+import static tez.util.LogUtil.*;
 
 /**
  * Created by suatgonul on 5/1/2017.
@@ -77,8 +78,8 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                 }
             }
 
-            if(env instanceof RealWorld) {
-                log.info(((RealWorld) env).getDeviceIdentifier() + " Action " + action.actionName() + " selected");
+            if (env instanceof RealWorld) {
+                log_info(log, ((RealWorld) env).getDeviceIdentifier(), " Action " + action.actionName() + " selected");
             }
 
 
@@ -154,7 +155,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
             }
 
-            log.info("Eligibility values calculated");
+            log_generic(log, "Eligibility values calculated");
 
             String interference = "N";
             if (!foundCurrentQTrace) {
@@ -197,7 +198,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                 }
 
                 traces.add(et);
-                log.info("Backward rewarding is done");
+                log_generic(log, "Backward rewarding is done");
 
                 if (action.action.isPrimitive() || !this.shouldAnnotateOptions) {
                     ea.recordTransitionTo(action, nextState.s, r, currentQVals, eeo.getUserContext(), eeo.getUserReaction(), interference, selectedBy);
@@ -213,7 +214,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
             }
 
-            log.info("Moving to next step");
+            log_generic(log, "Moving to next step");
 
             //move on
             curState = nextState;

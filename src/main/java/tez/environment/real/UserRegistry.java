@@ -1,6 +1,7 @@
 package tez.environment.real;
 
 import org.apache.log4j.Logger;
+import tez.util.LogUtil;
 import webapp.model.DeviceTokenInfo;
 import webapp.model.WifiInfo;
 
@@ -83,7 +84,7 @@ public class UserRegistry {
                 }
             }
         }
-        log.info("Control group size: " + controlGroup.size());
+        LogUtil.log_generic(log, "Control group size: " + controlGroup.size());
         return controlGroup;
     }
 

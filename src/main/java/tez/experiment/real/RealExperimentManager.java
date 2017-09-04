@@ -10,6 +10,8 @@ import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import org.apache.log4j.Logger;
 import tez.algorithm.SelfManagementEligibilitySarsaLam;
 import tez.algorithm.SelfManagementGreedyQPolicy;
+import tez.algorithm.SelfManagementNoActionFavoringQPolicy;
+import tez.algorithm.SelfManagementSarsa;
 import tez.algorithm.collaborative_learning.SparkStateClassifier;
 import tez.domain.DayTerminalFunction;
 import tez.domain.SelfManagementDomain;
@@ -83,7 +85,7 @@ public class RealExperimentManager {
         SparkStateClassifier sparkClassifier = SparkStateClassifier.getInstance();
         sparkClassifier.setDomain(domain);
 
-        LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
+        LearningAgentFactory[] learningCases = getLearningAlternatives(domain, deviceIdentifier);
 
         RealExperimenter exp = new RealExperimenter(environment,
                 10, 10000, deviceIdentifier, learningCases);
@@ -92,7 +94,7 @@ public class RealExperimentManager {
         exp.startExperiment();
     }
 
-    private LearningAgentFactory[] getLearningAlternatives(final Domain domain) {
+    private LearningAgentFactory[] getLearningAlternatives(final Domain domain, String deviceIdentifier) {
         List<LearningAgentFactory> learningAlternatives = new ArrayList<>();
         final SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
 
@@ -104,7 +106,7 @@ public class RealExperimentManager {
 
             @Override
             public LearningAgent generateAgent() {
-                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, true);
+                return new SelfManagementSarsa(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementNoActionFavoringQPolicy(deviceIdentifier), Integer.MAX_VALUE, 0.8);
             }
         };
         learningAlternatives.add(qLearningFactory);

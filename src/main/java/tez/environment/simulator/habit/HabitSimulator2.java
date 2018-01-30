@@ -1,7 +1,15 @@
 package tez.environment.simulator.habit;
 
+import tez.environment.simulator.habit.visualization.AccessibilityThresholdChart;
+import tez.environment.simulator.habit.visualization.BehaviourChart;
+import tez.environment.simulator.habit.visualization.ThresholdChart;
+import tez.environment.simulator.habit.visualization.h2.BfAccessibilityThreshold;
+
+import javax.swing.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HabitSimulator2 {
     // accessability decay parameter
@@ -18,6 +26,8 @@ public class HabitSimulator2 {
     private double DRH_AT;
     // habit decay parameter
     private double HDP;
+    // salience decay parameter
+    private double SDP_REM;
     // slope of the similarity function
     private double SS;
     // turning point parameter of the similarity function
@@ -36,86 +46,214 @@ public class HabitSimulator2 {
     private double WH_AT;
 
     // agent-specific
-    private double ACC_START;
-    private double BF_START;
     private double CI;
 
-    // salience decay parameter
-    private double ACC_BF;
-    private double BF;
-
-
-    // instant values of habit parameters
-    private double salienceReminder; // set 1 to at each reminder
-    private double accessability;
-    private double commitmentIntensity;
-    private double habitStrength;
-    private boolean behaviour;
-    private boolean reminder = true;
-
-    private int windowSize = 14;
-    private List<Boolean> behaviourWindow;
+    private Map<Double, BehaviorFrequency> behaviorFrequencies = new HashMap<>();
+    private double salienceReminder;
+    private double BF_EXE;
+    private int day = 2;
+    private boolean eventActive = false;
+    private boolean behavior;
 
     // visualization data
     private List<Boolean> behaviours = new ArrayList<>();
     private List<Boolean> reminders = new ArrayList<>();
-    private List<Double> accessibilities = new ArrayList<>();
-    private List<Double> thresholds = new ArrayList<>();
-    private List<Double> behaviourFrequencies = new ArrayList<>();
-    private List<Double> habitStrengths = new ArrayList<>();
-
-    // threshold
-    private List<Double> positives = new ArrayList<>();
-    private List<Double> negatives = new ArrayList<>();
-
-    private int day = 1;
+    private List<BehaviorFrequency> selectedFrequencies = new ArrayList<>();
 
     public static void main(String[] args) {
         HabitSimulator2 hs = new HabitSimulator2();
+        hs.simulateScenario();
+        hs.drawCharts();
     }
 
-    private boolean checkAccessibility() {
-        double threshold = CAT - (CAT * WH_AT * habitStrength) + (1 - CAT) * WBF_AT * BF * (1 - DRH_AT * habitStrength);
-        return ACC_BF >= threshold;
+    public HabitSimulator2() {
+        ADP = 0.641;
+        AGC_EVENT = 0.111;
+        AGC_REM = 0.005;
+        CAT = 0.749;
+        DP = 0.886;
+        DRH_AT = 0.975;
+        HDP = 0.08;
+        SDP_REM = 0.094;
+        SS = 18.484;
+        TS = 0.214;
+        TP = TS;
+        WBF_AGBEH = 0.221;
+        WBF_AT = 0.355;
+        WCI_EVENT = 0.997;
+        WCI_REM = 0.083;
+        WH_AT = 1.0;
+
+        // initial values
+        salienceReminder = 1.0;
+        BF_EXE = 0.5;
+        CI = 0.5;
     }
 
-    private void updateBfAccessibility() {
-        double accDecay = ACC_BF - ADP;
-        double accGainEvent = AGC_EVENT * (1-AGC_EVENT) * WCI_EVENT * CI;
-        double accGainBeh = BF * WBF_AGBEH;
-        double accGainRem = (AGC_REM + (1-AGC_REM) * WCI_REM * CI) * calculateSimilarity() * salienceReminder;
-        ACC_BF = ACC_BF - accDecay + accGainEvent + accGainBeh + accGainRem;
-    }
-
-    public void updateHabit() {
-        double habitDecay;
-        if(behaviour == false) {
-            // 8) HabitDecay = HS * HDP
-            habitDecay = habitStrength * HDP;
-        } else {
-            habitDecay = 0;
+    private void simulateScenario() {
+        for(double bf = 0.0; bf < 1.05; bf += 0.05) {
+            behaviorFrequencies.put(bf, new BehaviorFrequency(bf,1.0, 0.0));
         }
 
+        BehaviorFrequency firstBf = new BehaviorFrequency(BF_EXE,1.0, 0.3);
+        selectedFrequencies.add(firstBf);
+
+        for(; day < 150; day++) {
+            System.out.println("**************** DAY " + day);
+            if(day == 1) {
+                eventActive = true;
+            } else {
+                eventActive = false;
+            }
+            simulateStep();
+        }
+    }
+
+    private void simulateStep() {
+        double maxBehaviorFrequency = 0.0;
+
+        updateSalience();
+        for(double bf = 0.0; bf < 1.05; bf += 0.05) {
+            updateBfAccessibility(bf);
+            updateHabitStrength(bf);
+            checkAccessibility(bf);
+            if(behavior) {
+                maxBehaviorFrequency = bf;
+            }
+        }
+        BF_EXE = maxBehaviorFrequency;
+        selectedFrequencies.add(behaviorFrequencies.get(BF_EXE).copy());
+        System.out.println("Selected bf: " + BF_EXE);
+    }
+
+    private void checkAccessibility(double behaviorFrequency) {
+        BehaviorFrequency bf = behaviorFrequencies.get(behaviorFrequency);
+        double threshold = CAT - (CAT * WH_AT * bf.getHabitStrength()) + (1 - CAT) * WBF_AT * behaviorFrequency * (1 - DRH_AT * bf.getHabitStrength());
+        bf.setThreshold(threshold);
+
+        behavior = bf.getAccessibility() >= threshold;
+
+        //if(behaviorFrequency == 0) {
+            System.out.println("Behavior frequency: " + behaviorFrequency);
+            System.out.println("Behavior: " + behavior);
+            System.out.println("Threshold: " + threshold);
+            System.out.println("Accessibility: " + bf.getAccessibility());
+            //System.out.println("Salience remainder: " + salienceReminder);
+            System.out.println();
+        //}
+    }
+
+    private void updateBfAccessibility(double behaviorFrequency) {
+        BehaviorFrequency bf = behaviorFrequencies.get(behaviorFrequency);
+        double accDecay = bf.getAccessibility() * ADP;
+        double accGainEvent = 0;
+        if(eventActive) {
+            accGainEvent = AGC_EVENT * (1 - AGC_EVENT) * WCI_EVENT * CI;
+        }
+        double accGainBeh = 0;
+        if(BF_EXE != 0) {
+            accGainBeh = BF_EXE * WBF_AGBEH;
+        }
+        double accGainRem = (AGC_REM + (1-AGC_REM) * WCI_REM * CI) * calculateSimilarity(behaviorFrequency) * salienceReminder;
+        bf.setAccessibility(Math.max(0, Math.min(1, bf.getAccessibility() - accDecay + accGainEvent + accGainBeh + accGainRem)));
+    }
+
+    public void updateHabitStrength(double behaviorFrequency) {
+        BehaviorFrequency bf = behaviorFrequencies.get(behaviorFrequency);
+        double habitDecay;
+//        if(behavior == false) {
+            habitDecay = bf.getHabitStrength() * HDP;
+//        } else {
+//            habitDecay = 0;
+//        }
+
         double habitGainBF;
-        if(behaviour == true) {
-            double habitGainExe = (habitStrength * (1 - BF) + BF) * HDP;
-            habitGainBF = (1 - calculateSimilarity() + calculateSimilarity() * habitGainExe);
+        if(BF_EXE != 0) {
+            double habitGainExe = (bf.getHabitStrength() * (1 - BF_EXE) + BF_EXE) * HDP;
+            habitGainBF = (1 - calculateSimilarity(BF_EXE) + calculateSimilarity(behaviorFrequency) * habitGainExe);
         } else {
             habitGainBF = 0;
         }
 
-        // 12) HSt1 = HSt - HabitDecay + HabitGain
-        //habitStrength = habitStrength - habitDecay + habitGainBF;
-        habitStrength = habitStrength - habitDecay + habitGainBF;
+        bf.setHabitStrength(Math.max(0, Math.min(1, bf.getHabitStrength() - habitDecay + habitGainBF)));
     }
 
-    public double calculateSimilarity() {
+    private void updateSalience() {
+        double salienceDecay = salienceReminder * SDP_REM;
+        salienceReminder -= salienceDecay;
+    }
+
+
+    private double calculateSimilarity(double behaviorFrequency) {
         double similarity = 1 -
-                ((1.0 / (1 + Math.exp((0.5 - Math.pow(BF    , TS)) * SS)) -
+                ((1.0 / (1 + Math.exp((0.5 - Math.pow(behaviorFrequency, TS)) * SS)) -
                         (1.0 / (1 + Math.exp(0.5 * SS)))) /
                         ((1.0 / (1 + Math.exp(-0.5 * SS))) -
                                 (1.0 / (1 + Math.exp(0.5 * SS))))) *
                         DP;
         return similarity;
+    }
+
+    private void drawCharts() {
+        // show behaviour chart
+        SwingUtilities.invokeLater(() -> {
+            BfAccessibilityThreshold example = new BfAccessibilityThreshold("BFs");
+            example.showChart(selectedFrequencies);
+            example.setSize(800, 400);
+            example.setLocationRelativeTo(null);
+            example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            example.setVisible(true);
+        });
+    }
+
+    public static class BehaviorFrequency {
+        private double behaviourFrequency;
+        private double habitStrength;
+        private double accessibility;
+        private double threshold;
+
+        public BehaviorFrequency(double behaviourFrequency, double habitStrength, double accessibility) {
+            this.behaviourFrequency = behaviourFrequency;
+            this.habitStrength = habitStrength;
+            this.accessibility = accessibility;
+        }
+
+        public double getHabitStrength() {
+            return habitStrength;
+        }
+
+        public void setHabitStrength(double habitStrength) {
+            this.habitStrength = habitStrength;
+        }
+
+        public double getAccessibility() {
+            return accessibility;
+        }
+
+        public void setAccessibility(double accessibility) {
+            this.accessibility = accessibility;
+        }
+
+        public double getThreshold() {
+            return threshold;
+        }
+
+        public void setThreshold(double threshold) {
+            this.threshold = threshold;
+        }
+
+        public double getBehaviourFrequency() {
+            return behaviourFrequency;
+        }
+
+        public void setBehaviourFrequency(double behaviourFrequency) {
+            this.behaviourFrequency = behaviourFrequency;
+        }
+
+        public BehaviorFrequency copy() {
+            BehaviorFrequency copy = new BehaviorFrequency(this.behaviourFrequency, this.habitStrength, this.accessibility);
+            copy.setThreshold(this.threshold);
+            return copy;
+        }
     }
 }

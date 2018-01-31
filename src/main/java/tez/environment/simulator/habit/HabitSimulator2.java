@@ -1,8 +1,5 @@
 package tez.environment.simulator.habit;
 
-import tez.environment.simulator.habit.visualization.AccessibilityThresholdChart;
-import tez.environment.simulator.habit.visualization.BehaviourChart;
-import tez.environment.simulator.habit.visualization.ThresholdChart;
 import tez.environment.simulator.habit.visualization.h2.BfAccessibilityThreshold;
 
 import javax.swing.*;
@@ -49,7 +46,7 @@ public class HabitSimulator2 {
     private Map<Double, BehaviorFrequency> behaviorFrequencies = new HashMap<>();
     private double salienceReminder;
     private double BF_EXE;
-    private int day = 2;
+    private int step = 2;
     private boolean eventActive = false;
     private boolean behavior;
 
@@ -95,9 +92,9 @@ public class HabitSimulator2 {
         BehaviorFrequency firstBf = new BehaviorFrequency(BF_EXE,1.0, ACC_FIRST);
         selectedFrequencies.add(firstBf);
 
-        for(; day < 150; day++) {
-            System.out.println("**************** DAY " + day);
-            if(day == 1) {
+        for(; step < 150; step++) {
+            System.out.println("**************** STEP " + step);
+            if(step == 1) {
                 eventActive = true;
             } else {
                 eventActive = false;

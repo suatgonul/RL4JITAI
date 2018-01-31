@@ -6,10 +6,7 @@ import tez.environment.simulator.habit.visualization.ThresholdChart;
 import tez.environment.simulator.habit.visualization.h2.BfAccessibilityThreshold;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class HabitSimulator2 {
     // accessability decay parameter
@@ -47,6 +44,7 @@ public class HabitSimulator2 {
 
     // agent-specific
     private double CI;
+    private double ACC_FIRST;
 
     private Map<Double, BehaviorFrequency> behaviorFrequencies = new HashMap<>();
     private double salienceReminder;
@@ -56,8 +54,6 @@ public class HabitSimulator2 {
     private boolean behavior;
 
     // visualization data
-    private List<Boolean> behaviours = new ArrayList<>();
-    private List<Boolean> reminders = new ArrayList<>();
     private List<BehaviorFrequency> selectedFrequencies = new ArrayList<>();
 
     public static void main(String[] args) {
@@ -86,16 +82,17 @@ public class HabitSimulator2 {
 
         // initial values
         salienceReminder = 1.0;
-        BF_EXE = 0.5;
-        CI = 0.5;
+        BF_EXE = 0.2;
+        CI = 0.3;
+        ACC_FIRST = BF_EXE;
     }
 
     private void simulateScenario() {
         for(double bf = 0.0; bf < 1.05; bf += 0.05) {
-            behaviorFrequencies.put(bf, new BehaviorFrequency(bf,1.0, 0.0));
+            behaviorFrequencies.put(bf, new BehaviorFrequency(bf,1.0, bf));
         }
 
-        BehaviorFrequency firstBf = new BehaviorFrequency(BF_EXE,1.0, 0.3);
+        BehaviorFrequency firstBf = new BehaviorFrequency(BF_EXE,1.0, ACC_FIRST);
         selectedFrequencies.add(firstBf);
 
         for(; day < 150; day++) {
@@ -113,7 +110,8 @@ public class HabitSimulator2 {
         double maxBehaviorFrequency = 0.0;
 
         updateSalience();
-        for(double bf = 0.0; bf < 1.05; bf += 0.05) {
+        double bf;
+        for(bf = 0.0; bf < 1.05; bf += 0.05) {
             updateBfAccessibility(bf);
             updateHabitStrength(bf);
             checkAccessibility(bf);
@@ -122,13 +120,15 @@ public class HabitSimulator2 {
             }
         }
         BF_EXE = maxBehaviorFrequency;
+        if(new Random().nextInt(10) % 10 < 3) BF_EXE = 0.0; else BF_EXE = bf-0.05;
+
         selectedFrequencies.add(behaviorFrequencies.get(BF_EXE).copy());
         System.out.println("Selected bf: " + BF_EXE);
     }
 
     private void checkAccessibility(double behaviorFrequency) {
         BehaviorFrequency bf = behaviorFrequencies.get(behaviorFrequency);
-        double threshold = CAT - (CAT * WH_AT * bf.getHabitStrength()) + (1 - CAT) * WBF_AT * behaviorFrequency * (1 - DRH_AT * bf.getHabitStrength());
+        double threshold = CAT - (CAT * WH_AT * bf.getHabitStrength()) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * bf.getHabitStrength());
         bf.setThreshold(threshold);
 
         behavior = bf.getAccessibility() >= threshold;
@@ -148,13 +148,13 @@ public class HabitSimulator2 {
         double accDecay = bf.getAccessibility() * ADP;
         double accGainEvent = 0;
         if(eventActive) {
-            accGainEvent = AGC_EVENT * (1 - AGC_EVENT) * WCI_EVENT * CI;
+            accGainEvent = AGC_EVENT * (1.0 - AGC_EVENT) * WCI_EVENT * CI;
         }
         double accGainBeh = 0;
         if(BF_EXE != 0) {
             accGainBeh = BF_EXE * WBF_AGBEH;
         }
-        double accGainRem = (AGC_REM + (1-AGC_REM) * WCI_REM * CI) * calculateSimilarity(behaviorFrequency) * salienceReminder;
+        double accGainRem = (AGC_REM + (1.0-AGC_REM) * WCI_REM * CI) * calculateSimilarity(behaviorFrequency) * salienceReminder;
         bf.setAccessibility(Math.max(0, Math.min(1, bf.getAccessibility() - accDecay + accGainEvent + accGainBeh + accGainRem)));
     }
 
@@ -169,8 +169,8 @@ public class HabitSimulator2 {
 
         double habitGainBF;
         if(BF_EXE != 0) {
-            double habitGainExe = (bf.getHabitStrength() * (1 - BF_EXE) + BF_EXE) * HDP;
-            habitGainBF = (1 - calculateSimilarity(BF_EXE) + calculateSimilarity(behaviorFrequency) * habitGainExe);
+            double habitGainExe = (bf.getHabitStrength() * (1.0 - BF_EXE) + BF_EXE) * HDP;
+            habitGainBF = (1.0 - calculateSimilarity(BF_EXE) + calculateSimilarity(behaviorFrequency) * habitGainExe);
         } else {
             habitGainBF = 0;
         }
@@ -185,7 +185,7 @@ public class HabitSimulator2 {
 
 
     private double calculateSimilarity(double behaviorFrequency) {
-        double similarity = 1 -
+        double similarity = 1.0 -
                 ((1.0 / (1 + Math.exp((0.5 - Math.pow(behaviorFrequency, TS)) * SS)) -
                         (1.0 / (1 + Math.exp(0.5 * SS)))) /
                         ((1.0 / (1 + Math.exp(-0.5 * SS))) -

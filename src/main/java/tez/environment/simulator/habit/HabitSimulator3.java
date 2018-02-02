@@ -1,6 +1,6 @@
 package tez.environment.simulator.habit;
 
-import tez.environment.simulator.habit.visualization.h3.AccessibilityThresholdChart;
+import tez.environment.simulator.habit.visualization.AccessibilityThresholdChart;
 import tez.environment.simulator.habit.visualization.h3.BehaviorJitaiChart;
 
 import javax.swing.*;
@@ -60,12 +60,17 @@ public class HabitSimulator3 {
     private List<Integer> remembers = new ArrayList<>();
     private List<Double> accessibilities = new ArrayList<>();
     private List<Double> thresholds = new ArrayList<>();
+    private List<Double> habitStrengths = new ArrayList<>();
+    private List<Double> behaviorFrequencies = new ArrayList<>();
     private List<Integer> jitais = new ArrayList<>();
 
     public HabitSimulator3(double initialBehaviorFrequency, double commitmentIntensity, LinkedHashMap<Integer, Integer> jitaiGroups) {
         ADP = 0.641;
+        //ADP = 0.3;
         AGC_EVENT = 0.111;
         AGC_REM = 0.005;
+        //AGC_REM = 0.037;
+        //AGC_REM = 0.1;
         CAT = 0.749;
         DP = 0.886;
         DRH_AT = 0.975;
@@ -75,6 +80,7 @@ public class HabitSimulator3 {
         TS = 0.214;
         TP = TS;
         WBF_AGBEH = 0.221;
+        //WBF_AGBEH = 0.6;
         WBF_AT = 0.355;
         WCI_EVENT = 0.997;
         WCI_REM = 0.083;
@@ -93,6 +99,7 @@ public class HabitSimulator3 {
         }
         windowSize = 15;
         accessibility = commitmentIntensity;
+        habitStrength = initialBehaviorFrequency;
         initiateBehaviorList();
     }
 
@@ -100,15 +107,20 @@ public class HabitSimulator3 {
         LinkedHashMap<Integer, Integer> jitaiGroups = new LinkedHashMap<>();
         jitaiGroups.put(1, 2);
         jitaiGroups.put(2, 1);
-        HabitSimulator3 hs = new HabitSimulator3(0.3, 0.5, jitaiGroups);
+        HabitSimulator3 hs = new HabitSimulator3(0.7, 0.7, jitaiGroups);
+        hs.simulateScenario();
+        hs.drawCharts();
+
+        hs = new HabitSimulator3(0.3, 0.3, jitaiGroups);
         hs.simulateScenario();
         hs.drawCharts();
     }
 
     private void simulateScenario() {
         for (day = 0; day < 50; day++) {
+            System.out.println("************* DAY:" + day);
             for (dailyStep = 0; dailyStep < 3; dailyStep++) {
-                System.out.println("**************** STEP " + dailyStep);
+                System.out.println("**************** STEP: " + dailyStep);
                 //if(dailyStep % 2) {
                 //simulateStep((dailyStep % 2) + 1, (dailyStep % 2) == 0 ? 1 : 3);
                 simulateStep(1, 1);
@@ -129,14 +141,36 @@ public class HabitSimulator3 {
     }
 
     private void simulateBehavior() {
-        double threshold = CAT - (CAT * WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
+        System.out.println("VALUES FOR THRESHOLD");
+        System.out.println("Habit strenght: " + habitStrength);
+        System.out.println("Behavior frequency: " + behaviorFrequency);
+        System.out.println("");
+        double threshold = CAT - (CAT *  WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
 
         boolean behaviorRemembered = accessibility >= threshold;
         behaviorPerformed = behaviorRemembered;
         behaviorPerformed = false;
-        if (/*behaviorRemembered && */(new Random().nextInt(100) % 100 < (CI * 100))) {
+        if (behaviorRemembered) {
             behaviorPerformed = true;
         }
+//        if(behaviorRemembered) {
+            if ((new Random().nextInt(100) % 100 < (CI * 100))) {
+                behaviorPerformed = true;
+            } else {
+                behaviorPerformed = false;
+            }
+//        } else {
+//            behaviorPerformed = false;
+//        }
+
+//        if(day == 5) behaviorPerformed = true;
+//        if(day == 10) behaviorPerformed = false;
+//        if(day == 15) behaviorPerformed = true;
+//        if(day == 20) behaviorPerformed = false;
+//        if(day >= 10 && day < 17)
+//            behaviorPerformed = false;
+//        if(day >= 30 && day < 35)
+//            behaviorPerformed = true;
 
         updateBehaviourFrequency(behaviorPerformed);
 
@@ -156,11 +190,13 @@ public class HabitSimulator3 {
         behaviors.set(day, behaviors.get(day) + (behaviorPerformed ? 1 : 0));
         accessibilities.add(accessibility);
         thresholds.add(threshold);
+        habitStrengths.add(habitStrength);
+        behaviorFrequencies.add(behaviorFrequency);
         jitais.add(selectedJitaiType);
     }
 
     private void updateAccessibility() {
-        double accDecay = accessibility * ADP;
+        double accDecay  = accessibility * ADP;
         double accGainBeh = 0;
         double accGainEvent = 0;
         if(day == 0 && dailyStep == 0) {
@@ -169,7 +205,10 @@ public class HabitSimulator3 {
         if (behaviorPerformed) {
             accGainBeh = behaviorFrequency * WBF_AGBEH;
         }
-        double accGainRem = (AGC_REM + (1.0 - AGC_REM) * WCI_REM * CI) * calculateSimilarity(behaviorFrequency) * salienceReminders.get(selectedJitaiType);
+        double accGainRem = 0;
+        if(selectedJitaiType != 0) {
+            accGainRem = (AGC_REM + (1.0 - AGC_REM) * WCI_REM * CI) * salienceReminders.get(selectedJitaiType) ;
+        }
         accessibility = Math.max(0, Math.min(1, accessibility - accDecay + accGainEvent + accGainBeh + accGainRem));
 
         System.out.println("accDecay: " + accDecay);
@@ -190,7 +229,7 @@ public class HabitSimulator3 {
         double habitGainBF;
         if (behaviorPerformed) {
             double habitGainExe = (habitStrength * (1.0 - behaviorFrequency) + behaviorFrequency) * HDP;
-            habitGainBF = (1.0 - calculateSimilarity(behaviorFrequency) + calculateSimilarity(behaviorFrequency) * habitGainExe);
+            habitGainBF = habitGainExe;
         } else {
             habitGainBF = 0;
         }
@@ -226,11 +265,11 @@ public class HabitSimulator3 {
         behaviourWindow.add(behaviour);
 
         int performedBehaviour = 0;
-        for (int i = 0; i < windowSize; i++) {
+        for (int i = 0; i < windowSize * 3; i++) {
             performedBehaviour += behaviourWindow.get(i) ? 1 : 0;
         }
 
-        behaviorFrequency = Math.max(0, (double) performedBehaviour / (double) windowSize);
+        behaviorFrequency = Math.max(0, (double) performedBehaviour / (double) (windowSize*3));
     }
 
     private double calculateSimilarity(double behaviorFrequency) {
@@ -244,17 +283,17 @@ public class HabitSimulator3 {
     }
 
     private void drawCharts() {
-        SwingUtilities.invokeLater(() -> {
-            BehaviorJitaiChart example = new BehaviorJitaiChart("Behaviour");
-            example.showChart(behaviors, remembers);
-            example.setSize(800, 400);
-            example.setLocationRelativeTo(null);
-            example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            example.setVisible(true);
-        });
+//        SwingUtilities.invokeLater(() -> {
+//            BehaviorJitaiChart example = new BehaviorJitaiChart("Behaviour");
+//            example.showChart(behaviors, remembers);
+//            example.setSize(800, 400);
+//            example.setLocationRelativeTo(null);
+//            example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+//            example.setVisible(true);
+//        });
         SwingUtilities.invokeLater(() -> {
             AccessibilityThresholdChart example = new AccessibilityThresholdChart("Acc / Thresh");
-            example.showChart(accessibilities, thresholds);
+            example.showChart(accessibilities, thresholds, behaviorFrequencies, habitStrengths);
             example.setSize(800, 400);
             example.setLocationRelativeTo(null);
             example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

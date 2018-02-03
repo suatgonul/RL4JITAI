@@ -107,11 +107,11 @@ public class HabitSimulator3 {
         LinkedHashMap<Integer, Integer> jitaiGroups = new LinkedHashMap<>();
         jitaiGroups.put(1, 2);
         jitaiGroups.put(2, 1);
-        HabitSimulator3 hs = new HabitSimulator3(0.7, 0.7, jitaiGroups);
+        HabitSimulator3 hs = new HabitSimulator3(0.3, 0.2, jitaiGroups);
         hs.simulateScenario();
         hs.drawCharts();
 
-        hs = new HabitSimulator3(0.3, 0.3, jitaiGroups);
+        hs = new HabitSimulator3(0.5, 0.5, jitaiGroups);
         hs.simulateScenario();
         hs.drawCharts();
     }
@@ -145,6 +145,7 @@ public class HabitSimulator3 {
         System.out.println("Habit strenght: " + habitStrength);
         System.out.println("Behavior frequency: " + behaviorFrequency);
         System.out.println("");
+        //double threshold = CAT - (CAT *  WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
         double threshold = CAT - (CAT *  WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
 
         boolean behaviorRemembered = accessibility >= threshold;
@@ -154,7 +155,7 @@ public class HabitSimulator3 {
             behaviorPerformed = true;
         }
 //        if(behaviorRemembered) {
-            if ((new Random().nextInt(100) % 100 < (CI * 100))) {
+            if ((new Random().nextInt(100) % 100 < (0.8 * 100))) {
                 behaviorPerformed = true;
             } else {
                 behaviorPerformed = false;
@@ -203,13 +204,15 @@ public class HabitSimulator3 {
             accGainEvent = AGC_EVENT * (1.0 - AGC_EVENT) * WCI_EVENT * CI;
         }
         if (behaviorPerformed) {
-            accGainBeh = behaviorFrequency * WBF_AGBEH;
+            //accGainBeh = behaviorFrequency * WBF_AGBEH
+            accGainBeh = behaviorFrequency * WBF_AGBEH + (1-behaviorFrequency) * WBF_AGBEH;
         }
         double accGainRem = 0;
         if(selectedJitaiType != 0) {
             accGainRem = (AGC_REM + (1.0 - AGC_REM) * WCI_REM * CI) * salienceReminders.get(selectedJitaiType) ;
         }
         accessibility = Math.max(0, Math.min(1, accessibility - accDecay + accGainEvent + accGainBeh + accGainRem));
+
 
         System.out.println("accDecay: " + accDecay);
         System.out.println("accGainRem: " + accGainRem);

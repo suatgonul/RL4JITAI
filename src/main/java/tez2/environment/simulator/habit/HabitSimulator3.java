@@ -1,4 +1,4 @@
-package tez.environment.simulator.habit;
+package tez2.environment.simulator.habit;
 
 import tez.environment.simulator.habit.visualization.AccessibilityThresholdChart;
 import tez.environment.simulator.habit.visualization.h3.BehaviorJitaiChart;
@@ -107,11 +107,11 @@ public class HabitSimulator3 {
         LinkedHashMap<Integer, Integer> jitaiGroups = new LinkedHashMap<>();
         jitaiGroups.put(1, 2);
         jitaiGroups.put(2, 1);
-        HabitSimulator3 hs = new HabitSimulator3(0.3, 0.2, jitaiGroups);
+        tez.environment.simulator.habit.HabitSimulator3 hs = new tez.environment.simulator.habit.HabitSimulator3(0.3, 0.2, jitaiGroups);
         hs.simulateScenario();
         hs.drawCharts();
 
-        hs = new HabitSimulator3(0.5, 0.5, jitaiGroups);
+        hs = new tez.environment.simulator.habit.HabitSimulator3(0.5, 0.5, jitaiGroups);
         hs.simulateScenario();
         hs.drawCharts();
     }

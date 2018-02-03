@@ -1,0 +1,16 @@
+package tez2.experiment.performance;
+
+/**
+ * Created by suatgonul on 4/27/2017.
+ */
+public enum SelfManagementPerformanceMetric {
+    CUMULATIVEREWARDPERSTEP,
+    CUMULATIVE_REWARD_PER_EPISODE,
+    AVERAGEEPISODEREWARD,
+    MEDIANEPISODEREWARD,
+    CUMULATIVESTEPSPEREPISODE,
+    STEPSPEREPISODE,
+    REWARD_PER_EPISODE,
+    USER_REACTION_PER_EPISODE,
+    CUMULATIVE_REACTION;
+}

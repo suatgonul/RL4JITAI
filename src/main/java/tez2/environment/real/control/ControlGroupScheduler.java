@@ -14,7 +14,7 @@ import java.util.Set;
  * Created by suat on 19-Jun-17.
  */
 public class ControlGroupScheduler {
-    private static tez.environment.real.control.ControlGroupScheduler instance;
+    private static ControlGroupScheduler instance;
 
     private Scheduler scheduler;
 
@@ -22,9 +22,9 @@ public class ControlGroupScheduler {
 
     }
 
-    public static tez.environment.real.control.ControlGroupScheduler getInstance() {
+    public static ControlGroupScheduler getInstance() {
         if (instance == null) {
-            instance = new tez.environment.real.control.ControlGroupScheduler();
+            instance = new ControlGroupScheduler();
         }
         return instance;
     }

@@ -45,7 +45,7 @@ public class Experiment {
         RewardFunction rf = new SelfManagementRewardFunction();
         JitaiSelectionDomainGenerator domGen = new JitaiSelectionDomainGenerator(null);
         Domain domain = domGen.generateDomain();
-        environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob");
+        environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob", "p1");
         //environment = new RealWorld(domain, rf, tf, 1, 100);
         domGen.setEnvironment(environment);
 

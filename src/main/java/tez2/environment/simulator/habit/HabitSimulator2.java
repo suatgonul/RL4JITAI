@@ -1,6 +1,6 @@
 package tez2.environment.simulator.habit;
 
-import tez.environment.simulator.habit.visualization.h2.BfAccessibilityThreshold;
+import tez2.environment.simulator.habit.visualization.h2.BfAccessibilityThreshold;
 
 import javax.swing.*;
 import java.util.*;
@@ -54,7 +54,7 @@ public class HabitSimulator2 {
     private List<BehaviorFrequency> selectedFrequencies = new ArrayList<>();
 
     public static void main(String[] args) {
-        tez.environment.simulator.habit.HabitSimulator2 hs = new tez.environment.simulator.habit.HabitSimulator2();
+        HabitSimulator2 hs = new HabitSimulator2();
         hs.simulateScenario();
         hs.drawCharts();
     }

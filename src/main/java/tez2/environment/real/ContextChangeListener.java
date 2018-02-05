@@ -22,7 +22,7 @@ import static tez.util.LogUtil.*;
  */
 public class ContextChangeListener {
     private static final Logger log = Logger.getLogger(tez.environment.real.ContextChangeListener.class);
-    private static tez.environment.real.ContextChangeListener instance;
+    private static ContextChangeListener instance;
     private Thread listenerThread;
     // this map keeps the recently processed contexts
     private Map<String, Context> latestContexts = new HashMap<>();
@@ -34,9 +34,9 @@ public class ContextChangeListener {
 
     }
 
-    public static tez.environment.real.ContextChangeListener getInstance() {
+    public static ContextChangeListener getInstance() {
         if (instance == null) {
-            instance = new tez.environment.real.ContextChangeListener();
+            instance = new ContextChangeListener();
         }
         return instance;
     }

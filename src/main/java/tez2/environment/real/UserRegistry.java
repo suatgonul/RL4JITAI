@@ -11,16 +11,16 @@ import java.util.*;
  * Created by suat on 19-Jun-17.
  */
 public class UserRegistry {
-    private static final Logger log = Logger.getLogger(tez.environment.real.UserRegistry.class);
+    private static final Logger log = Logger.getLogger(UserRegistry.class);
 
     // keys are device identifiers
     private Map<String, UserData> users = Collections.synchronizedMap(new HashMap<>());
 
-    private static tez.environment.real.UserRegistry registry;
+    private static UserRegistry registry;
 
-    public static tez.environment.real.UserRegistry getInstance() {
+    public static UserRegistry getInstance() {
         if(registry == null) {
-            registry = new tez.environment.real.UserRegistry();
+            registry = new UserRegistry();
         }
         return registry;
     }
@@ -57,7 +57,7 @@ public class UserRegistry {
     }
 
     public boolean isSettingsConfigured(String deviceIdentifier) {
-        UserData userData = tez.environment.real.UserRegistry.getInstance().getUser(deviceIdentifier);
+        UserData userData =UserRegistry.getInstance().getUser(deviceIdentifier);
         if(userData.getWifiName() == null) {
             return false;
         }

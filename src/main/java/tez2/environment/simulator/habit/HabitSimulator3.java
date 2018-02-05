@@ -1,9 +1,11 @@
 package tez2.environment.simulator.habit;
 
-import tez.environment.simulator.habit.visualization.AccessibilityThresholdChart;
-import tez.environment.simulator.habit.visualization.h3.BehaviorJitaiChart;
+import tez2.environment.simulator.habit.visualization.AccessibilityThresholdChart;
 
 import javax.swing.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 
 public class HabitSimulator3 {
@@ -64,7 +66,31 @@ public class HabitSimulator3 {
     private List<Double> behaviorFrequencies = new ArrayList<>();
     private List<Integer> jitais = new ArrayList<>();
 
+    public HabitSimulator3(String configFilePath) {
+        Properties prop = new Properties();
+        try {
+            prop.load(new FileInputStream(configFilePath));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read config file at: " + configFilePath);
+        }
+
+        String[] jitaiTypes = prop.getProperty("jitai_types").split(",");
+        LinkedHashMap jitaiTypeMap = new LinkedHashMap();
+        for(int i=0; i<jitaiTypes.length; i++) {
+            jitaiTypeMap.put(i+1, Integer.parseInt(jitaiTypes[i]));
+        }
+
+        double behaviorFrequency = Double.parseDouble(prop.getProperty("behavior_frequency"));
+        double commitmentIntensity= Double.parseDouble(prop.getProperty("commitment_intensity"));
+
+        setInitialValues(behaviorFrequency,commitmentIntensity, jitaiTypeMap);
+    }
+
     public HabitSimulator3(double initialBehaviorFrequency, double commitmentIntensity, LinkedHashMap<Integer, Integer> jitaiGroups) {
+        setInitialValues(initialBehaviorFrequency, commitmentIntensity, jitaiGroups);
+    }
+
+    private void setInitialValues(double initialBehaviorFrequency, double commitmentIntensity, LinkedHashMap<Integer, Integer> jitaiGroups) {
         ADP = 0.641;
         //ADP = 0.3;
         AGC_EVENT = 0.111;
@@ -98,8 +124,7 @@ public class HabitSimulator3 {
             salienceReminders.put(i, 1.0);
         }
         windowSize = 15;
-        accessibility = commitmentIntensity;
-        habitStrength = initialBehaviorFrequency;
+        accessibility = habitStrength = commitmentIntensity;
         initiateBehaviorList();
     }
 
@@ -107,11 +132,11 @@ public class HabitSimulator3 {
         LinkedHashMap<Integer, Integer> jitaiGroups = new LinkedHashMap<>();
         jitaiGroups.put(1, 2);
         jitaiGroups.put(2, 1);
-        tez.environment.simulator.habit.HabitSimulator3 hs = new tez.environment.simulator.habit.HabitSimulator3(0.3, 0.2, jitaiGroups);
+        HabitSimulator3 hs = new HabitSimulator3(0.3, 0.2, jitaiGroups);
         hs.simulateScenario();
         hs.drawCharts();
 
-        hs = new tez.environment.simulator.habit.HabitSimulator3(0.5, 0.5, jitaiGroups);
+        hs = new HabitSimulator3(0.5, 0.5, jitaiGroups);
         hs.simulateScenario();
         hs.drawCharts();
     }

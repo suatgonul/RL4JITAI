@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import static tez.persona.parser.Constant.*;
+import static tez2.persona.parser.Constant.*;
 
 /**
  * Created by suatgonul on 12/25/2016.

@@ -8,18 +8,15 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import org.apache.log4j.Logger;
-import tez.algorithm.SelfManagementEligibilitySarsaLam;
-import tez.algorithm.SelfManagementGreedyQPolicy;
-import tez.algorithm.SelfManagementNoActionFavoringQPolicy;
-import tez.algorithm.SelfManagementSarsa;
-import tez.algorithm.collaborative_learning.SparkStateClassifier;
-import tez.domain.DayTerminalFunction;
-import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
-import tez.domain.SelfManagementRewardFunction;
-import tez.environment.real.RealWorld;
-import tez.environment.real.UserRegistry;
-import tez.experiment.real.RealExperimenter;
+import tez2.algorithm.SelfManagementNoActionFavoringQPolicy;
+import tez2.algorithm.SelfManagementSarsa;
+import tez2.algorithm.collaborative_learning.SparkStateClassifier;
+import tez2.domain.DayTerminalFunction;
+import tez2.domain.SelfManagementDomain;
+import tez2.domain.SelfManagementRewardFunction;
+import tez2.environment.real.RealWorld;
+import tez2.environment.real.UserRegistry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +29,7 @@ import static tez.util.LogUtil.log_info;
  * Created by suat on 19-Jun-17.
  */
 public class RealExperimentManager {
-    private static tez.experiment.real.RealExperimentManager instance;
+    private static RealExperimentManager instance;
     private static final Logger log = Logger.getLogger(tez.experiment.real.RealExperimentManager.class);
 
     private Map<String, Environment> environments = new HashMap<>();
@@ -42,9 +39,9 @@ public class RealExperimentManager {
 
     }
 
-    public static tez.experiment.real.RealExperimentManager getInstance() {
+    public static RealExperimentManager getInstance() {
         if (instance == null) {
-            instance = new tez.experiment.real.RealExperimentManager();
+            instance = new RealExperimentManager();
         }
         return instance;
     }
@@ -74,7 +71,7 @@ public class RealExperimentManager {
     }
 
     private void runRLExperiment(String deviceIdentifier) {
-        SelfManagementDomainGenerator smdg = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
+        SelfManagementDomainGenerator smdg = new SelfManagementDomainGenerator(tez.domain.SelfManagementDomain.DomainComplexity.HARD);
         Domain domain = smdg.generateDomain();
         TerminalFunction tf = new DayTerminalFunction();
         RewardFunction rf = new SelfManagementRewardFunction();

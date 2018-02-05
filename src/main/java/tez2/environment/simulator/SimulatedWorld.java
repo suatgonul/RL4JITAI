@@ -2,19 +2,27 @@ package tez2.environment.simulator;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TerminalFunction;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.objects.ObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.EnvironmentObserver;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import org.joda.time.DateTime;
+import tez2.domain.SelfManagementDomain;
+import tez2.domain.TerminalState;
 import tez2.environment.SelfManagementEnvironment;
-import tez2.environment.context.DayType;
-import tez2.environment.context.PartOfDay;
+import tez2.environment.simulator.habit.HabitSimulator3;
 import tez2.persona.Activity;
 import tez2.persona.TimePlan;
 import tez2.persona.parser.PersonaParser;
 import tez2.persona.parser.PersonaParserException;
+
+import java.util.LinkedHashMap;
+
+import static tez2.domain.DomainConfig.*;
 
 /**
  * Created by suatgonul on 12/2/2016.
@@ -25,6 +33,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
      */
     private double habitStrength;
     private double behaviorFrequency;
+    private boolean rememberBehavior;
 
     private int currentDay;
     private TimePlan currentTimePlan;
@@ -32,14 +41,15 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     private boolean lastActivity;
 
     private String personaFolder;
-    private String personId;
 
-    public SimulatedWorld(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String personaFolder, String personId) {
+    private HabitSimulator3 habitSimulator;
+
+    public SimulatedWorld(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String personaFolder) {
         super(domain, rf, tf, stateChangeFrequency);
         this.personaFolder = personaFolder;
-        this.personId = personId;
         this.currentDay = 1;
-        episodeInit();
+        initEpisode();
+        this.habitSimulator = new HabitSimulator3(personaFolder + "/config");
         this.curState = stateGenerator.generateState();
     }
 
@@ -115,7 +125,24 @@ public class SimulatedWorld extends SelfManagementEnvironment {
 
     @Override
     public State getStateFromCurrentContext() {
-        return null;
+        SelfManagementDomain smdomain = (SelfManagementDomain) domain;
+        State s;
+        if (!lastActivity) {
+            s = new MutableState();
+            s.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
+
+            ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
+            o.setValue(ATT_HABIT_STRENGTH, habitStrength);
+            o.setValue(ATT_BEHAVIOR_FREQUENCY, behaviorFrequency);
+            o.setValue(ATT_REMEMBER_BEHAVIOR, rememberBehavior);
+            o.setValue(ATT_DAY_TYPE, getDayType(currentDay));
+            o.setValue(ATT_PART_OF_DAY, getDayPart());
+
+        } else {
+            s = new TerminalState();
+        }
+
+        return s;
     }
 
     @Override
@@ -129,10 +156,10 @@ public class SimulatedWorld extends SelfManagementEnvironment {
      *
      * @throws WorldSimulationException
      */
-    protected void episodeInit() throws WorldSimulationException {
+    protected void initEpisode() throws WorldSimulationException {
         // initialize time plan
         PersonaParser personaParser = new PersonaParser();
-        String personaPath = personaFolder + "/" + personId + "/weekday.csv";
+        String personaPath = personaFolder + "/weekday.csv";
 
         try {
             currentTimePlan = personaParser.getTimePlanForPersona(personaPath);

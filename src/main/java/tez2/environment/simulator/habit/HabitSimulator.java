@@ -1,8 +1,8 @@
 package tez2.environment.simulator.habit;
 
-import tez.environment.simulator.habit.visualization.AccessibilityThresholdChart;
-import tez.environment.simulator.habit.visualization.BehaviourChart;
-import tez.environment.simulator.habit.visualization.ThresholdChart;
+import tez2.environment.simulator.habit.visualization.AccessibilityThresholdChart;
+import tez2.environment.simulator.habit.visualization.BehaviourChart;
+import tez2.environment.simulator.habit.visualization.ThresholdChart;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public class HabitSimulator {
     private int day = 1;
 
     public static void main(String[] args) {
-        tez.environment.simulator.habit.HabitSimulator hs = new tez.environment.simulator.habit.HabitSimulator();
+        HabitSimulator hs = new HabitSimulator();
         hs.setAGC_REM(0.037);
         hs.setAGC_EVENT(0.615);
         hs.setAGC_BEH(0.21);
@@ -95,7 +95,7 @@ public class HabitSimulator {
 
     }
 
-    private void simulateScenario(tez.environment.simulator.habit.HabitSimulator hs) {
+    private void simulateScenario(HabitSimulator hs) {
         List<Boolean> simulatedBehaviours = new ArrayList<>();
 
         // simulate salience decay

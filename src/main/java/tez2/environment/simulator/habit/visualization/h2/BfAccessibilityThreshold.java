@@ -6,7 +6,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import tez.environment.simulator.habit.HabitSimulator2;
+import tez2.environment.simulator.habit.HabitSimulator2;
 
 import javax.swing.*;
 import java.util.List;

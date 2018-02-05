@@ -10,7 +10,7 @@ import java.util.*;
  * Created by suat on 19-Jun-17.
  */
 public class NotificationManager {
-    private static tez.environment.real.NotificationManager instance;
+    private static NotificationManager instance;
 
     private FirebaseClient firebaseClient;
     private Map<String, LinkedList<NotificationMetadata>> sentNotifications = new HashMap<>();
@@ -20,9 +20,9 @@ public class NotificationManager {
         firebaseClient = new FirebaseClient();
     }
 
-    public static tez.environment.real.NotificationManager getInstance() {
+    public static NotificationManager getInstance() {
         if (instance == null) {
-            instance = new tez.environment.real.NotificationManager();
+            instance = new NotificationManager();
         }
         return instance;
     }

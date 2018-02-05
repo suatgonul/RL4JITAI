@@ -3,9 +3,9 @@ package tez2.experiment.performance;
 import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
-import tez.domain.action.SelfManagementAction;
-import tez.environment.context.Context;
-import tez.experiment.performance.SelfManagementEpisodeAnalysis;
+import tez2.domain.action.SelfManagementAction;
+import tez2.environment.context.Context;
+import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 
 import java.util.ArrayList;
 import java.util.List;

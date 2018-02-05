@@ -18,8 +18,8 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.YIntervalSeries;
 import org.jfree.data.xy.YIntervalSeriesCollection;
-import tez.domain.ExtendedEnvironmentOutcome;
-import tez.experiment.performance.SelfManagementPerformanceMetric;
+import tez2.domain.ExtendedEnvironmentOutcome;
+import tez2.experiment.performance.SelfManagementPerformanceMetric;
 
 import javax.swing.*;
 import java.awt.*;
@@ -207,7 +207,7 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
         this.curAgentName = firstAgentName;
 
         this.agentTrials = new HashMap<String, List<Trial>>();
-        this.agentTrials.put(this.curAgentName, new ArrayList<tez.experiment.performance.SelfManagementRewardPlotter.Trial>());
+        this.agentTrials.put(this.curAgentName, new ArrayList<SelfManagementRewardPlotter.Trial>());
 
         allAgents_cumulativeRewardInAllSteps = new XYSeriesCollection();
         allAgents_cumulativeRewardInAllEpisodes = new XYSeriesCollection();
@@ -410,11 +410,11 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
 
             @Override
             public void run() {
-                synchronized (tez.experiment.performance.SelfManagementRewardPlotter.this) {
-                    tez.experiment.performance.SelfManagementRewardPlotter.this.endTrialsForCurrentAgent();
-                    tez.experiment.performance.SelfManagementRewardPlotter.this.curAgentName = agentName;
-                    tez.experiment.performance.SelfManagementRewardPlotter.this.agentTrials.put(tez.experiment.performance.SelfManagementRewardPlotter.this.curAgentName, new ArrayList<tez.experiment.performance.SelfManagementRewardPlotter.Trial>());
-                    tez.experiment.performance.SelfManagementRewardPlotter.this.curAgentDatasets = new AgentDatasets(curAgentName);
+                synchronized (this) {
+                    endTrialsForCurrentAgent();
+                    curAgentName = agentName;
+                    agentTrials.put(curAgentName, new ArrayList<SelfManagementRewardPlotter.Trial>());
+                    curAgentDatasets = new AgentDatasets(curAgentName);
                 }
             }
         });
@@ -430,8 +430,8 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
 
             @Override
             public void run() {
-                synchronized (tez.experiment.performance.SelfManagementRewardPlotter.this) {
-                    tez.experiment.performance.SelfManagementRewardPlotter.this.endTrialsForCurrentAgent();
+                synchronized (this) {
+                    endTrialsForCurrentAgent();
                 }
             }
         });
@@ -517,9 +517,9 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
             @Override
             public void run() {
                 while (true) {
-                    tez.experiment.performance.SelfManagementRewardPlotter.this.updateTimeSeries();
+                    updateTimeSeries();
                     try {
-                        Thread.sleep(tez.experiment.performance.SelfManagementRewardPlotter.this.delay);
+                        Thread.sleep(delay);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -543,36 +543,36 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
             @Override
             public void run() {
 
-                if (tez.experiment.performance.SelfManagementRewardPlotter.this.trialMode.mostRecentTrialEnabled()) {
-                    synchronized (tez.experiment.performance.SelfManagementRewardPlotter.this) {
+                if (trialMode.mostRecentTrialEnabled()) {
+                    synchronized (this) {
 
-                        synchronized (tez.experiment.performance.SelfManagementRewardPlotter.this.trialUpdateComplete) {
+                        synchronized (trialUpdateComplete) {
 
-                            if (tez.experiment.performance.SelfManagementRewardPlotter.this.needsClearing) {
-                                tez.experiment.performance.SelfManagementRewardPlotter.this.curAgentDatasets.clearNonAverages();
-                                tez.experiment.performance.SelfManagementRewardPlotter.this.needsClearing = false;
+                            if (needsClearing) {
+                                curAgentDatasets.clearNonAverages();
+                                needsClearing = false;
                             }
 
-                            if (tez.experiment.performance.SelfManagementRewardPlotter.this.curTimeStep > tez.experiment.performance.SelfManagementRewardPlotter.this.lastTimeStepUpdate) {
-                                tez.experiment.performance.SelfManagementRewardPlotter.this.updateCSRSeries();
-                                tez.experiment.performance.SelfManagementRewardPlotter.this.lastTimeStepUpdate = curTimeStep;
+                            if (curTimeStep > lastTimeStepUpdate) {
+                                updateCSRSeries();
+                                lastTimeStepUpdate = curTimeStep;
                             }
-                            if (tez.experiment.performance.SelfManagementRewardPlotter.this.curEpisode > tez.experiment.performance.SelfManagementRewardPlotter.this.lastEpisode) {
-                                tez.experiment.performance.SelfManagementRewardPlotter.this.updateCERSeries();
-                                tez.experiment.performance.SelfManagementRewardPlotter.this.updateAERSeris();
-                                tez.experiment.performance.SelfManagementRewardPlotter.this.updateMERSeris();
-                                tez.experiment.performance.SelfManagementRewardPlotter.this.updateCSESeries();
-                                tez.experiment.performance.SelfManagementRewardPlotter.this.updateSESeries();
-                                tez.experiment.performance.SelfManagementRewardPlotter.this.updateRPESeries();
-                                tez.experiment.performance.SelfManagementRewardPlotter.this.updateURESeries();
-                                tez.experiment.performance.SelfManagementRewardPlotter.this.updateCRRSeries();
+                            if (curEpisode > lastEpisode) {
+                                updateCERSeries();
+                                updateAERSeris();
+                                updateMERSeris();
+                                updateCSESeries();
+                                updateSESeries();
+                                updateRPESeries();
+                                updateURESeries();
+                                updateCRRSeries();
 
-                                tez.experiment.performance.SelfManagementRewardPlotter.this.lastEpisode = tez.experiment.performance.SelfManagementRewardPlotter.this.curEpisode;
+                                lastEpisode = curEpisode;
                             }
 
 
-                            tez.experiment.performance.SelfManagementRewardPlotter.this.trialUpdateComplete.b = true;
-                            tez.experiment.performance.SelfManagementRewardPlotter.this.trialUpdateComplete.notifyAll();
+                            trialUpdateComplete.b = true;
+                            trialUpdateComplete.notifyAll();
 
                         }
                     }
@@ -594,8 +594,8 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
         }
 
 
-        List<Trial> trials = tez.experiment.performance.SelfManagementRewardPlotter.this.agentTrials.get(aName);
-        int[] n = tez.experiment.performance.SelfManagementRewardPlotter.this.minStepAndEpisodes(trials);
+        List<Trial> trials = agentTrials.get(aName);
+        int[] n = minStepAndEpisodes(trials);
 
 
         if (this.metricsSet.contains(SelfManagementPerformanceMetric.CUMULATIVEREWARDPERSTEP)) {

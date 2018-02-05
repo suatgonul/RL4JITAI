@@ -2,8 +2,8 @@ package tez2.domain;
 
 import burlap.oomdp.auxiliary.StateGenerator;
 import burlap.oomdp.core.states.State;
-import tez.environment.SelfManagementEnvironment;
-import tez.environment.simulator.SimulatedWorld;
+import tez2.environment.SelfManagementEnvironment;
+import tez2.environment.simulator.SimulatedWorld;
 
 /**
  * Created by suatgonul on 4/30/2017.

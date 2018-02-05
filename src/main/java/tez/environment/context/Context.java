@@ -14,6 +14,7 @@ public class Context {
     private StateOfMind stateOfMind;
     private PhoneUsage phoneUsage;
     private boolean phoneCheckSuitability;
+    private boolean behaviorSuitability;
 
     public Context() {
         this.time = LocalTime.now();
@@ -23,6 +24,7 @@ public class Context {
         this.stateOfMind = StateOfMind.CALM;
         this.phoneUsage = PhoneUsage.SCREEN_OFF;
         this.phoneCheckSuitability = false;
+        this.behaviorSuitability = false;
     }
 
     public Context(String deviceIdentifier) {
@@ -92,6 +94,14 @@ public class Context {
 
     public void setDeviceIdentifier(String deviceIdentifier) {
         this.deviceIdentifier = deviceIdentifier;
+    }
+
+    public boolean getBehaviorSuitability() {
+        return this.behaviorSuitability;
+    }
+
+    public void setBehaviorSuitability(boolean behaviorSuitability) {
+        this.behaviorSuitability = behaviorSuitability;
     }
 
     public Context copy() {

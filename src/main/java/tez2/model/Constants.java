@@ -6,7 +6,7 @@ package tez2.model;
 public class Constants {
     /*public static final String CLASS_STATE = "state";
 
-    public static final String ACTION_INT_DELIVERY = "intervention_delivery";
+    public static final String ACTION_JITAI_1 = "intervention_delivery";
     public static final String ACTION_NO_ACTION = "no_action";
 
     public static final String ATT_TIME = "time";

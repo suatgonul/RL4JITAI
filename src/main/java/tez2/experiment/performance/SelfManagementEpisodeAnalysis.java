@@ -5,11 +5,13 @@ import burlap.behavior.singleagent.learning.LearningAgentFactory;
 import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
-import tez.domain.SelfManagementDomainGenerator;
-import tez.environment.context.Context;
+import tez2.domain.DomainConfig;
+import tez2.environment.context.Context;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static tez2.domain.DomainConfig.*;
 
 /**
  * Created by suatgonul on 4/26/2017.
@@ -38,7 +40,7 @@ public class SelfManagementEpisodeAnalysis extends EpisodeAnalysis {
         userReactions.add(userReaction);
         if (userReaction == true) {
             phoneCheckNumber++;
-            if (usingAction.actionName().equals(SelfManagementDomainGenerator.ACTION_INT_DELIVERY)) {
+            if (usingAction.actionName().equals(ACTION_SEND_JITAI)) {
                 actionDeliveredDuringPhoneCheck++;
             }
         }

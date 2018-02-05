@@ -1,7 +1,6 @@
 package tez2.persona;
 
 import org.joda.time.DateTime;
-import tez.persona.Activity;
 
 import java.util.ArrayList;
 import java.util.List;

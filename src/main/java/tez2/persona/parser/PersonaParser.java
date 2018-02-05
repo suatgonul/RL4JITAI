@@ -2,11 +2,8 @@ package tez2.persona.parser;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
-import tez.persona.Activity;
-import tez.persona.TimePlan;
-import tez.persona.parser.Alternative;
-import tez.persona.parser.ContextParser;
-import tez.persona.parser.PersonaParserException;
+import tez2.persona.Activity;
+import tez2.persona.TimePlan;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +12,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static java.util.Arrays.asList;
-import static tez.persona.parser.Constant.*;
+import static tez2.persona.parser.Constant.*;
 
 /**
  * Created by suatgonul on 12/10/2016.
@@ -42,7 +39,7 @@ public class PersonaParser {
 
     public static void main(String[] args) throws Exception {
         for (int i = 0; i < 50; i++)
-        new tez.persona.parser.PersonaParser().generateActivitiesForTimePlan("src/main/resources/persona/officejob/weekday.csv");
+            new PersonaParser().generateActivitiesForTimePlan("src/main/resources/persona/officejob/weekday.csv");
     }
 
     public TimePlan getTimePlanForPersona(String filePath) throws PersonaParserException {

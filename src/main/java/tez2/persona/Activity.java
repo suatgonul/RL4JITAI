@@ -1,7 +1,7 @@
 package tez2.persona;
 
 import org.joda.time.DateTime;
-import tez.environment.context.Context;
+import tez2.environment.context.Context;
 
 /**
  * Created by suatgonul on 12/2/2016
@@ -61,8 +61,8 @@ public class Activity {
         return start.plusMinutes(duration);
     }
 
-    public tez.persona.Activity copy() {
-        tez.persona.Activity activity = new tez.persona.Activity(getName(), getStart(), getDuration(), getContext());
+    public Activity copy() {
+        Activity activity = new Activity(getName(), getStart(), getDuration(), getContext());
         return activity;
     }
 }

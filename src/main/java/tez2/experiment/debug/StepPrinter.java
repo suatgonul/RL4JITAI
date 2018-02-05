@@ -5,9 +5,9 @@ import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import org.apache.log4j.Logger;
-import tez.domain.action.SelfManagementAction;
-import tez.environment.context.*;
-import tez.util.LogUtil;
+import tez2.domain.action.SelfManagementAction;
+import tez2.environment.context.*;
+import tez2.util.LogUtil;
 
 import java.text.DecimalFormat;
 import java.util.List;
@@ -34,16 +34,14 @@ public class StepPrinter {
         PhoneUsage phoneUsage_c = context.getPhoneUsage();
         EmotionalStatus emotionalStatus_c = context.getEmotionalStatus();
         PhysicalActivity physicalActivity_c = context.getPhysicalActivity();
-        StateOfMind stateOfMind_c = context.getStateOfMind();
 
         StringBuilder sb = new StringBuilder();
         String activityTime = o.getStringValForAttribute(ATT_ACTIVITY_TIME);
         PhysicalActivity activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)];
         PhoneUsage phoneUsage = PhoneUsage.values()[o.getIntValForAttribute(ATT_PHONE_USAGE)];
-        StateOfMind stateOfMind = StateOfMind.values()[o.getIntValForAttribute(ATT_STATE_OF_MIND)];
         EmotionalStatus emotionalStatus = EmotionalStatus.values()[o.getIntValForAttribute(ATT_EMOTIONAL_STATUS)];
-        sb.append("(" + activityTime + ", " + dayType + ", " + location + ", " + activity + ", " + phoneUsage + ", " + stateOfMind + ", " + emotionalStatus + ") ");
-        sb.append("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");
+        sb.append("(" + activityTime + ", " + dayType + ", " + location + ", " + activity + ", " + phoneUsage + ", " + emotionalStatus + ") ");
+        sb.append("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + emotionalStatus_c + ") ");
         int actionNo;
         for (QValue qv : qValues) {
             actionNo = qv.a.actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;

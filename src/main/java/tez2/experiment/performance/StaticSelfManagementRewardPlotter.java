@@ -12,7 +12,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
 import org.jfree.data.xy.YIntervalSeries;
 import org.jfree.data.xy.YIntervalSeriesCollection;
-import tez.experiment.performance.SelfManagementPerformanceMetric;
+import tez2.experiment.performance.SelfManagementPerformanceMetric;
 
 import javax.swing.*;
 import java.awt.*;
@@ -142,7 +142,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         this.curAgentName = firstAgentName;
 
         this.agentTrials = new HashMap<String, List<Trial>>();
-        this.agentTrials.put(this.curAgentName, new ArrayList<tez.experiment.performance.StaticSelfManagementRewardPlotter.Trial>());
+        this.agentTrials.put(this.curAgentName, new ArrayList<tez2.experiment.performance.StaticSelfManagementRewardPlotter.Trial>());
 
         allAgents_cumulativeRewardInAllStepsAvg = new YIntervalSeriesCollection();
         allAgents_cumulativeRewardInAllEpisodesAvg = new YIntervalSeriesCollection();
@@ -278,11 +278,11 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
 
             @Override
             public void run() {
-                synchronized (tez.experiment.performance.StaticSelfManagementRewardPlotter.this) {
-                    tez.experiment.performance.StaticSelfManagementRewardPlotter.this.endTrialsForCurrentAgent();
-                    tez.experiment.performance.StaticSelfManagementRewardPlotter.this.curAgentName = agentName;
-                    tez.experiment.performance.StaticSelfManagementRewardPlotter.this.agentTrials.put(tez.experiment.performance.StaticSelfManagementRewardPlotter.this.curAgentName, new ArrayList<tez.experiment.performance.StaticSelfManagementRewardPlotter.Trial>());
-                    tez.experiment.performance.StaticSelfManagementRewardPlotter.this.curAgentDatasets = new AgentDatasets(curAgentName);
+                synchronized (this) {
+                    endTrialsForCurrentAgent();
+                    curAgentName = agentName;
+                    agentTrials.put(curAgentName, new ArrayList<StaticSelfManagementRewardPlotter.Trial>());
+                    curAgentDatasets = new AgentDatasets(curAgentName);
                 }
             }
         });
@@ -298,8 +298,8 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
 
             @Override
             public void run() {
-                synchronized (tez.experiment.performance.StaticSelfManagementRewardPlotter.this) {
-                    tez.experiment.performance.StaticSelfManagementRewardPlotter.this.endTrialsForCurrentAgent();
+                synchronized (this) {
+                    endTrialsForCurrentAgent();
                 }
             }
         });
@@ -379,8 +379,8 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         }
 
 
-        List<Trial> trials = tez.experiment.performance.StaticSelfManagementRewardPlotter.this.agentTrials.get(aName);
-        int[] n = tez.experiment.performance.StaticSelfManagementRewardPlotter.this.minStepAndEpisodes(trials);
+        List<Trial> trials = agentTrials.get(aName);
+        int[] n = minStepAndEpisodes(trials);
 
 
         if (this.metricsSet.contains(SelfManagementPerformanceMetric.CUMULATIVEREWARDPERSTEP)) {

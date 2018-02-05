@@ -11,18 +11,18 @@ import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import power2dm.reporting.visualization.VisualizationMetadata;
-import tez.domain.SelfManagementDomain;
-import tez.domain.action.SelfManagementAction;
-import tez.environment.context.*;
-import tez.experiment.debug.Reporter;
-import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
-import tez.experiment.performance.SelfManagementEpisodeAnalysis;
-import tez.experiment.performance.SelfManagementPerformanceMetric;
-import tez.experiment.performance.SelfManagementRewardPlotter;
-import tez.experiment.performance.visualization.ReactionHitRatioVisualizer;
-import tez.experiment.performance.visualization.ReactionNumbersVisualizer;
-import tez.experiment.performance.visualization.Visualizer;
-import tez.environment.simulator.SimulatedWorld;
+import tez2.domain.SelfManagementDomain;
+import tez2.domain.action.SelfManagementAction;
+import tez2.environment.context.*;
+import tez2.experiment.debug.Reporter;
+import tez2.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
+import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
+import tez2.experiment.performance.SelfManagementPerformanceMetric;
+import tez2.experiment.performance.SelfManagementRewardPlotter;
+import tez2.experiment.performance.visualization.ReactionHitRatioVisualizer;
+import tez2.experiment.performance.visualization.ReactionNumbersVisualizer;
+import tez2.experiment.performance.visualization.Visualizer;
+import tez2.environment.simulator.SimulatedWorld;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -286,7 +286,6 @@ public class SelfManagementExperimenter {
                         PhoneUsage phoneUsage_c = context.getPhoneUsage();
                         EmotionalStatus emotionalStatus_c = context.getEmotionalStatus();
                         PhysicalActivity physicalActivity_c = context.getPhysicalActivity();
-                        StateOfMind stateOfMind_c = context.getStateOfMind();
 
                         //if (hourOfDay > 16) {
 
@@ -306,14 +305,13 @@ public class SelfManagementExperimenter {
                             String activityTime = o.getStringValForAttribute(ATT_ACTIVITY_TIME);
                             PhysicalActivity activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)];
                             PhoneUsage phoneUsage = PhoneUsage.values()[o.getIntValForAttribute(ATT_PHONE_USAGE)];
-                            StateOfMind stateOfMind = StateOfMind.values()[o.getIntValForAttribute(ATT_STATE_OF_MIND)];
                             EmotionalStatus emotionalStatus = EmotionalStatus.values()[o.getIntValForAttribute(ATT_EMOTIONAL_STATUS)];
                             //System.out.print("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + stateOfMind + ", " + emotionalStatus + ") ");
-                            sb.append("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + stateOfMind + ", " + emotionalStatus + ") ");
+                            sb.append("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + emotionalStatus + ") ");
                         }
 
                         //System.out.print("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");
-                        sb.append("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");
+                        sb.append("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + emotionalStatus_c + ") ");
                         int actionNo;
                         for (QValue qv : ea.qValuesForStates.get(j)) {
                             actionNo = qv.a.actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;

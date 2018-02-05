@@ -12,16 +12,16 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import org.apache.commons.io.FileUtils;
 import power2dm.reporting.visualization.VisualizationMetadata;
-import tez.algorithm.collaborative_learning.SparkStateClassifier;
-import tez.domain.SelfManagementDomain;
-import tez.domain.action.SelfManagementAction;
-import tez.environment.context.*;
-import tez.experiment.debug.Reporter;
-import tez.experiment.performance.*;
-import tez.experiment.performance.visualization.ReactionHitRatioVisualizer;
-import tez.experiment.performance.visualization.ReactionNumbersVisualizer;
-import tez.experiment.performance.visualization.Visualizer;
-import tez.environment.simulator.SimulatedWorld;
+import tez2.algorithm.collaborative_learning.SparkStateClassifier;
+import tez2.domain.SelfManagementDomain;
+import tez2.domain.action.SelfManagementAction;
+import tez2.environment.context.*;
+import tez2.experiment.debug.Reporter;
+import tez2.experiment.performance.*;
+import tez2.experiment.performance.visualization.ReactionHitRatioVisualizer;
+import tez2.experiment.performance.visualization.ReactionNumbersVisualizer;
+import tez2.experiment.performance.visualization.Visualizer;
+import tez2.environment.simulator.SimulatedWorld;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +29,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static tez.domain.SelfManagementDomainGenerator.*;
+import static tez2.domain.DomainConfig.*;
 
 /**
  * Created by suatgonul on 4/26/2017.
@@ -263,7 +263,7 @@ public class StaticSelfManagementExperimenter {
             this.plotter.endEpisode();
             this.environmentSever.resetEnvironment();
 
-            if (ea instanceof SelfManagementEpisodeAnalysis) {
+            /*if (ea instanceof SelfManagementEpisodeAnalysis) {
                 if (i < 50 || i > this.trialLength - 50) {
                     //System.out.println("Episode " + (i + 1));
                     reporter.report("Episode " + (i + 1));
@@ -281,7 +281,6 @@ public class StaticSelfManagementExperimenter {
                         PhoneUsage phoneUsage_c = context.getPhoneUsage();
                         EmotionalStatus emotionalStatus_c = context.getEmotionalStatus();
                         PhysicalActivity physicalActivity_c = context.getPhysicalActivity();
-                        StateOfMind stateOfMind_c = context.getStateOfMind();
 
                         //if (hourOfDay > 16) {
 
@@ -301,14 +300,13 @@ public class StaticSelfManagementExperimenter {
                             String activityTime = o.getStringValForAttribute(ATT_ACTIVITY_TIME);
                             PhysicalActivity activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)];
                             PhoneUsage phoneUsage = PhoneUsage.values()[o.getIntValForAttribute(ATT_PHONE_USAGE)];
-                            StateOfMind stateOfMind = StateOfMind.values()[o.getIntValForAttribute(ATT_STATE_OF_MIND)];
                             EmotionalStatus emotionalStatus = EmotionalStatus.values()[o.getIntValForAttribute(ATT_EMOTIONAL_STATUS)];
                             //System.out.print("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + stateOfMind + ", " + emotionalStatus + ") ");
-                            sb.append("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + stateOfMind + ", " + emotionalStatus + ") ");
+                            sb.append("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + emotionalStatus + ") ");
                         }
 
                         //System.out.print("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");
-                        sb.append("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");
+                        sb.append("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + emotionalStatus_c + ") ");
                         int actionNo;
                         for (QValue qv : ea.qValuesForStates.get(j)) {
                             actionNo = qv.a.actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
@@ -331,13 +329,13 @@ public class StaticSelfManagementExperimenter {
                         reporter.report(sb.toString());
                     }
                 }
-            }
+            }*/
         }
         System.out.println("Trial completed in " + (System.currentTimeMillis() - trialStartTime) + " milliseconds");
 
         long updateStartTime = System.currentTimeMillis();
         //H2OStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
-        SparkStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
+        //SparkStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
         System.out.println("Model update completed in " + (System.currentTimeMillis() - updateStartTime) + " milliseconds");
 
         reporter.finalizeReporting();

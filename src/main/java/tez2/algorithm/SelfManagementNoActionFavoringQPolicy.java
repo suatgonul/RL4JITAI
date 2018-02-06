@@ -6,21 +6,20 @@ import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.AbstractObjectParameterizedGroundedAction;
 import burlap.oomdp.core.states.State;
 import org.apache.log4j.Logger;
-import tez.algorithm.SelfManagementSimpleGroundedAction;
-import tez.domain.SelfManagementDomain;
-import tez.domain.SelfManagementDomainGenerator;
-import tez.domain.action.SelfManagementAction;
-import tez.util.LogUtil;
+import tez2.domain.action.SelfManagementAction;
+import tez2.util.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static tez2.domain.DomainConfig.*;
 
 /**
  * Created by suat on 18-May-17.
  */
 public class SelfManagementNoActionFavoringQPolicy extends GreedyQPolicy {
 
-    private static final Logger log = Logger.getLogger(tez.algorithm.SelfManagementNoActionFavoringQPolicy.class);
+    private static final Logger log = Logger.getLogger(SelfManagementNoActionFavoringQPolicy.class);
 
     private String deviceIdentifier;
 
@@ -57,7 +56,7 @@ public class SelfManagementNoActionFavoringQPolicy extends GreedyQPolicy {
             LogUtil.log_info(log, deviceIdentifier,"intervention action: " + interventionAction);
             int interventionActionIndex = 0;
             for(int i=0; i<qValues.size(); i++) {
-                if(qValues.get(i).a.actionName().contentEquals(SelfManagementDomainGenerator.ACTION_INT_DELIVERY)) {
+                if(qValues.get(i).a.actionName().contentEquals(ACTION_SEND_JITAI)) {
                     interventionActionIndex = i;
                 }
             }

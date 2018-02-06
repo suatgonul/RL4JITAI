@@ -69,6 +69,8 @@ public class PersonaParser {
         setPhoneChecks();
         // Parse remaning context values for activities
         parseActivityContexts();
+        // Parse suitability for behavior
+        parseBehaviorSuitability();
 
         //TODO delete the for below
 //        for (int i = 0; i < parsedActivityPool.getParsedActivities().size(); i++) {
@@ -483,6 +485,20 @@ public class PersonaParser {
             }
         }
         return phoneCheckDuration;
+    }
+
+    private void parseBehaviorSuitability() {
+        List<Activity> parsedActivities = parsedActivityPool.getParsedActivities();
+        List<String> activityLines = parsedActivityPool.getLinesForActivities();
+
+        for(int i=0; i<activityLines.size(); i++) {
+            String[] words = activityLines.get(i).split(",");
+            if(Integer.parseInt(words[OFFSET_BEHAVIOR_SUITABILITY]) == 0) {
+                parsedActivities.get(i).setSuitableForBehavior(false);
+            } else {
+                parsedActivities.get(i).setSuitableForBehavior(true);
+            }
+        }
     }
 
     private boolean isPhoneCheckHasSpecificContext(List<String> words) {

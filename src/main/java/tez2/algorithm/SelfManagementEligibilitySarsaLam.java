@@ -17,28 +17,25 @@ import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
 import org.apache.log4j.Logger;
-import tez.algorithm.SelfManagementEligibilityTrace;
-import tez.algorithm.SelfManagementSimpleGroundedAction;
-import tez.algorithm.collaborative_learning.SparkStateClassifier;
-import tez.domain.ExtendedEnvironmentOutcome;
-import tez.domain.SelfManagementRewardFunction;
-import tez.domain.action.SelfManagementAction;
-import tez.environment.real.RealWorld;
-import tez.experiment.debug.StepPrinter;
-import tez.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
+import tez2.algorithm.collaborative_learning.SparkStateClassifier;
+import tez2.domain.ExtendedEnvironmentOutcome;
+import tez2.domain.SelfManagementRewardFunction;
+import tez2.domain.action.SelfManagementAction;
+import tez2.experiment.debug.StepPrinter;
+import tez2.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static tez.domain.SelfManagementDomainGenerator.ACTION_INT_DELIVERY;
-import static tez.util.LogUtil.*;
+import static tez2.domain.DomainConfig.ACTION_SEND_JITAI;
+import static tez2.util.LogUtil.log_generic;
 
 /**
  * Created by suatgonul on 5/1/2017.
  */
 public class SelfManagementEligibilitySarsaLam extends SarsaLam {
-    private static final Logger log = Logger.getLogger(tez.algorithm.SelfManagementEligibilitySarsaLam.class);
+    private static final Logger log = Logger.getLogger(SelfManagementEligibilitySarsaLam.class);
 
     private boolean useStateClassifier = false;
     private List<State> deliveredInterventions;
@@ -80,12 +77,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                 }
             }
 
-            if (env instanceof RealWorld) {
-                log_info(log, ((RealWorld) env).getDeviceIdentifier(), " Action " + action.actionName() + " selected");
-            }
-
-
-            if (action.actionName().equals(ACTION_INT_DELIVERY)) {
+            if (action.actionName().equals(ACTION_SEND_JITAI)) {
                 deliveredInterventions.add(curState);
             }
 
@@ -132,7 +124,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                 // if the user reaction is positive at the current state and if the current trace includes an
                 // intervention delivery action do not positively reward a previous trace if it did not provide a
                 // positive result.
-                if (eeo.getUserReaction() && et.q.a.actionName().equals(ACTION_INT_DELIVERY)) {
+                if (eeo.getUserReaction() && et.q.a.actionName().equals(ACTION_SEND_JITAI)) {
                     if (!et.isUseful()) {
                         double tempDelta = SelfManagementRewardFunction.getRewardNonReactionToIntervention() + (discount * nextQV) - curQ.q;
                         et.q.q = et.q.q + (learningRate * et.eligibility * tempDelta);
@@ -167,7 +159,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                 SelfManagementEligibilityTrace et;
 
                 if (eeo.getUserReaction()) {
-                    if (action.actionName().equals(ACTION_INT_DELIVERY)) {
+                    if (action.actionName().equals(ACTION_SEND_JITAI)) {
                         curQ.q = curQ.q + (learningRate * delta);
                         et = new SelfManagementEligibilityTrace(curState, curQ, lambda * discount, true);
                         interference = "NoN"; //no need
@@ -176,7 +168,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                         // override delta for the simulated action
                         Action intDeliveryAction = null;
                         for (Action a : actions) {
-                            if (a.getName().equals(ACTION_INT_DELIVERY)) {
+                            if (a.getName().equals(ACTION_SEND_JITAI)) {
                                 intDeliveryAction = a;
                             }
                         }

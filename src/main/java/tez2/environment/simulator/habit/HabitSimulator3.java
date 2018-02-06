@@ -141,6 +141,14 @@ public class HabitSimulator3 {
         hs.drawCharts();
     }
 
+    public double getHabitStrength() {
+        return habitStrength;
+    }
+
+    public double getBehaviorFrequency() {
+        return behaviorFrequency;
+    }
+
     private void simulateScenario() {
         for (day = 0; day < 50; day++) {
             System.out.println("************* DAY:" + day);

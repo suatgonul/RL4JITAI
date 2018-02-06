@@ -37,15 +37,15 @@ public abstract class SelfManagementEnvironment extends SimulatedEnvironment {
 
     public abstract boolean simulateBehavior();
 
-    protected DayType getDayType(int dayOffset) {
+    protected int getDayType(int dayOffset) {
         if (dayOffset - 1 % 7 < 5) {
-            return DayType.WEEKDAY;
+            return DayType.WEEKDAY.ordinal();
         } else {
-            return DayType.WEEKEND;
+            return DayType.WEEKEND.ordinal();
         }
     }
 
-    protected DayPart getDayPart() {
+    protected int getDayPart() {
         LocalTime time = currentTime.toLocalTime();
         LocalTime morningStart = new LocalTime().withHourOfDay(6).withMinuteOfHour(0).withSecondOfMinute(0);
         LocalTime morningEnd = morningStart.plusHours(5).plusMinutes(30).minusSeconds(1);
@@ -57,27 +57,17 @@ public abstract class SelfManagementEnvironment extends SimulatedEnvironment {
         LocalTime eveningEnd = eveningStart.plusHours(4).plusMinutes(30).minusSeconds(1);
         LocalTime nightStart = eveningEnd.plusSeconds(1);
         LocalTime nightEnd = morningStart.minusSeconds(1);
-        System.out.println(morningStart);
-        System.out.println(morningEnd);
-        System.out.println(noonStart);
-        System.out.println(noonEnd);
-        System.out.println(afternoonStart);
-        System.out.println(afternoonEnd);
-        System.out.println(eveningStart);
-        System.out.println(eveningEnd);
-        System.out.println(nightStart);
-        System.out.println(nightEnd);
 
         if(time.isAfter(nightEnd) && time.isBefore(noonStart)) {
-            return DayPart.MORNING;
+            return DayPart.MORNING.ordinal();
         } else if(time.isAfter(morningEnd) && time.isBefore(afternoonStart)) {
-            return DayPart.NOON;
+            return DayPart.NOON.ordinal();
         } else if(time.isAfter(noonEnd) && time.isBefore(eveningStart)) {
-            return DayPart.AFTERNOON;
+            return DayPart.AFTERNOON.ordinal();
         } else if(time.isAfter(afternoonEnd) && time.isBefore(nightStart)) {
-            return DayPart.EVENING;
+            return DayPart.EVENING.ordinal();
         } else {
-            return DayPart.NIGHT;
+            return DayPart.NIGHT.ordinal();
         }
     }
 

@@ -2,10 +2,9 @@ package tez2.domain;
 
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.State;
-import tez.environment.context.*;
+import tez2.environment.context.*;
 
-import static tez.domain.SelfManagementDomainGenerator.*;
-import static tez.domain.SelfManagementDomainGenerator.ATT_EMOTIONAL_STATUS;
+import static tez2.domain.DomainConfig.*;
 
 /**
  * Created by suat on 14-May-17.
@@ -24,7 +23,6 @@ public class SelfManagementState {
         Location location = Location.values()[o.getIntValForAttribute(ATT_LOCATION)];
         PhysicalActivity activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)];
         PhoneUsage phoneUsage = PhoneUsage.APPS_ACTIVE.values()[o.getIntValForAttribute(ATT_PHONE_USAGE)];
-        StateOfMind stateOfMind = StateOfMind.values()[o.getIntValForAttribute(ATT_STATE_OF_MIND)];
         EmotionalStatus emotionalStatus = EmotionalStatus.values()[o.getIntValForAttribute(ATT_EMOTIONAL_STATUS)];
 
         StringBuilder sb = new StringBuilder();
@@ -33,7 +31,6 @@ public class SelfManagementState {
                 .append(location).append(",")
                 .append(activity).append(",")
                 .append(phoneUsage).append(",")
-                .append(stateOfMind).append(",")
                 .append(emotionalStatus);
         if (a != null) {
             sb.append(",")

@@ -18,6 +18,8 @@ public class Activity {
 
     private Context context = new Context();
 
+    private boolean suitableForBehavior;
+
     public Activity() {
 
     }
@@ -59,6 +61,14 @@ public class Activity {
 
     public DateTime getEndTime() {
         return start.plusMinutes(duration);
+    }
+
+    public boolean isSuitableForBehavior() {
+        return suitableForBehavior;
+    }
+
+    public void setSuitableForBehavior(boolean suitableForBehavior) {
+        this.suitableForBehavior = suitableForBehavior;
     }
 
     public Activity copy() {

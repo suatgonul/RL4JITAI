@@ -4,10 +4,9 @@ import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
-import tez.environment.real.RealWorld;
-import tez.environment.simulator.SimulatedWorld;
+import tez2.environment.simulator.SimulatedWorld;
 
-import static tez.domain.SelfManagementDomainGenerator.ACTION_INT_DELIVERY;
+import static tez2.domain.DomainConfig.ACTION_SEND_JITAI;
 
 /**
  * Created by suatgonul on 12/23/2016.
@@ -25,12 +24,11 @@ public class SelfManagementRewardFunction implements RewardFunction {
 
     @Override
     public double reward(State s, GroundedAction a, State sprime) {
-        if (a.action.getName().equals(ACTION_INT_DELIVERY)) {
+        if (a.action.getName().equals(ACTION_SEND_JITAI)) {
             boolean userReacted = false;
             if(environment instanceof SimulatedWorld) {
-                userReacted = ((SimulatedWorld) environment).getLastUserReaction();
-            } else if (environment instanceof RealWorld){
-                userReacted = ((RealWorld) environment).getLastUserReaction();
+                //userReacted = ((SimulatedWorld) environment).getLastUserReaction();
+                //TODO
             }
             if(userReacted) {
                 return REWARD_REACTION_TO_INTERVENTION;

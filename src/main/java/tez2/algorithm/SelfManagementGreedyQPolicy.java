@@ -5,8 +5,7 @@ import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.AbstractObjectParameterizedGroundedAction;
 import burlap.oomdp.core.states.State;
-import tez.algorithm.SelfManagementSimpleGroundedAction;
-import tez.domain.action.SelfManagementAction;
+import tez2.domain.action.SelfManagementAction;
 
 import java.util.ArrayList;
 import java.util.List;

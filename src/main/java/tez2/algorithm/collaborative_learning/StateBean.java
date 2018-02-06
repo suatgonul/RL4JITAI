@@ -2,11 +2,12 @@ package tez2.algorithm.collaborative_learning;
 
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.State;
-import tez.environment.context.*;
+import tez2.environment.context.StateOfMind;
+import tez2.environment.context.*;
 
 import java.io.Serializable;
 
-import static tez.domain.SelfManagementDomainGenerator.*;
+import static tez2.domain.DomainConfig.*;
 
 /**
  * Created by suat on 23-May-17.

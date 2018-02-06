@@ -14,8 +14,8 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
-import tez.domain.ExtendedEnvironmentOutcome;
-import tez.experiment.performance.SelfManagementEpisodeAnalysis;
+import tez2.domain.ExtendedEnvironmentOutcome;
+import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

@@ -11,6 +11,7 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.EnvironmentObserver;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import org.joda.time.DateTime;
+import tez2.domain.ExtendedEnvironmentOutcome;
 import tez2.domain.SelfManagementDomain;
 import tez2.domain.TerminalState;
 import tez2.environment.SelfManagementEnvironment;
@@ -31,14 +32,11 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     /*
      * dynamically updated values throughout the simulation of activities
      */
-    private double habitStrength;
-    private double behaviorFrequency;
-    private boolean rememberBehavior;
-
     private int currentDay;
     private TimePlan currentTimePlan;
     private Activity currentActivity;
     private boolean lastActivity;
+    private int checkedBehaviorOpportunityCount = 0;
 
     private String personaFolder;
 
@@ -50,7 +48,6 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         this.currentDay = 1;
         initEpisode();
         this.habitSimulator = new HabitSimulator3(personaFolder + "/config");
-        this.rememberBehavior = habitSimulator.willRemember();
         this.curState = stateGenerator.generateState();
     }
 
@@ -87,7 +84,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
             this.lastReward = 0.;
         }
 
-        EnvironmentOutcome eo = new EnvironmentOutcome(this.curState.copy(), simGA, nextState.copy(), this.lastReward, this.tf.isTerminal(nextState));
+        EnvironmentOutcome eo = new ExtendedEnvironmentOutcome(this.curState.copy(), simGA, nextState.copy(), this.lastReward, this.tf.isTerminal(nextState), null, false);
 
         this.curState = nextState;
 
@@ -122,20 +119,24 @@ public class SimulatedWorld extends SelfManagementEnvironment {
                 currentActivity = currentTimePlan.getActivities().get(++currentActivityIndex);
             }
         }
+
+        if(currentActivity.isSuitableForBehavior()) {
+            checkedBehaviorOpportunityCount++;
+            System.out.println("suitable activity: " + currentActivity.getName());
+        }
     }
 
     @Override
     public State getStateFromCurrentContext() {
-        SelfManagementDomain smdomain = (SelfManagementDomain) domain;
         State s;
         if (!lastActivity) {
             s = new MutableState();
             s.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
 
             ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
-            o.setValue(ATT_HABIT_STRENGTH, habitStrength);
-            o.setValue(ATT_BEHAVIOR_FREQUENCY, behaviorFrequency);
-            o.setValue(ATT_REMEMBER_BEHAVIOR, rememberBehavior);
+            o.setValue(ATT_HABIT_STRENGTH, habitSimulator.getHabitStrength());
+            o.setValue(ATT_BEHAVIOR_FREQUENCY, habitSimulator.getBehaviorFrequency());
+            o.setValue(ATT_REMEMBER_BEHAVIOR, habitSimulator.willRemember());
             o.setValue(ATT_DAY_TYPE, getDayType(currentDay));
             o.setValue(ATT_PART_OF_DAY, getDayPart());
 
@@ -173,5 +174,17 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         currentTime = currentTimePlan.getStart();
         // initialize activity
         currentActivity = currentTimePlan.getActivities().get(0);
+
+        checkedBehaviorOpportunityCount = 0;
+
+        // All activities are processed. Set lastActivity to false to set the initial state of the next episode properly
+        lastActivity = false;
+    }
+
+    @Override
+    public void resetEnvironment() {
+        currentDay++;
+        initEpisode();
+        super.resetEnvironment();
     }
 }

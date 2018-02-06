@@ -4,6 +4,7 @@ import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 
 public class DomainConfig {
+    //
     public static final String ATT_LOCATION = "Location";
     public static final String ATT_QUARTER_HOUR_OF_DAY = "QuarterHourOfDay";
     public static final String ATT_ACTIVITY = "Activity";
@@ -16,6 +17,9 @@ public class DomainConfig {
     public static final String ATT_BEHAVIOR_FREQUENCY = "BehaviorFrequency";
     public static final String ATT_REMEMBER_BEHAVIOR = "BehaviorRemembered";
 
+    public static final String ATT_ACTIVITY_TIME = "Time";
+    public static final String ATT_STATE_OF_MIND = "StateOfMind";
+
     public static final String CLASS_STATE = "state";
 
     public static final String ACTION_JITAI_1 = "JITAI_1";
@@ -23,7 +27,6 @@ public class DomainConfig {
     public static final String ACTION_JITAI_3 = "JITAI_3";
     public static final String ACTION_NO_ACTION = "NO_INT";
     public static final String ACTION_SEND_JITAI = "SEND_JITAI";
-
 
     public static Attribute getAtt(String attributeName, Domain domain) {
         Attribute att = null;

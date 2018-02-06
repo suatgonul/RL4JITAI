@@ -1,10 +1,6 @@
 package tez2.environment.context;
 
 import org.joda.time.LocalTime;
-import tez2.environment.context.EmotionalStatus;
-import tez2.environment.context.Location;
-import tez2.environment.context.PhoneUsage;
-import tez2.environment.context.PhysicalActivity;
 
 /**
  * Created by suatgonul on 12/24/2016.
@@ -15,16 +11,20 @@ public class Context {
     private Location location;
     private PhysicalActivity physicalActivity;
     private EmotionalStatus emotionalStatus;
+    private StateOfMind stateOfMind;
     private PhoneUsage phoneUsage;
     private boolean phoneCheckSuitability;
+    private boolean behaviorSuitability;
 
     public Context() {
         this.time = LocalTime.now();
         this.location = Location.HOME;
         this.physicalActivity = PhysicalActivity.SEDENTARY;
         this.emotionalStatus = EmotionalStatus.NEUTRAL;
+        this.stateOfMind = StateOfMind.CALM;
         this.phoneUsage = PhoneUsage.SCREEN_OFF;
         this.phoneCheckSuitability = false;
+        this.behaviorSuitability = false;
     }
 
     public Context(String deviceIdentifier) {
@@ -64,6 +64,14 @@ public class Context {
         this.emotionalStatus = emotionalStatus;
     }
 
+    public StateOfMind getStateOfMind() {
+        return stateOfMind;
+    }
+
+    public void setStateOfMind(StateOfMind stateOfMind) {
+        this.stateOfMind = stateOfMind;
+    }
+
     public PhoneUsage getPhoneUsage() {
         return phoneUsage;
     }
@@ -88,11 +96,20 @@ public class Context {
         this.deviceIdentifier = deviceIdentifier;
     }
 
+    public boolean getBehaviorSuitability() {
+        return this.behaviorSuitability;
+    }
+
+    public void setBehaviorSuitability(boolean behaviorSuitability) {
+        this.behaviorSuitability = behaviorSuitability;
+    }
+
     public Context copy() {
         Context context = new Context();
         context.setTime(getTime());
         context.setPhoneUsage(getPhoneUsage());
         context.setEmotionalStatus(getEmotionalStatus());
+        context.setStateOfMind(getStateOfMind());
         context.setLocation(getLocation());
         context.setPhysicalActivity(getPhysicalActivity());
         context.setPhoneCheckSuitability(getPhoneCheckSuitability());

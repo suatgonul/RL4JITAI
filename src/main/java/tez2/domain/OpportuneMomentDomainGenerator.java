@@ -1,16 +1,13 @@
 package tez2.domain;
 
 import burlap.oomdp.auxiliary.DomainGenerator;
-import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.environment.Environment;
-import com.sun.java.browser.plugin2.DOM;
-import tez.domain.SelfManagementDomain;
-import tez.domain.action.InterventionDeliveryAction;
-import tez.domain.action.NoAction;
-import tez.domain.action.SelfManagementAction;
+import tez2.domain.action.InterventionDeliveryAction;
+import tez2.domain.action.NoAction;
+import tez2.domain.action.SelfManagementAction;
 
 import static tez2.domain.DomainConfig.*;
 

@@ -7,9 +7,8 @@ import burlap.oomdp.singleagent.FullActionModel;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.common.SimpleAction;
 import burlap.oomdp.singleagent.environment.Environment;
-import tez.algorithm.SelfManagementSimpleGroundedAction;
-import tez.environment.real.RealWorld;
-import tez.environment.simulator.SimulatedWorld;
+import tez2.algorithm.SelfManagementSimpleGroundedAction;
+import tez2.environment.simulator.SimulatedWorld;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,8 +42,6 @@ public abstract class SelfManagementAction extends SimpleAction implements FullA
         // advance the environment state
         if(environment instanceof  SimulatedWorld) {
             return ((SimulatedWorld) environment).getNextState();
-        } else if(environment instanceof RealWorld) {
-            return ((RealWorld) environment).getNextState();
         }
         throw new IllegalStateException("Invalid environment type");
     }

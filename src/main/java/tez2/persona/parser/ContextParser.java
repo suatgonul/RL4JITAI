@@ -3,13 +3,12 @@ package tez2.persona.parser;
 import org.joda.time.DateTime;
 import tez2.environment.context.*;
 import tez2.persona.Activity;
-import tez2.persona.parser.PersonaParserException;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import static tez2.persona.parser.Constant.*;
+import static tez.persona.parser.Constant.*;
 
 /**
  * Created by suatgonul on 12/25/2016.
@@ -51,6 +50,8 @@ public class ContextParser {
         }
 
         String[] psychologicalParameters = getContextValueRandomly(psychologicalParametersStr).split("/");
+        StateOfMind stateOfMind = StateOfMind.valueOf(psychologicalParameters[0].trim());
+        context.setStateOfMind(stateOfMind);
         EmotionalStatus emotionalStatus = EmotionalStatus.valueOf(psychologicalParameters[1].trim());
         context.setEmotionalStatus(emotionalStatus);
 

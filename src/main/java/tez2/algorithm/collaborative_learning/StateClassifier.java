@@ -4,13 +4,12 @@ import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
-import tez.algorithm.collaborative_learning.DataItem;
-import tez.domain.SelfManagementRewardFunction;
-import tez.experiment.performance.SelfManagementEpisodeAnalysis;
+import tez2.domain.SelfManagementRewardFunction;
+import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 
 import java.util.*;
 
-import static tez.domain.SelfManagementDomainGenerator.ACTION_NO_ACTION;
+import static tez2.domain.DomainConfig.*;
 
 /**
  * Created by suat on 22-May-17.

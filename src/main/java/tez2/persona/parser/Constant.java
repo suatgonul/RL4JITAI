@@ -30,5 +30,6 @@ public class Constant {
     public static final int OFFSET_DURATION = 7;
     public static final int OFFSET_DURATION_VARIATION = 8;
     public static final int OFFSET_PHONE_CHECK = 9;
-    public static final int OFFSET_CONDITION = 10;
+    public static final int OFFSET_BEHAVIOR_SUITABILITY = 10;
+    public static final int OFFSET_CONDITION = 11;
 }

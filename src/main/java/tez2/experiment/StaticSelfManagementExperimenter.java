@@ -12,6 +12,7 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import org.apache.commons.io.FileUtils;
 import power2dm.reporting.visualization.VisualizationMetadata;
+import sun.management.resources.agent;
 import tez2.algorithm.collaborative_learning.SparkStateClassifier;
 import tez2.domain.SelfManagementDomain;
 import tez2.domain.action.SelfManagementAction;
@@ -253,11 +254,11 @@ public class StaticSelfManagementExperimenter {
             long episodeStarttime = System.currentTimeMillis();
             SelfManagementEpisodeAnalysis ea = (SelfManagementEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
             episodeAnalysisList.add(ea);
-            if (agentFactory.getAgentName().contains("colla")) {
+            //if (agentFactory.getAgentName().contains("colla")) {
                 elapsedTrialTime += (System.currentTimeMillis()-episodeStarttime);
                 System.out.println("Episode: " + (i + 1) + " completed in " + (System.currentTimeMillis()-episodeStarttime) + " milliseconds");
                 System.out.println("Elapsed trial time: " + elapsedTrialTime + " milliseconds");
-            }
+            //}
 
             this.plotter.populateAgentDatasets(ea);
             this.plotter.endEpisode();
@@ -333,10 +334,10 @@ public class StaticSelfManagementExperimenter {
         }
         System.out.println("Trial completed in " + (System.currentTimeMillis() - trialStartTime) + " milliseconds");
 
-        long updateStartTime = System.currentTimeMillis();
+        //long updateStartTime = System.currentTimeMillis();
         //H2OStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
         //SparkStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
-        System.out.println("Model update completed in " + (System.currentTimeMillis() - updateStartTime) + " milliseconds");
+        //System.out.println("Model update completed in " + (System.currentTimeMillis() - updateStartTime) + " milliseconds");
 
         reporter.finalizeReporting();
 

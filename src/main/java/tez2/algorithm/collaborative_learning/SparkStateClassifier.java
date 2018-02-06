@@ -23,21 +23,17 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
-import tez.algorithm.collaborative_learning.DataItem;
-import tez.algorithm.collaborative_learning.StateActionBean;
-import tez.algorithm.collaborative_learning.StateBean;
-import tez.algorithm.collaborative_learning.StateClassifier;
-import tez.domain.SelfManagementDomain;
-import tez.domain.SelfManagementDomainGenerator;
-import tez.experiment.performance.SelfManagementEpisodeAnalysis;
-import tez.util.LogUtil;
+import tez2.domain.JitaiSelectionDomainGenerator;
+import tez2.domain.SelfManagementDomain;
+import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
+import tez2.util.LogUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static tez.domain.SelfManagementDomainGenerator.*;
+import static tez2.domain.DomainConfig.*;
 
 
 /**
@@ -85,7 +81,7 @@ public class SparkStateClassifier extends StateClassifier {
     public static void main(String[] args) {
         System.setProperty("hadoop.home.dir", "D:\\tools\\spark-2.1.1-bin-hadoop2.7\\hadoop");
 
-        SelfManagementDomainGenerator smdg = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
+        JitaiSelectionDomainGenerator smdg = new JitaiSelectionDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
         Domain domain = smdg.generateDomain();
         ObjectClass oc = new ObjectClass(domain, CLASS_STATE);
 
@@ -131,19 +127,19 @@ public class SparkStateClassifier extends StateClassifier {
         trainingData.printSchema();
         trainingData.show();
 
-        List<tez.algorithm.collaborative_learning.StateBean> sbs = new ArrayList<>();
-        sbs.add(new tez.algorithm.collaborative_learning.StateBean(s));
-        sbs.add(new tez.algorithm.collaborative_learning.StateBean(s2));
-        Dataset<Row> sbsDf = spark.createDataFrame(sbs, tez.algorithm.collaborative_learning.StateBean.class);
+        List<StateBean> sbs = new ArrayList<>();
+        sbs.add(new StateBean(s));
+        sbs.add(new StateBean(s2));
+        Dataset<Row> sbsDf = spark.createDataFrame(sbs, StateBean.class);
         sbsDf.printSchema();
         sbsDf.show();
 
-        tez.algorithm.collaborative_learning.DataItem di1 = new tez.algorithm.collaborative_learning.DataItem(s, "INT");
-        tez.algorithm.collaborative_learning.DataItem di2 = new tez.algorithm.collaborative_learning.DataItem(s2, "NO_INT");
-        List<tez.algorithm.collaborative_learning.StateActionBean> sabList = new ArrayList<>();
-        sabList.add(new tez.algorithm.collaborative_learning.StateActionBean(di1));
-        sabList.add(new tez.algorithm.collaborative_learning.StateActionBean(di2));
-        Dataset<Row> sabsDf = spark.createDataFrame(sabList, tez.algorithm.collaborative_learning.StateActionBean.class);
+        DataItem di1 = new DataItem(s, "INT");
+        DataItem di2 = new DataItem(s2, "NO_INT");
+        List<StateActionBean> sabList = new ArrayList<>();
+        sabList.add(new StateActionBean(di1));
+        sabList.add(new StateActionBean(di2));
+        Dataset<Row> sabsDf = spark.createDataFrame(sabList, StateActionBean.class);
         sabsDf.printSchema();
         sabsDf.show();
 
@@ -219,10 +215,10 @@ public class SparkStateClassifier extends StateClassifier {
     @Override
     public void updateLearningModel(List<SelfManagementEpisodeAnalysis> ea) {
         updateStateActionCounts(ea);
-        List<tez.algorithm.collaborative_learning.DataItem> dataItems = generateDataSetFromDataItems();
-        List<tez.algorithm.collaborative_learning.StateActionBean> stateActionBeans = new ArrayList<>();
+        List<DataItem> dataItems = generateDataSetFromDataItems();
+        List<StateActionBean> stateActionBeans = new ArrayList<>();
         for (DataItem dataItem : dataItems) {
-            stateActionBeans.add(new tez.algorithm.collaborative_learning.StateActionBean(dataItem));
+            stateActionBeans.add(new StateActionBean(dataItem));
         }
         stateActionData = spark.createDataFrame(stateActionBeans, StateActionBean.class);
         stateActionData.cache();
@@ -290,7 +286,7 @@ public class SparkStateClassifier extends StateClassifier {
 
     @Override
     public Action guessAction(State state) {
-        List<tez.algorithm.collaborative_learning.StateBean> testData = Arrays.asList(new tez.algorithm.collaborative_learning.StateBean[]{new tez.algorithm.collaborative_learning.StateBean(state)});
+        List<StateBean> testData = Arrays.asList(new StateBean[]{new StateBean(state)});
         Dataset<Row> testDataSet = spark.createDataFrame(testData, StateBean.class);
         Dataset<Row> predictions = rdfClassifier.transform(testDataSet);
         predictions.col("predictedLabel");

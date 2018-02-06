@@ -14,6 +14,7 @@ import power2dm.reporting.visualization.VisualizationMetadata;
 import tez2.domain.SelfManagementDomain;
 import tez2.domain.action.SelfManagementAction;
 import tez2.environment.context.*;
+import tez2.environment.simulator.SimulatedWorld;
 import tez2.experiment.debug.Reporter;
 import tez2.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
@@ -22,13 +23,12 @@ import tez2.experiment.performance.SelfManagementRewardPlotter;
 import tez2.experiment.performance.visualization.ReactionHitRatioVisualizer;
 import tez2.experiment.performance.visualization.ReactionNumbersVisualizer;
 import tez2.experiment.performance.visualization.Visualizer;
-import tez2.environment.simulator.SimulatedWorld;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static tez.domain.SelfManagementDomainGenerator.*;
+import static tez2.domain.DomainConfig.*;
 
 /**
  * Created by suatgonul on 4/26/2017.
@@ -268,7 +268,7 @@ public class SelfManagementExperimenter {
 
             episodeAnalysisList.add(ea);
 
-            if (ea instanceof SelfManagementEpisodeAnalysis) {
+            /*if (ea instanceof SelfManagementEpisodeAnalysis) {
                 if (i < 50 || i > episodeAnalysisList.size() - 50) {
                     //System.out.println("Episode " + (i + 1));
                     reporter.report("Episode " + (i + 1));
@@ -334,7 +334,7 @@ public class SelfManagementExperimenter {
                         reporter.report(sb.toString());
                     }
                 }
-            }
+            }*/
         }
 
         reporter.finalizeReporting();

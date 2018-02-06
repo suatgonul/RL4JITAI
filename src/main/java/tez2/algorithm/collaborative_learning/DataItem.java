@@ -1,7 +1,6 @@
 package tez2.algorithm.collaborative_learning;
 
 import burlap.oomdp.core.states.State;
-import burlap.oomdp.singleagent.Action;
 
 /**
  * Created by suat on 17-May-17.

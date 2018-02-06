@@ -3,7 +3,7 @@ package tez2.domain;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
-import tez.environment.context.Context;
+import tez2.environment.context.Context;
 
 /**
  * Created by suatgonul on 4/28/2017.

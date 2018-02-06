@@ -1,8 +1,6 @@
 package tez2.environment.context;
 
-import tez.environment.context.EmotionalStatus;
-import tez.environment.context.StateOfMind;
-import tez.environment.simulator.WorldSimulationException;
+import tez2.environment.simulator.WorldSimulationException;
 
 import java.util.ArrayList;
 import java.util.List;

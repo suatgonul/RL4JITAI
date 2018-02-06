@@ -9,10 +9,7 @@ import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
-import tez2.algorithm.SelfManagementEligibilitySarsaLam;
-import tez2.algorithm.SelfManagementGreedyQPolicy;
-import tez2.algorithm.SelfManagementSarsa;
-import tez2.algorithm.SelfManagementSarsaLam;
+import tez2.algorithm.*;
 import tez2.domain.DayTerminalFunction;
 import tez2.domain.JitaiSelectionDomainGenerator;
 import tez2.domain.SelfManagementRewardFunction;
@@ -45,15 +42,15 @@ public class Experiment {
         RewardFunction rf = new SelfManagementRewardFunction();
         JitaiSelectionDomainGenerator domGen = new JitaiSelectionDomainGenerator(null);
         Domain domain = domGen.generateDomain();
-        //environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob");
-        environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob");
+        environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob");
+        //environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob");
         //environment = new RealWorld(domain, rf, tf, 1, 100);
         domGen.setEnvironment(environment);
 
         LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
 
         StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                30, 1000, learningCases);
+                1, 100, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 CUMULATIVE_REWARD_PER_EPISODE,
@@ -80,10 +77,23 @@ public class Experiment {
 
             @Override
             public LearningAgent generateAgent() {
-                return new SelfManagementSarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8);
+                return new SelfManagementQLearning(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE);
             }
         };
         learningAlternatives.add(qLearningFactory);
+
+        qLearningFactory = new LearningAgentFactory() {
+            @Override
+            public String getAgentName() {
+                return "Sarsa-Lam  Lambda_0.8 Gamma_0.1 LR_0.1";
+            }
+
+            @Override
+            public LearningAgent generateAgent() {
+                return new SelfManagementSarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8);
+            }
+        };
+        //learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             @Override
@@ -96,7 +106,7 @@ public class Experiment {
                 return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, false);
             }
         };
-        learningAlternatives.add(qLearningFactory);
+        //learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             @Override
@@ -109,7 +119,7 @@ public class Experiment {
                 return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, true);
             }
         };
-        learningAlternatives.add(qLearningFactory);
+        //learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {

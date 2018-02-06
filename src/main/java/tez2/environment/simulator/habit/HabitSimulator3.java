@@ -221,6 +221,12 @@ public class HabitSimulator3 {
         jitais.add(selectedJitaiType);
     }
 
+    public boolean willRemember() {
+        double threshold = CAT - (CAT *  WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
+        boolean behaviorRemembered = accessibility >= threshold;
+        return behaviorRemembered;
+    }
+
     private void updateAccessibility() {
         double accDecay  = accessibility * ADP;
         double accGainBeh = 0;

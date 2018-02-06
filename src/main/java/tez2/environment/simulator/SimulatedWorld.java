@@ -50,6 +50,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         this.currentDay = 1;
         initEpisode();
         this.habitSimulator = new HabitSimulator3(personaFolder + "/config");
+        this.rememberBehavior = habitSimulator.willRemember();
         this.curState = stateGenerator.generateState();
     }
 
@@ -159,7 +160,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     protected void initEpisode() throws WorldSimulationException {
         // initialize time plan
         PersonaParser personaParser = new PersonaParser();
-        String personaPath = personaFolder + "/weekday.csv";
+        String personaPath = personaFolder + "/weekdayv2.csv";
 
         try {
             currentTimePlan = personaParser.getTimePlanForPersona(personaPath);

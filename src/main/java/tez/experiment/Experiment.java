@@ -4,6 +4,7 @@ import burlap.behavior.policy.GreedyQPolicy;
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
+import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -108,6 +109,19 @@ public class Experiment {
                 return new SelfManagementSarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8);
             }
         };
+//        learningAlternatives.add(qLearningFactory);
+
+        qLearningFactory = new LearningAgentFactory() {
+            @Override
+            public String getAgentName() {
+                return "Sarsa-Lam  Lambda_0.8 Gamma_0.1 LR_0.1";
+            }
+
+            @Override
+            public LearningAgent generateAgent() {
+                return new QLearning(domain, 0.1, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE);
+            }
+        };
         learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
@@ -121,7 +135,7 @@ public class Experiment {
                 return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, false);
             }
         };
-        learningAlternatives.add(qLearningFactory);
+//        learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             @Override
@@ -134,7 +148,7 @@ public class Experiment {
                 return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, true);
             }
         };
-        learningAlternatives.add(qLearningFactory);
+//        learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {

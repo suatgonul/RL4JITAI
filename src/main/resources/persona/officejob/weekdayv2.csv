@@ -2,7 +2,7 @@
 :persona_property,evening_time=18:00
 
 #activity_description,location,physical_activity,phone_usage,state_of_mind/emotional_status,time,time_variation,duration,duration_variation,phone_check_suitability_and_context_details,behavior_suitability
-wakes up,HOME,SEDENTARY,SCREEN_OFF,CALM/NEUTRAL=60|CALM/HAPPY=20|TENSE/STRESSED=20,07:15,15,0,0,0,0
+wakes up,HOME,SEDENTARY,SCREEN_OFF,CALM/NEUTRAL=60|CALM/HAPPY=20|TENSE/STRESSED=20,06:15,15,0,0,0,0
 bathroom session,HOME,INDOOR_ACTIVITY,APPS_ACTIVE,CALM/NEUTRAL=50|FOCUS/NEUTRAL=50,rel,0,10,5,CALM/NEUTRAL=65|CALM/HAPPY=10|FOCUS/HAPPY=10|FOCUS/EXCITED=5|FOCUS/ANGRY=10,0
 household affairs until leaving home,HOME,INDOOR_ACTIVITY,SCREEN_OFF,CALM/NEUTRAL=80|TENSE/NEUTRAL=20,rel,0,rel,0,0,1
 leaves home,HOME,INDOOR_ACTIVITY,SCREEN_OFF,CALM/NEUTRAL,08:00,5,2,1,0,0

@@ -2,18 +2,21 @@ package tez2.algorithm;
 
 import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
+import tez2.persona.ActionPlan;
 
 import java.util.List;
 
 public class ActionRestrictingState extends MutableState {
-    private List<Action> allowedActions;
 
-    public ActionRestrictingState(List<Action> allowedActions) {
+    private ActionPlan.JitaiNature expectedJitaiType;
+
+    public ActionRestrictingState(ActionPlan.JitaiNature expectedJitaiType) {
         super();
-        this.allowedActions = allowedActions;
+        this.expectedJitaiType = expectedJitaiType;
+
     }
 
-    public List<Action> getAllowedActions() {
-        return this.allowedActions;
+    public ActionPlan.JitaiNature getExpectedJitaiType() {
+        return expectedJitaiType;
     }
 }

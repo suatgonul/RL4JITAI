@@ -2,25 +2,26 @@ package tez2.environment.simulator;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TerminalFunction;
-import burlap.oomdp.core.objects.MutableObjectInstance;
-import burlap.oomdp.core.objects.ObjectInstance;
-import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.EnvironmentObserver;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
+import burlap.oomdp.statehashing.HashableState;
 import org.joda.time.DateTime;
+import tez.environment.context.DayType;
+import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
+import tez2.algorithm.jitai_selection.JitaiSelectionQLearning;
 import tez2.domain.ExtendedEnvironmentOutcome;
-import tez2.domain.TerminalState;
 import tez2.environment.SelfManagementEnvironment;
-import tez2.environment.simulator.habit.HabitSimulator3;
+import tez2.persona.ActionPlan;
 import tez2.persona.Activity;
 import tez2.persona.TimePlan;
 import tez2.persona.parser.PersonaParser;
 import tez2.persona.parser.PersonaParserException;
 
-import static tez2.domain.DomainConfig.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by suatgonul on 12/2/2016.
@@ -34,17 +35,27 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     private Activity currentActivity;
     private boolean lastActivity;
 
+
     private String personaFolder;
 
-    //private HabitSimulator3 habitSimulator;
+    // jitai selection related objects
+    private JitaiSelectionEnvironment jitaiSelectionEnvironment;
+    private JitaiSelectionQLearning jitaiSelectionLearning;
+    private List<SelfManagementEpisodeAnalysis> jitaiSelectionResults = new ArrayList<>();
+    private SelfManagementEpisodeAnalysis jitaiSelectionEpisode;
+    private int checkedActionPlanIndex;
+    private ActionPlan actionPlan;
 
-    public SimulatedWorld(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String personaFolder) {
+
+    public SimulatedWorld(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String personaFolder, JitaiSelectionEnvironment jitaiSelectionEnvironment, JitaiSelectionQLearning jitaiSelectionLearning) {
         super(domain, rf, tf, stateChangeFrequency);
         this.personaFolder = personaFolder;
         this.currentDay = 1;
+        this.jitaiSelectionLearning = jitaiSelectionLearning;
+        this.jitaiSelectionEnvironment = jitaiSelectionEnvironment;
         initEpisode();
-        //this.habitSimulator = new HabitSimulator3(personaFolder + "/config");
         this.curState = stateGenerator.generateState();
+        initActionPlan();
     }
 
     /**
@@ -103,6 +114,23 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     }
 
     private void advanceTimePlan() {
+        // execute the jitai selection step
+        List<Object> currentRange = getTimeRange();
+        if(currentRange != null) {
+            int rangeIndex = (Integer) currentRange.get(0);
+            if(rangeIndex > checkedActionPlanIndex) {
+                ActionPlan.JitaiTimeRange timeRange = (ActionPlan.JitaiTimeRange) currentRange.get(1);
+                HashableState curJitaiSelectionState = jitaiSelectionLearning.stateHash(jitaiSelectionEnvironment.getCurrentObservation());
+                jitaiSelectionLearning.executeLearningStep(jitaiSelectionEnvironment, curJitaiSelectionState, jitaiSelectionEpisode);
+                checkedActionPlanIndex++;
+
+                // check the last time range
+                if(checkedActionPlanIndex+1 == actionPlan.getJitaiTimeRanges().size()) {
+
+                }
+            }
+        }
+
         int currentActivityIndex = currentTimePlan.getActivities().indexOf(currentActivity);
         DateTime activityEndTime = currentActivity.getEndTime();
         if (activityEndTime.isAfter(currentTime.plusMinutes(stateChangeFrequency))) {
@@ -115,20 +143,13 @@ public class SimulatedWorld extends SelfManagementEnvironment {
                 currentActivity = currentTimePlan.getActivities().get(++currentActivityIndex);
             }
         }
-
-        if(currentActivity.isSuitableForBehavior()) {
-            if(checkedBehaviorOpportunityCount < 3) {
-                //habitSimulator.simulateStep(1, );
-            }
-            checkedBehaviorOpportunityCount++;
-        }
     }
 
     @Override
     public State getStateFromCurrentContext() {
 
-
-        return s;
+        //TODO
+        return null;
     }
 
     @Override
@@ -161,6 +182,11 @@ public class SimulatedWorld extends SelfManagementEnvironment {
 
         // All activities are processed. Set lastActivity to false to set the initial state of the next episode properly
         lastActivity = false;
+
+        // jitai-selection related initialization
+        jitaiSelectionResults.add(jitaiSelectionEpisode);
+        checkedActionPlanIndex = -1;
+        jitaiSelectionEpisode = new SelfManagementEpisodeAnalysis(jitaiSelectionEnvironment.getCurrentObservation());
     }
 
     @Override
@@ -168,5 +194,72 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         currentDay++;
         initEpisode();
         super.resetEnvironment();
+    }
+
+    private void initActionPlan() {
+        ActionPlan ap = new ActionPlan();
+        // morning time range
+        // TODO
+    }
+
+    private List<Object> getTimeRange() {
+        for(int i=0; i<actionPlan.getJitaiTimeRanges().size(); i++) {
+            ActionPlan.JitaiTimeRange tr = actionPlan.getJitaiTimeRanges().get(i);
+            if(currentTime.toLocalTime().isAfter(tr.getStartTime()) && currentTime.toLocalTime().isBefore(tr.getEndTime())) {
+                List<Object> result = new ArrayList<>();
+                result.add(i);
+                result.add(tr);
+                return result;
+            }
+        }
+        return null;
+    }
+
+    public DynamicSimulatedWorldContext getContext() {
+        DynamicSimulatedWorldContext context = new DynamicSimulatedWorldContext();
+        context.setActivity(currentActivity);
+        context.setCurrentDayType(getDayType(currentDay));
+        context.setCurrentTime(currentTime);
+        context.setExpectedJitaiNature(((ActionPlan.JitaiTimeRange) getTimeRange().get(1)).getJitaiNature());
+        return context;
+    }
+
+    public static class DynamicSimulatedWorldContext {
+        private Activity activity;
+        private DateTime currentTime;
+        private int currentDayType;
+        private ActionPlan.JitaiNature expectedJitaiNature;
+
+        public Activity getActivity() {
+            return activity;
+        }
+
+        public void setActivity(Activity activity) {
+            this.activity = activity;
+        }
+
+        public DateTime getCurrentTime() {
+            return currentTime;
+        }
+
+        public void setCurrentTime(DateTime currentTime) {
+            this.currentTime = currentTime;
+        }
+
+        public int getCurrentDayType() {
+            return currentDayType;
+        }
+
+        public void setCurrentDayType(int currentDayType) {
+            this.currentDayType = currentDayType;
+        }
+
+        public ActionPlan.JitaiNature getExpectedJitaiNature() {
+            return expectedJitaiNature;
+        }
+
+        public void setExpectedJitaiNature(ActionPlan.JitaiNature expectedJitaiNature) {
+            this.expectedJitaiNature = expectedJitaiNature;
+        }
     }
 }

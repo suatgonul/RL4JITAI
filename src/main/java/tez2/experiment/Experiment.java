@@ -12,8 +12,10 @@ import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import tez2.algorithm.*;
 import tez2.domain.DayTerminalFunction;
 import tez2.domain.JitaiSelectionDomainGenerator;
+import tez2.domain.OpportuneMomentDomainGenerator;
 import tez2.domain.SelfManagementRewardFunction;
 import tez2.environment.simulator.SimulatedWorld;
+import tez2.environment.simulator.JitaiSelectionEnvironment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,20 +39,27 @@ public class Experiment {
     }
 
     private void runExperiment() {
+        String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
 
+        // jitai selection related objects
         TerminalFunction tf = new DayTerminalFunction();
         RewardFunction rf = new SelfManagementRewardFunction();
         JitaiSelectionDomainGenerator domGen = new JitaiSelectionDomainGenerator(null);
         Domain domain = domGen.generateDomain();
-        environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob");
-        //environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob");
-        //environment = new RealWorld(domain, rf, tf, 1, 100);
-        domGen.setEnvironment(environment);
+        JitaiSelectionEnvironment jitaiSelectionEnvironment = new JitaiSelectionEnvironment(domain, rf, tf, 60, personaFolder + "/config");
 
-        LearningAgentFactory[] learningCases = getLearningAlternatives(domain);
+        LearningAgentFactory[] omiLearningCases = getOpportuneMomentIdentificationLearningAlternatives(domain);
+
+        // opportune moment identification related objects
+        OpportuneMomentDomainGenerator omiDomGen = new OpportuneMomentDomainGenerator();
+        omiDomGen.generateDomain();
+        environment = new SimulatedWorld(domain, rf, tf, 60, personaFolder);
+        //environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob");
+        omiDomGen.setEnvironment(environment);
+
 
         StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                1, 100, learningCases);
+                1, 100, omiLearningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 CUMULATIVE_REWARD_PER_EPISODE,
@@ -65,7 +74,12 @@ public class Experiment {
         exp.startExperiment();
     }
 
-    private LearningAgentFactory[] getLearningAlternatives(final Domain domain) {
+    private LearningAgentFactory[] getJitaiSelectionLearningAlternatives() {
+        // TODO
+        return null;
+    }
+
+    private LearningAgentFactory[] getOpportuneMomentIdentificationLearningAlternatives(final Domain domain) {
         List<LearningAgentFactory> learningAlternatives = new ArrayList<>();
         final SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
 

@@ -40,8 +40,6 @@ public class JitaiSelectionDomainGenerator implements DomainGenerator {
         stateClass.addAttribute(DomainConfig.getAtt(ATT_PART_OF_DAY, domain));
         stateClass.addAttribute(DomainConfig.getAtt(ATT_DAY_TYPE, domain));
 
-
-
         new Jitai1Action(ACTION_JITAI_1, domain);
         new Jitai2Action(ACTION_JITAI_2, domain);
         new Jitai3Action(ACTION_JITAI_3, domain);

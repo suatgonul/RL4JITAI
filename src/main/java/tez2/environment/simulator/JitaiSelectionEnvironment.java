@@ -1,4 +1,4 @@
-package tez2.environment.simulator.habit;
+package tez2.environment.simulator;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TerminalFunction;
@@ -7,9 +7,11 @@ import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.RewardFunction;
+import tez2.algorithm.ActionRestrictingState;
 import tez2.domain.TerminalState;
 import tez2.environment.SelfManagementEnvironment;
 import tez2.environment.simulator.habit.visualization.AccessibilityThresholdChart;
+import tez2.persona.ActionPlan;
 
 import javax.swing.*;
 import java.io.FileInputStream;
@@ -20,7 +22,7 @@ import static tez2.domain.DomainConfig.*;
 import static tez2.domain.DomainConfig.ATT_DAY_TYPE;
 import static tez2.domain.DomainConfig.ATT_PART_OF_DAY;
 
-public class HabitSimulatorEnvironment extends SelfManagementEnvironment {
+public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
     // accessability decay parameter
     private double ADP;
     // accessability gain constant for events
@@ -80,7 +82,13 @@ public class HabitSimulatorEnvironment extends SelfManagementEnvironment {
     private List<Double> behaviorFrequencies = new ArrayList<>();
     private List<Integer> jitais = new ArrayList<>();
 
-    public HabitSimulatorEnvironment(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String configFilePath) {
+    private SimulatedWorld simulatedWorld;
+
+    {
+        s = new TerminalState();
+    }
+
+    public JitaiSelectionEnvironment(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String configFilePath, SimulatedWorld simulatedWorld) {
         super(domain, rf, tf, stateChangeFrequency);
 
         Properties prop = new Properties();
@@ -92,14 +100,15 @@ public class HabitSimulatorEnvironment extends SelfManagementEnvironment {
 
         String[] jitaiTypes = prop.getProperty("jitai_types").split(",");
         LinkedHashMap jitaiTypeMap = new LinkedHashMap();
-        for(int i=0; i<jitaiTypes.length; i++) {
-            jitaiTypeMap.put(i+1, Integer.parseInt(jitaiTypes[i]));
+        for (int i = 0; i < jitaiTypes.length; i++) {
+            jitaiTypeMap.put(i + 1, Integer.parseInt(jitaiTypes[i]));
         }
 
         double behaviorFrequency = Double.parseDouble(prop.getProperty("behavior_frequency"));
-        double commitmentIntensity= Double.parseDouble(prop.getProperty("commitment_intensity"));
+        double commitmentIntensity = Double.parseDouble(prop.getProperty("commitment_intensity"));
 
-        setInitialValues(behaviorFrequency,commitmentIntensity, jitaiTypeMap);
+        setInitialValues(behaviorFrequency, commitmentIntensity, jitaiTypeMap);
+        this.simulatedWorld = simulatedWorld;
     }
 
     private void setInitialValues(double initialBehaviorFrequency, double commitmentIntensity, LinkedHashMap<Integer, Integer> jitaiGroups) {
@@ -138,6 +147,8 @@ public class HabitSimulatorEnvironment extends SelfManagementEnvironment {
         windowSize = 15;
         accessibility = habitStrength = commitmentIntensity;
         initiateBehaviorList();
+
+        this.simulatedWorld =
     }
 
     public double getHabitStrength() {
@@ -165,9 +176,9 @@ public class HabitSimulatorEnvironment extends SelfManagementEnvironment {
         selectedJitaiType = jitaiType;
 
         //if(dailyStep % 2 == 0) {
-            simulateBehavior();
-            updateAccessibility();
-            updateHabitStrength();
+        simulateBehavior();
+        updateAccessibility();
+        updateHabitStrength();
         //}
         updateSalience();
     }
@@ -178,7 +189,7 @@ public class HabitSimulatorEnvironment extends SelfManagementEnvironment {
         System.out.println("Behavior frequency: " + behaviorFrequency);
         System.out.println("");
         //double threshold = CAT - (CAT *  WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
-        double threshold = CAT - (CAT *  WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
+        double threshold = CAT - (CAT * WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
 
         boolean behaviorRemembered = accessibility >= threshold;
         behaviorPerformed = behaviorRemembered;
@@ -217,25 +228,25 @@ public class HabitSimulatorEnvironment extends SelfManagementEnvironment {
     }
 
     public boolean willRemember() {
-        double threshold = CAT - (CAT *  WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
+        double threshold = CAT - (CAT * WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
         boolean behaviorRemembered = accessibility >= threshold;
         return behaviorRemembered;
     }
 
     private void updateAccessibility() {
-        double accDecay  = accessibility * ADP;
+        double accDecay = accessibility * ADP;
         double accGainBeh = 0;
         double accGainEvent = 0;
-        if(day == 0 && dailyStep == 0) {
+        if (day == 0 && dailyStep == 0) {
             accGainEvent = AGC_EVENT * (1.0 - AGC_EVENT) * WCI_EVENT * CI;
         }
         if (behaviorPerformed) {
             //accGainBeh = behaviorFrequency * WBF_AGBEH
-            accGainBeh = behaviorFrequency * WBF_AGBEH + (1-behaviorFrequency) * WBF_AGBEH;
+            accGainBeh = behaviorFrequency * WBF_AGBEH + (1 - behaviorFrequency) * WBF_AGBEH;
         }
         double accGainRem = 0;
-        if(selectedJitaiType != 0) {
-            accGainRem = (AGC_REM + (1.0 - AGC_REM) * WCI_REM * CI) * salienceReminders.get(selectedJitaiType) ;
+        if (selectedJitaiType != 0) {
+            accGainRem = (AGC_REM + (1.0 - AGC_REM) * WCI_REM * CI) * salienceReminders.get(selectedJitaiType);
         }
         accessibility = Math.max(0, Math.min(1, accessibility - accDecay + accGainEvent + accGainBeh + accGainRem));
 
@@ -298,7 +309,7 @@ public class HabitSimulatorEnvironment extends SelfManagementEnvironment {
             performedBehaviour += behaviourWindow.get(i) ? 1 : 0;
         }
 
-        behaviorFrequency = Math.max(0, (double) performedBehaviour / (double) (windowSize*3));
+        behaviorFrequency = Math.max(0, (double) performedBehaviour / (double) (windowSize * 3));
     }
 
     private double calculateSimilarity(double behaviorFrequency) {
@@ -346,36 +357,36 @@ public class HabitSimulatorEnvironment extends SelfManagementEnvironment {
         }
     }
 
-    @Override
+        @Override
     public State getNextState() {
-        if(checkedBehaviorOpportunityCount < 3) {
+        if (checkedBehaviorOpportunityCount < 3) {
             //habitSimulator.simulateStep(1, );
         }
         checkedBehaviorOpportunityCount++;
-    }
+    } else
 
-    @Override
+@Override
     public State getStateFromCurrentContext() {
-        State s;
-        if (!lastActivity) {
-            s = new MutableState();
-            s.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
+        SimulatedWorld.DynamicSimulatedWorldContext simulatedWorldContext = this.simulatedWorld.getContext();
+        ActionPlan.JitaiNature expectedJitai = simulatedWorldContext.getExpectedJitaiNature();
 
-            ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
-            o.setValue(ATT_HABIT_STRENGTH, habitStrength);
-            o.setValue(ATT_BEHAVIOR_FREQUENCY, behaviorFrequency);
-            o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
-            o.setValue(ATT_DAY_TYPE, getDayType(currentDay));
-            o.setValue(ATT_PART_OF_DAY, getDayPart());
+        ActionRestrictingState s = new ActionRestrictingState(expectedJitai);
 
-        } else {
-            s = new TerminalState();
-        }
+        s.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
+
+        ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
+        o.setValue(ATT_HABIT_STRENGTH, habitStrength);
+        o.setValue(ATT_BEHAVIOR_FREQUENCY, behaviorFrequency);
+        o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
+        o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
+        o.setValue(ATT_PART_OF_DAY, getDayPart());
+
     }
+
+}
 
     @Override
     public void resetEnvironment() {
-        currentDay++;
         checkedBehaviorOpportunityCount = 0;
         super.resetEnvironment();
     }

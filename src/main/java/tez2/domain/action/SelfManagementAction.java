@@ -7,6 +7,7 @@ import burlap.oomdp.singleagent.FullActionModel;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.common.SimpleAction;
 import burlap.oomdp.singleagent.environment.Environment;
+import tez2.algorithm.ActionRestrictingState;
 import tez2.algorithm.SelfManagementSimpleGroundedAction;
 import tez2.environment.simulator.SimulatedWorld;
 

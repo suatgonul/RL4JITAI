@@ -2,7 +2,10 @@ package tez2.domain;
 
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.Action;
 import tez2.environment.context.*;
+
+import java.util.List;
 
 import static tez2.domain.DomainConfig.*;
 

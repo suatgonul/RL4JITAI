@@ -5,10 +5,7 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.environment.Environment;
-import tez2.domain.action.Jitai1Action;
-import tez2.domain.action.Jitai2Action;
-import tez2.domain.action.Jitai3Action;
-import tez2.domain.action.SelfManagementAction;
+import tez2.domain.action.*;
 
 import static tez2.domain.DomainConfig.*;
 
@@ -43,9 +40,12 @@ public class JitaiSelectionDomainGenerator implements DomainGenerator {
         stateClass.addAttribute(DomainConfig.getAtt(ATT_PART_OF_DAY, domain));
         stateClass.addAttribute(DomainConfig.getAtt(ATT_DAY_TYPE, domain));
 
+
+
         new Jitai1Action(ACTION_JITAI_1, domain);
         new Jitai2Action(ACTION_JITAI_2, domain);
         new Jitai3Action(ACTION_JITAI_3, domain);
+        new NoAction(ACTION_NO_ACTION, domain);
 
         return domain;
     }

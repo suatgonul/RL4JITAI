@@ -37,13 +37,13 @@ public class OpportuneMomentDomainGenerator implements DomainGenerator {
 
         ObjectClass stateClass = new ObjectClass(domain, CLASS_STATE);
 
-        stateClass.addAttribute(DomainConfig.getAtt(ATT_REMEMBER_BEHAVIOR, domain));
-        stateClass.addAttribute(DomainConfig.getAtt(ATT_BEHAVIOR_FREQUENCY, domain));
-        stateClass.addAttribute(DomainConfig.getAtt(ATT_HABIT_STRENGTH, domain));
-        stateClass.addAttribute(DomainConfig.getAtt(ATT_PART_OF_DAY, domain));
-        stateClass.addAttribute(DomainConfig.getAtt(ATT_DAY_TYPE, domain));
+        stateClass.addAttribute(DomainConfig.getAtt(ATT_LOCATION, domain));
+        stateClass.addAttribute(DomainConfig.getAtt(ATT_QUARTER_HOUR_OF_DAY, domain));
+        stateClass.addAttribute(DomainConfig.getAtt(ATT_ACTIVITY, domain));
+        stateClass.addAttribute(DomainConfig.getAtt(ATT_PHONE_USAGE, domain));
+        stateClass.addAttribute(DomainConfig.getAtt(ATT_EMOTIONAL_STATUS, domain));
 
-        new InterventionDeliveryAction(ACTION_JITAI_1, domain);
+        new InterventionDeliveryAction(ACTION_SEND_JITAI, domain);
         new NoAction(ACTION_NO_ACTION, domain);
 
         return domain;

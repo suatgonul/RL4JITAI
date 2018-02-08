@@ -71,7 +71,7 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
     private List<Boolean> behaviourWindow;
     private Map<Integer, Double> salienceReminders = new HashMap<>();
 
-    private int checkedBehaviorOpportunityCount = 0;
+    private int stepCount = 0;
 
     // visualization data
     private List<Integer> behaviors = new ArrayList<>();
@@ -356,6 +356,26 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
 
     @Override
     public State getNextState() {
+        SimulatedWorld.DynamicSimulatedWorldContext simulatedWorldContext = this.simulatedWorld.getLastContextForJitai();
+        ActionPlan.JitaiNature expectedJitai = simulatedWorldContext.getExpectedJitaiNature();
+
+        ActionRestrictingState s = new ActionRestrictingState(expectedJitai);
+
+        s.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
+
+        ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
+        o.setValue(ATT_HABIT_STRENGTH, habitStrength);
+        o.setValue(ATT_BEHAVIOR_FREQUENCY, behaviorFrequency);
+        o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
+        o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
+        o.setValue(ATT_PART_OF_DAY, getDayPart());
+
+        if(stepCount < 6) {
+
+        } else {
+            s = new TerminalState();
+        }
+            stepCount++;
         return null;
     }
 
@@ -382,5 +402,10 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
     public void resetEnvironment() {
         checkedBehaviorOpportunityCount = 0;
         super.resetEnvironment();
+    }
+
+    public void initEpisode() {
+        State s = getStateFromCurrentContext();
+        setCurStateTo(s);
     }
 }

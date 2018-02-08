@@ -9,6 +9,7 @@ import burlap.oomdp.singleagent.environment.EnvironmentObserver;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import org.joda.time.DateTime;
+import org.joda.time.LocalTime;
 import tez.environment.context.DayType;
 import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez2.algorithm.jitai_selection.JitaiSelectionQLearning;
@@ -117,6 +118,11 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         // execute the jitai selection step
         List<Object> currentRange = getTimeRange();
         if(currentRange != null) {
+            // initialize the jitai selection environment state
+            if(checkedActionPlanIndex == -1) {
+                jitaiSelectionEnvironment.initEpisode();
+            }
+
             int rangeIndex = (Integer) currentRange.get(0);
             if(rangeIndex > checkedActionPlanIndex) {
                 ActionPlan.JitaiTimeRange timeRange = (ActionPlan.JitaiTimeRange) currentRange.get(1);
@@ -222,6 +228,43 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         context.setCurrentTime(currentTime);
         context.setExpectedJitaiNature(((ActionPlan.JitaiTimeRange) getTimeRange().get(1)).getJitaiNature());
         return context;
+    }
+
+    public DynamicSimulatedWorldContext getLastContextForJitai() {
+        DynamicSimulatedWorldContext context = new DynamicSimulatedWorldContext();
+        context.setCurrentDayType(getDayType(currentDay));
+        context.setExpectedJitaiNature(((ActionPlan.JitaiTimeRange) getTimeRange().get(1)).getJitaiNature());
+
+        LocalTime time = currentActivity.getStart().toLocalTime();
+        Activity activity = currentActivity;
+
+        for(int i=0; i<actionPlan.getJitaiTimeRanges().size(); i++) {
+            ActionPlan.JitaiTimeRange tr = actionPlan.getJitaiTimeRanges().get(i);
+            if(currentTime.toLocalTime().isAfter(tr.getStartTime()) && currentTime.toLocalTime().isBefore(tr.getEndTime())) {
+                List<Object> result = new ArrayList<>();
+                result.add(i);
+                result.add(tr);
+                return result;
+            }
+        }
+
+
+        if (activityEndTime.isAfter(currentTime.plusMinutes(stateChangeFrequency))) {
+            currentTime = currentTime.plusMinutes(stateChangeFrequency);
+        } else {
+            currentTime = activityEndTime;
+            // update activity
+            lastActivity = currentActivityIndex == currentTimePlan.getActivities().size() - 1;
+            if (!lastActivity) {
+                currentActivity = currentTimePlan.getActivities().get(++currentActivityIndex);
+            }
+        }
+    }
+
+    private void executeBehaviorInRealLife() {
+        if(checkedActionPlanIndex % 2 == 0) {
+
+        }
     }
 
     public static class DynamicSimulatedWorldContext {

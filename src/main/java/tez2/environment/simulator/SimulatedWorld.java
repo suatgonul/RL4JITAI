@@ -108,7 +108,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
      * Increase the time in real world by considering the start of the next activity and state time period
      */
     @Override
-    public State getNextState() {
+    public State getNextState(GroundedAction action) {
         advanceTimePlan();
         State state = getStateFromCurrentContext();
         return state;
@@ -225,40 +225,27 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         DynamicSimulatedWorldContext context = new DynamicSimulatedWorldContext();
         context.setActivity(currentActivity);
         context.setCurrentDayType(getDayType(currentDay));
-        context.setCurrentTime(currentTime);
+        context.setCurrentTime(currentTime.toLocalTime());
         context.setExpectedJitaiNature(((ActionPlan.JitaiTimeRange) getTimeRange().get(1)).getJitaiNature());
         return context;
     }
 
-    public DynamicSimulatedWorldContext getLastContextForJitai() {
+    public DynamicSimulatedWorldContext getLastContextForJitai(int jitaiOffset) {
         DynamicSimulatedWorldContext context = new DynamicSimulatedWorldContext();
         context.setCurrentDayType(getDayType(currentDay));
         context.setExpectedJitaiNature(((ActionPlan.JitaiTimeRange) getTimeRange().get(1)).getJitaiNature());
 
-        LocalTime time = currentActivity.getStart().toLocalTime();
-        Activity activity = currentActivity;
-
-        for(int i=0; i<actionPlan.getJitaiTimeRanges().size(); i++) {
-            ActionPlan.JitaiTimeRange tr = actionPlan.getJitaiTimeRanges().get(i);
-            if(currentTime.toLocalTime().isAfter(tr.getStartTime()) && currentTime.toLocalTime().isBefore(tr.getEndTime())) {
-                List<Object> result = new ArrayList<>();
-                result.add(i);
-                result.add(tr);
-                return result;
+        LocalTime time = currentTimePlan.getStart().toLocalTime();
+        LocalTime timeRangeEnd = actionPlan.getJitaiTimeRanges().get(jitaiOffset).getEndTime();
+        for(int i=0; i<currentTimePlan.getActivities().size(); i++) {
+            time = time.plusMinutes(currentTimePlan.getActivities().get(i).getDuration());
+            if(time.isEqual(timeRangeEnd) || time.isAfter(timeRangeEnd)) {
+                context.setActivity(currentTimePlan.getActivities().get(i));
+                context.setCurrentTime(time);
+                break;
             }
         }
-
-
-        if (activityEndTime.isAfter(currentTime.plusMinutes(stateChangeFrequency))) {
-            currentTime = currentTime.plusMinutes(stateChangeFrequency);
-        } else {
-            currentTime = activityEndTime;
-            // update activity
-            lastActivity = currentActivityIndex == currentTimePlan.getActivities().size() - 1;
-            if (!lastActivity) {
-                currentActivity = currentTimePlan.getActivities().get(++currentActivityIndex);
-            }
-        }
+        return context;
     }
 
     private void executeBehaviorInRealLife() {
@@ -269,7 +256,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
 
     public static class DynamicSimulatedWorldContext {
         private Activity activity;
-        private DateTime currentTime;
+        private LocalTime currentTime;
         private int currentDayType;
         private ActionPlan.JitaiNature expectedJitaiNature;
 
@@ -281,11 +268,11 @@ public class SimulatedWorld extends SelfManagementEnvironment {
             this.activity = activity;
         }
 
-        public DateTime getCurrentTime() {
+        public LocalTime getCurrentTime() {
             return currentTime;
         }
 
-        public void setCurrentTime(DateTime currentTime) {
+        public void setCurrentTime(LocalTime currentTime) {
             this.currentTime = currentTime;
         }
 

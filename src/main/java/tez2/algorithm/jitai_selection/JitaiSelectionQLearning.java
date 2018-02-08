@@ -22,7 +22,8 @@ import java.util.List;
  * Created by suat on 07-Feb-18.
  */
 public class JitaiSelectionQLearning extends QLearning {
-    public JitaiSelectionQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory, ValueFunctionInitialization qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize) {
+    public JitaiSelectionQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory,
+                                   double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize) {
         super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, maxEpisodeSize);
     }
 

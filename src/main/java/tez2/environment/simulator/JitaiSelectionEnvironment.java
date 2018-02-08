@@ -6,10 +6,16 @@ import burlap.oomdp.core.objects.MutableObjectInstance;
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
+import power2dm.model.TaskDifficulty;
 import tez2.algorithm.ActionRestrictingState;
 import tez2.domain.TerminalState;
+import tez2.domain.action.Jitai1Action;
+import tez2.domain.action.Jitai2Action;
+import tez2.domain.action.Jitai3Action;
 import tez2.environment.SelfManagementEnvironment;
+import tez2.environment.simulator.habit.HabitGainRatio;
 import tez2.environment.simulator.habit.visualization.AccessibilityThresholdChart;
 import tez2.persona.ActionPlan;
 
@@ -70,8 +76,13 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
     private int windowSize;
     private List<Boolean> behaviourWindow;
     private Map<Integer, Double> salienceReminders = new HashMap<>();
+    private int habitGainOffset;
+    private TaskDifficulty taskDifficulty;
 
+    // environment related parameters
     private int stepCount = 0;
+    private int reminderCount = 0;
+    private SimulatedWorld simulatedWorld;
 
     // visualization data
     private List<Integer> behaviors = new ArrayList<>();
@@ -82,9 +93,7 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
     private List<Double> behaviorFrequencies = new ArrayList<>();
     private List<Integer> jitais = new ArrayList<>();
 
-    private SimulatedWorld simulatedWorld;
-
-    public JitaiSelectionEnvironment(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String configFilePath, SimulatedWorld simulatedWorld) {
+    public JitaiSelectionEnvironment(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String configFilePath) {
         super(domain, rf, tf, stateChangeFrequency);
 
         Properties prop = new Properties();
@@ -104,7 +113,6 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         double commitmentIntensity = Double.parseDouble(prop.getProperty("commitment_intensity"));
 
         setInitialValues(behaviorFrequency, commitmentIntensity, jitaiTypeMap);
-        this.simulatedWorld = simulatedWorld;
     }
 
     private void setInitialValues(double initialBehaviorFrequency, double commitmentIntensity, LinkedHashMap<Integer, Integer> jitaiGroups) {
@@ -145,35 +153,32 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         initiateBehaviorList();
     }
 
-    public double getHabitStrength() {
-        return habitStrength;
+    public void setSimulatedWorld(SimulatedWorld simulatedWorld) {
+        this.simulatedWorld = simulatedWorld;
     }
 
-    public double getBehaviorFrequency() {
-        return behaviorFrequency;
-    }
-
-    private void simulateScenario() {
-        for (day = 0; day < 50; day++) {
-            System.out.println("************* DAY:" + day);
-            for (dailyStep = 0; dailyStep < 3; dailyStep++) {
-                System.out.println("**************** STEP: " + dailyStep);
-                //if(dailyStep % 2) {
-                //simulateStep((dailyStep % 2) + 1, (dailyStep % 2) == 0 ? 1 : 3);
-                simulateStep(1, 1);
-            }
+    private void simulateStep(GroundedAction action) {
+        ActionRestrictingState currentState = (ActionRestrictingState) getCurrentObservation();
+        int jitaiGroup = currentState.getExpectedJitaiType() == ActionPlan.JitaiNature.REMINDER ? 1 : 2;
+        int jitaiType = 0;
+        if(action.action instanceof Jitai1Action) {
+            jitaiType = 1;
+        } else if(action.action instanceof Jitai2Action) {
+            jitaiType = 2;
+        } else if(action.action instanceof Jitai3Action) {
+            jitaiType = 3;
         }
+
+        simulateStep(jitaiGroup, jitaiType);
     }
 
     private void simulateStep(int jitaiGroup, int jitaiType) {
         selectedJitaiGroup = jitaiGroup;
         selectedJitaiType = jitaiType;
 
-        //if(dailyStep % 2 == 0) {
         simulateBehavior();
         updateAccessibility();
         updateHabitStrength();
-        //}
         updateSalience();
     }
 
@@ -183,7 +188,7 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         System.out.println("Behavior frequency: " + behaviorFrequency);
         System.out.println("");
         //double threshold = CAT - (CAT *  WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
-        double threshold = CAT - (CAT * WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
+        double threshold = Math.abs(CAT - (CAT *  WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength) - (1-behaviorFrequency)*normalizeCI());
 
         boolean behaviorRemembered = accessibility >= threshold;
         behaviorPerformed = behaviorRemembered;
@@ -192,8 +197,15 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
             behaviorPerformed = true;
         }
 
-        if ((new Random().nextInt(100) % 100 < (CI * 100))) {
-            behaviorPerformed = true;
+        if(behaviorRemembered) {
+            double habitGain = HabitGainRatio.get(taskDifficulty, habitGainOffset++);
+            System.out.println("Habit gain ratio:" + habitGain);
+            //if ((new Random().nextInt(100) % 100 < (CI * 100))) {
+            if ((new Random().nextInt(100) % 100 < habitGain)) {
+                behaviorPerformed = true;
+            } else {
+                behaviorPerformed = false;
+            }
         } else {
             behaviorPerformed = false;
         }
@@ -220,12 +232,12 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         behaviorFrequencies.add(behaviorFrequency);
         jitais.add(selectedJitaiType);
 
-        // TODO
-        return false;
+        return behaviorPerformed;
     }
 
     public boolean willRemember() {
-        double threshold = CAT - (CAT * WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
+        //double threshold = CAT - (CAT * WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength);
+        double threshold = Math.abs(CAT - (CAT *  WH_AT * habitStrength) + (1.0 - CAT) * WBF_AT * behaviorFrequency * (1.0 - DRH_AT * habitStrength) - (1-behaviorFrequency)*normalizeCI());
         boolean behaviorRemembered = accessibility >= threshold;
         return behaviorRemembered;
     }
@@ -243,7 +255,7 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         }
         double accGainRem = 0;
         if (selectedJitaiType != 0) {
-            accGainRem = (AGC_REM + (1.0 - AGC_REM) * WCI_REM * CI) * salienceReminders.get(selectedJitaiType);
+            accGainRem = (AGC_REM + (1.0 - AGC_REM) * WCI_REM * CI) * salienceReminders.get(selectedJitaiType) + (1-behaviorFrequency) * CI;
         }
         accessibility = Math.max(0, Math.min(1, accessibility - accDecay + accGainEvent + accGainBeh + accGainRem));
 
@@ -309,16 +321,6 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         behaviorFrequency = Math.max(0, (double) performedBehaviour / (double) (windowSize * 3));
     }
 
-    private double calculateSimilarity(double behaviorFrequency) {
-        double similarity = 1.0 -
-                ((1.0 / (1 + Math.exp((0.5 - Math.pow(behaviorFrequency, TS)) * SS)) -
-                        (1.0 / (1 + Math.exp(0.5 * SS)))) /
-                        ((1.0 / (1 + Math.exp(-0.5 * SS))) -
-                                (1.0 / (1 + Math.exp(0.5 * SS))))) *
-                        DP;
-        return similarity;
-    }
-
     private void drawCharts() {
 //        SwingUtilities.invokeLater(() -> {
 //            BehaviorJitaiChart example = new BehaviorJitaiChart("Behaviour");
@@ -354,29 +356,49 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         }
     }
 
+    private double normalizeCI() {
+        return CI * 0.4 + 0.3;
+    }
+
+    /***************************************
+     ***** Environment-related methods *****
+     ***************************************/
+
     @Override
-    public State getNextState() {
-        SimulatedWorld.DynamicSimulatedWorldContext simulatedWorldContext = this.simulatedWorld.getLastContextForJitai();
-        ActionPlan.JitaiNature expectedJitai = simulatedWorldContext.getExpectedJitaiNature();
+    public State getNextState(GroundedAction action) {
 
-        ActionRestrictingState s = new ActionRestrictingState(expectedJitai);
+        State nextState;
 
-        s.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
+        if (stepCount < 6) {
+            if(action.action instanceof Jitai1Action || action.action instanceof  Jitai3Action || action.action instanceof Jitai3Action) {
+                reminderCount++;
+            }
 
-        ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
-        o.setValue(ATT_HABIT_STRENGTH, habitStrength);
-        o.setValue(ATT_BEHAVIOR_FREQUENCY, behaviorFrequency);
-        o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
-        o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
-        o.setValue(ATT_PART_OF_DAY, getDayPart());
+            // advance the environment
+            // only simulate the habit model when the environment is in a reminder state
+            ActionRestrictingState currentState = (ActionRestrictingState) getCurrentObservation();
+            if(currentState.getExpectedJitaiType() == ActionPlan.JitaiNature.REMINDER) {
+                simulateStep(action);
+                reminderCount = 0;
+            }
 
-        if(stepCount < 6) {
+            SimulatedWorld.DynamicSimulatedWorldContext simulatedWorldContext = this.simulatedWorld.getLastContextForJitai(stepCount);
+            ActionPlan.JitaiNature expectedJitai = simulatedWorldContext.getExpectedJitaiNature();
+
+            nextState = new ActionRestrictingState(expectedJitai);
+            nextState.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
+            ObjectInstance o = nextState.getObjectsOfClass(CLASS_STATE).get(0);
+            o.setValue(ATT_HABIT_STRENGTH, habitStrength);
+            o.setValue(ATT_BEHAVIOR_FREQUENCY, behaviorFrequency);
+            o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
+            o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
+            o.setValue(ATT_PART_OF_DAY, getDayPart());
 
         } else {
-            s = new TerminalState();
+            nextState = new TerminalState();
         }
-            stepCount++;
-        return null;
+        stepCount++;
+        return nextState;
     }
 
     @Override
@@ -400,7 +422,7 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
 
     @Override
     public void resetEnvironment() {
-        checkedBehaviorOpportunityCount = 0;
+        stepCount = 0;
         super.resetEnvironment();
     }
 

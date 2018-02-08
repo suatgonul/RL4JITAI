@@ -3,6 +3,7 @@ package tez2.environment;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.states.State;
+import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
 import org.joda.time.DateTime;
@@ -31,7 +32,7 @@ public abstract class SelfManagementEnvironment extends SimulatedEnvironment {
         return (SelfManagementDomain) domain;
     }
 
-    public abstract State getNextState();
+    public abstract State getNextState(GroundedAction action);
 
     public abstract State getStateFromCurrentContext();
 

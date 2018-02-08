@@ -39,39 +39,39 @@ public class Experiment {
     }
 
     private void runExperiment() {
-        String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
-
-        // jitai selection related objects
-        TerminalFunction tf = new DayTerminalFunction();
-        RewardFunction rf = new SelfManagementRewardFunction();
-        JitaiSelectionDomainGenerator domGen = new JitaiSelectionDomainGenerator(null);
-        Domain domain = domGen.generateDomain();
-        JitaiSelectionEnvironment jitaiSelectionEnvironment = new JitaiSelectionEnvironment(domain, rf, tf, 60, personaFolder + "/config");
-
-        LearningAgentFactory[] omiLearningCases = getOpportuneMomentIdentificationLearningAlternatives(domain);
-
-        // opportune moment identification related objects
-        OpportuneMomentDomainGenerator omiDomGen = new OpportuneMomentDomainGenerator();
-        omiDomGen.generateDomain();
-        environment = new SimulatedWorld(domain, rf, tf, 60, personaFolder);
-        //environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob");
-        omiDomGen.setEnvironment(environment);
-
-
-        StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                1, 100, omiLearningCases);
-
-        exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
-                CUMULATIVE_REWARD_PER_EPISODE,
-                CUMULATIVE_REACTION,
-                AVERAGEEPISODEREWARD,
-                REWARD_PER_EPISODE,
-                USER_REACTION_PER_EPISODE
-        );
-
-
-        //start experiment
-        exp.startExperiment();
+//        String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
+//
+//        // jitai selection related objects
+//        TerminalFunction tf = new DayTerminalFunction();
+//        RewardFunction rf = new SelfManagementRewardFunction();
+//        JitaiSelectionDomainGenerator domGen = new JitaiSelectionDomainGenerator(null);
+//        Domain domain = domGen.generateDomain();
+//        JitaiSelectionEnvironment jitaiSelectionEnvironment = new JitaiSelectionEnvironment(domain, rf, tf, 60, personaFolder + "/config");
+//
+//        LearningAgentFactory[] omiLearningCases = getOpportuneMomentIdentificationLearningAlternatives(domain);
+//
+//        // opportune moment identification related objects
+//        OpportuneMomentDomainGenerator omiDomGen = new OpportuneMomentDomainGenerator();
+//        omiDomGen.generateDomain();
+//        environment = new SimulatedWorld(domain, rf, tf, 60, personaFolder);
+//        //environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob");
+//        omiDomGen.setEnvironment(environment);
+//
+//
+//        StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
+//                1, 100, omiLearningCases);
+//
+//        exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
+//                CUMULATIVE_REWARD_PER_EPISODE,
+//                CUMULATIVE_REACTION,
+//                AVERAGEEPISODEREWARD,
+//                REWARD_PER_EPISODE,
+//                USER_REACTION_PER_EPISODE
+//        );
+//
+//
+//        //start experiment
+//        exp.startExperiment();
     }
 
     private LearningAgentFactory[] getJitaiSelectionLearningAlternatives() {

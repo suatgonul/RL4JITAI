@@ -84,10 +84,6 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
 
     private SimulatedWorld simulatedWorld;
 
-    {
-        s = new TerminalState();
-    }
-
     public JitaiSelectionEnvironment(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String configFilePath, SimulatedWorld simulatedWorld) {
         super(domain, rf, tf, stateChangeFrequency);
 
@@ -147,8 +143,6 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         windowSize = 15;
         accessibility = habitStrength = commitmentIntensity;
         initiateBehaviorList();
-
-        this.simulatedWorld =
     }
 
     public double getHabitStrength() {
@@ -183,7 +177,7 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         updateSalience();
     }
 
-    private void simulateBehavior() {
+    public boolean simulateBehavior() {
         System.out.println("VALUES FOR THRESHOLD");
         System.out.println("Habit strenght: " + habitStrength);
         System.out.println("Behavior frequency: " + behaviorFrequency);
@@ -225,6 +219,9 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         habitStrengths.add(habitStrength);
         behaviorFrequencies.add(behaviorFrequency);
         jitais.add(selectedJitaiType);
+
+        // TODO
+        return false;
     }
 
     public boolean willRemember() {
@@ -357,15 +354,12 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         }
     }
 
-        @Override
+    @Override
     public State getNextState() {
-        if (checkedBehaviorOpportunityCount < 3) {
-            //habitSimulator.simulateStep(1, );
-        }
-        checkedBehaviorOpportunityCount++;
-    } else
+        return null;
+    }
 
-@Override
+    @Override
     public State getStateFromCurrentContext() {
         SimulatedWorld.DynamicSimulatedWorldContext simulatedWorldContext = this.simulatedWorld.getContext();
         ActionPlan.JitaiNature expectedJitai = simulatedWorldContext.getExpectedJitaiNature();
@@ -381,9 +375,8 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
         o.setValue(ATT_PART_OF_DAY, getDayPart());
 
+        return s;
     }
-
-}
 
     @Override
     public void resetEnvironment() {

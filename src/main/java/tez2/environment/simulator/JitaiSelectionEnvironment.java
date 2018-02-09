@@ -82,6 +82,7 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
     // environment related parameters
     private int stepCount = 0;
     private int reminderCount = 0;
+    private GroundedAction lastAction;
     private SimulatedWorld simulatedWorld;
 
     // visualization data
@@ -182,7 +183,7 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         updateSalience();
     }
 
-    public boolean simulateBehavior() {
+    public void simulateBehavior() {
         System.out.println("VALUES FOR THRESHOLD");
         System.out.println("Habit strenght: " + habitStrength);
         System.out.println("Behavior frequency: " + behaviorFrequency);
@@ -231,8 +232,6 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         habitStrengths.add(habitStrength);
         behaviorFrequencies.add(behaviorFrequency);
         jitais.add(selectedJitaiType);
-
-        return behaviorPerformed;
     }
 
     public boolean willRemember() {
@@ -366,7 +365,7 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
 
     @Override
     public State getNextState(GroundedAction action) {
-
+        lastAction = action;
         State nextState;
 
         if (stepCount < 6) {
@@ -379,7 +378,7 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
             ActionRestrictingState currentState = (ActionRestrictingState) getCurrentObservation();
             if(currentState.getExpectedJitaiType() == ActionPlan.JitaiNature.REMINDER) {
                 simulateStep(action);
-                reminderCount = 0;
+                reminderCount = 0; //TODO update the effect of reminders on accessibility based on reminder count
             }
 
             SimulatedWorld.DynamicSimulatedWorldContext simulatedWorldContext = this.simulatedWorld.getLastContextForJitai(stepCount);
@@ -392,7 +391,7 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
             o.setValue(ATT_BEHAVIOR_FREQUENCY, behaviorFrequency);
             o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
             o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
-            o.setValue(ATT_PART_OF_DAY, getDayPart());
+            o.setValue(ATT_PART_OF_DAY, simulatedWorldContext.getCurrentDayPart());
 
         } else {
             nextState = new TerminalState();
@@ -415,7 +414,7 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
         o.setValue(ATT_BEHAVIOR_FREQUENCY, behaviorFrequency);
         o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
         o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
-        o.setValue(ATT_PART_OF_DAY, getDayPart());
+        o.setValue(ATT_PART_OF_DAY, simulatedWorldContext.getCurrentDayPart());
 
         return s;
     }
@@ -429,5 +428,9 @@ public class JitaiSelectionEnvironment extends SelfManagementEnvironment {
     public void initEpisode() {
         State s = getStateFromCurrentContext();
         setCurStateTo(s);
+    }
+
+    public GroundedAction getLastAction() {
+        return lastAction;
     }
 }

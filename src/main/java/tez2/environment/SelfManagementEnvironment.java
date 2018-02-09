@@ -36,8 +36,6 @@ public abstract class SelfManagementEnvironment extends SimulatedEnvironment {
 
     public abstract State getStateFromCurrentContext();
 
-    public abstract boolean simulateBehavior();
-
     protected int getDayType(int dayOffset) {
         if (dayOffset - 1 % 7 < 5) {
             return DayType.WEEKDAY.ordinal();
@@ -47,7 +45,10 @@ public abstract class SelfManagementEnvironment extends SimulatedEnvironment {
     }
 
     protected int getDayPart() {
-        LocalTime time = currentTime.toLocalTime();
+        return getDayPart(currentTime.toLocalTime());
+    }
+
+    protected int getDayPart(LocalTime time) {
         LocalTime morningStart = new LocalTime().withHourOfDay(6).withMinuteOfHour(0).withSecondOfMinute(0);
         LocalTime morningEnd = morningStart.plusHours(5).plusMinutes(30).minusSeconds(1);
         LocalTime noonStart = morningEnd.plusSeconds(1);

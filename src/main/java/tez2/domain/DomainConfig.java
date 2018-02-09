@@ -36,8 +36,7 @@ public class DomainConfig {
                 att.setDiscValuesForRange(0, 2, 1);
                 break;
             case ATT_QUARTER_HOUR_OF_DAY:
-                att = new Attribute(domain, ATT_ACTIVITY, Attribute.AttributeType.INT);
-                att.setDiscValuesForRange(0, 96, 1);
+                att = new Attribute(domain, ATT_QUARTER_HOUR_OF_DAY, Attribute.AttributeType.STRING);
                 break;
             case ATT_ACTIVITY:
                 att = new Attribute(domain, ATT_ACTIVITY, Attribute.AttributeType.INT);

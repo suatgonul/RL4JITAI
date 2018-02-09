@@ -2,27 +2,36 @@ package tez2.environment.simulator;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TerminalFunction;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.objects.ObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.EnvironmentObserver;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
-import tez.environment.context.DayType;
-import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez2.algorithm.jitai_selection.JitaiSelectionQLearning;
 import tez2.domain.ExtendedEnvironmentOutcome;
+import tez2.domain.SelfManagementDomain;
+import tez2.domain.TerminalState;
 import tez2.environment.SelfManagementEnvironment;
+import tez2.environment.context.*;
+import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez2.persona.ActionPlan;
 import tez2.persona.Activity;
 import tez2.persona.TimePlan;
 import tez2.persona.parser.PersonaParser;
 import tez2.persona.parser.PersonaParserException;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.*;
+
+import static tez2.domain.DomainConfig.*;
 
 /**
  * Created by suatgonul on 12/2/2016.
@@ -35,6 +44,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     private TimePlan currentTimePlan;
     private Activity currentActivity;
     private boolean lastActivity;
+    private boolean behaviorPerformed;
 
 
     private String personaFolder;
@@ -46,6 +56,8 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     private SelfManagementEpisodeAnalysis jitaiSelectionEpisode;
     private int checkedActionPlanIndex;
     private ActionPlan actionPlan;
+    private GroundedAction lastSelectedJitai;
+    private Map<String, Double> jitaiPreferences;
 
 
     public SimulatedWorld(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String personaFolder, JitaiSelectionEnvironment jitaiSelectionEnvironment, JitaiSelectionQLearning jitaiSelectionLearning) {
@@ -57,6 +69,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         initEpisode();
         this.curState = stateGenerator.generateState();
         initActionPlan();
+        initJitaiPreferences(personaFolder);
     }
 
     /**
@@ -117,24 +130,35 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     private void advanceTimePlan() {
         // execute the jitai selection step
         List<Object> currentRange = getTimeRange();
-        if(currentRange != null) {
+        if (currentRange != null) {
             // initialize the jitai selection environment state
-            if(checkedActionPlanIndex == -1) {
+            if (checkedActionPlanIndex == -1) {
+                jitaiSelectionResults.add(jitaiSelectionEpisode);
+                jitaiSelectionEpisode = new SelfManagementEpisodeAnalysis(jitaiSelectionEnvironment.getCurrentObservation());
                 jitaiSelectionEnvironment.initEpisode();
             }
 
             int rangeIndex = (Integer) currentRange.get(0);
-            if(rangeIndex > checkedActionPlanIndex) {
+            if (rangeIndex > checkedActionPlanIndex) {
                 ActionPlan.JitaiTimeRange timeRange = (ActionPlan.JitaiTimeRange) currentRange.get(1);
                 HashableState curJitaiSelectionState = jitaiSelectionLearning.stateHash(jitaiSelectionEnvironment.getCurrentObservation());
                 jitaiSelectionLearning.executeLearningStep(jitaiSelectionEnvironment, curJitaiSelectionState, jitaiSelectionEpisode);
+                lastSelectedJitai = jitaiSelectionEnvironment.getLastAction();
                 checkedActionPlanIndex++;
 
                 // check the last time range
-                if(checkedActionPlanIndex+1 == actionPlan.getJitaiTimeRanges().size()) {
-
+                if (checkedActionPlanIndex + 1 == actionPlan.getJitaiTimeRanges().size()) {
+                    checkedActionPlanIndex = -1;
                 }
             }
+        }
+
+        //
+        simulateUserReactionToJitai();
+
+        // perform reaction to the JITAI
+        if (!lastSelectedJitai.actionName().contentEquals(ACTION_NO_ACTION)) {
+            simulateBehaviorPerformance();
         }
 
         int currentActivityIndex = currentTimePlan.getActivities().indexOf(currentActivity);
@@ -151,16 +175,91 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         }
     }
 
-    @Override
-    public State getStateFromCurrentContext() {
+    private boolean simulateUserReactionToJitai() {
+        int dayType = getDayType(currentDay);
+        Location location = currentActivity.getContext().getLocation();
+        PhysicalActivity physicalActivity = currentActivity.getContext().getPhysicalActivity();
+        StateOfMind stateOfMind = currentActivity.getContext().getStateOfMind();
+        EmotionalStatus emotionalStatus = currentActivity.getContext().getEmotionalStatus();
+        PhoneUsage phoneUsage = currentActivity.getContext().getPhoneUsage();
 
-        //TODO
-        return null;
+        // check performance of the behavior for the reminder type jitais
+        if(checkedActionPlanIndex % 2 == 0) {
+            if(behaviorPerformed == true) {
+                return false;
+            }
+        }
+
+        // check preferences on jitais
+        if(new Random().nextDouble() > jitaiPreferences.get(lastSelectedJitai.actionName())) {
+            return false;
+        }
+
+        // check suitability of the context
+        if (currentActivity.getContext().getPhoneCheckSuitability() == true) {
+            boolean contextSuitable = false;
+
+            // before going to work and at the beginning of the working day
+            if ((stateOfMind == StateOfMind.CALM || stateOfMind == StateOfMind.FOCUS) &&
+                    (emotionalStatus == EmotionalStatus.NEUTRAL || emotionalStatus == EmotionalStatus.RELAXED || emotionalStatus == EmotionalStatus.HAPPY) &&
+                    physicalActivity == PhysicalActivity.SITTING_IN_CAR || physicalActivity == PhysicalActivity.SEDENTARY) {
+                contextSuitable = true;
+            }
+
+            // check other heuristics related to reaction to a delivered intervention
+            if (contextSuitable) {
+                // check the time between two reactions is less than 3 hours
+//                if (lastInterventionCheckTime != null && time.getMillis() - lastInterventionCheckTime.getMillis() < 3 * 60 * 60 * 1000) {
+//                    return false;
+//                } else {
+//                    lastInterventionCheckTime = time;
+//                    return true;
+//                }
+                return true;
+            } else {
+                return false;
+            }
+
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public boolean simulateBehavior() {
-        return false;
+    public State getStateFromCurrentContext() {
+        SelfManagementDomain smdomain = (SelfManagementDomain) domain;
+        State s;
+        if (!lastActivity) {
+            s = new MutableState();
+            s.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
+
+            ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
+            o.setValue(ATT_LOCATION, currentActivity.getContext().getLocation().ordinal());
+            o.setValue(ATT_ACTIVITY_TIME, getQuarterStateRepresentation());
+            o.setValue(ATT_ACTIVITY, currentActivity.getContext().getPhysicalActivity().ordinal());
+            o.setValue(ATT_PHONE_USAGE, currentActivity.getContext().getPhoneUsage().ordinal());
+            o.setValue(ATT_EMOTIONAL_STATUS, currentActivity.getContext().getEmotionalStatus().ordinal());
+
+        } else {
+            s = new TerminalState();
+        }
+
+        return s;
+    }
+
+    void simulateBehaviorPerformance() {
+        // get number of activities in which the behavior could be performed
+        // apply gaussian distribution to select
+        NormalDistribution nd = new NormalDistribution();
+        //nd.inverseCumulativeProbability()cumulativeProbability()
+        //TODO implement this
+    }
+
+    public static void main(String [] srgs ) {
+        NormalDistribution nd = new NormalDistribution();
+        System.out.println(nd.cumulativeProbability(1.0));
+        System.out.println(nd.cumulativeProbability(-1.0));
+        System.out.println(nd.inverseCumulativeProbability(0.9999999999999));
     }
 
     /**
@@ -189,10 +288,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         // All activities are processed. Set lastActivity to false to set the initial state of the next episode properly
         lastActivity = false;
 
-        // jitai-selection related initialization
-        jitaiSelectionResults.add(jitaiSelectionEpisode);
-        checkedActionPlanIndex = -1;
-        jitaiSelectionEpisode = new SelfManagementEpisodeAnalysis(jitaiSelectionEnvironment.getCurrentObservation());
+        behaviorPerformed = false;
     }
 
     @Override
@@ -203,15 +299,56 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     }
 
     private void initActionPlan() {
-        ActionPlan ap = new ActionPlan();
-        // morning time range
-        // TODO
+        actionPlan = new ActionPlan();
+        // rem1 time range
+        LocalTime time = new LocalTime().withMillisOfDay(21600000); // 6 o'clock
+        ActionPlan.JitaiTimeRange tr = new ActionPlan.JitaiTimeRange(time, time.plusHours(2), ActionPlan.JitaiNature.REMINDER);
+        actionPlan.addJITAITimeRange(tr);
+
+        // mot1 time range
+        time = time.plusHours(2);
+        tr = new ActionPlan.JitaiTimeRange(time, time.plusHours(5), ActionPlan.JitaiNature.MOTIVATION);
+        actionPlan.addJITAITimeRange(tr);
+
+        // rem2 time range
+        time = time.plusHours(5);
+        tr = new ActionPlan.JitaiTimeRange(time, time.plusHours(2), ActionPlan.JitaiNature.REMINDER);
+        actionPlan.addJITAITimeRange(tr);
+
+        // mot2 time range
+        time = time.plusHours(2);
+        tr = new ActionPlan.JitaiTimeRange(time, time.plusHours(5), ActionPlan.JitaiNature.MOTIVATION);
+        actionPlan.addJITAITimeRange(tr);
+
+        // rem3 time range
+        time = time.plusHours(5);
+        tr = new ActionPlan.JitaiTimeRange(time, time.plusHours(2), ActionPlan.JitaiNature.REMINDER);
+        actionPlan.addJITAITimeRange(tr);
+
+        // mot3 time range
+        time = time.plusHours(2);
+        tr = new ActionPlan.JitaiTimeRange(time, time.plusHours(5), ActionPlan.JitaiNature.MOTIVATION);
+        actionPlan.addJITAITimeRange(tr);
+    }
+
+    private void initJitaiPreferences(String personaFolder) {
+        Properties prop = new Properties();
+        try {
+            prop.load(new FileInputStream(personaFolder + "/config"));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read config file");
+        }
+
+        String[] preferences = prop.getProperty("reaction_to_jitais").split(",");
+        for(int i = 0; i<preferences.length; i++) {
+            jitaiPreferences.put("JITAI_" + (i+1), Double.parseDouble(preferences[i]));
+        }
     }
 
     private List<Object> getTimeRange() {
-        for(int i=0; i<actionPlan.getJitaiTimeRanges().size(); i++) {
+        for (int i = 0; i < actionPlan.getJitaiTimeRanges().size(); i++) {
             ActionPlan.JitaiTimeRange tr = actionPlan.getJitaiTimeRanges().get(i);
-            if(currentTime.toLocalTime().isAfter(tr.getStartTime()) && currentTime.toLocalTime().isBefore(tr.getEndTime())) {
+            if (currentTime.toLocalTime().isAfter(tr.getStartTime()) && currentTime.toLocalTime().isBefore(tr.getEndTime())) {
                 List<Object> result = new ArrayList<>();
                 result.add(i);
                 result.add(tr);
@@ -225,7 +362,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         DynamicSimulatedWorldContext context = new DynamicSimulatedWorldContext();
         context.setActivity(currentActivity);
         context.setCurrentDayType(getDayType(currentDay));
-        context.setCurrentTime(currentTime.toLocalTime());
+        context.setCurrentDayPart(getDayPart());
         context.setExpectedJitaiNature(((ActionPlan.JitaiTimeRange) getTimeRange().get(1)).getJitaiNature());
         return context;
     }
@@ -237,26 +374,20 @@ public class SimulatedWorld extends SelfManagementEnvironment {
 
         LocalTime time = currentTimePlan.getStart().toLocalTime();
         LocalTime timeRangeEnd = actionPlan.getJitaiTimeRanges().get(jitaiOffset).getEndTime();
-        for(int i=0; i<currentTimePlan.getActivities().size(); i++) {
+        for (int i = 0; i < currentTimePlan.getActivities().size(); i++) {
             time = time.plusMinutes(currentTimePlan.getActivities().get(i).getDuration());
-            if(time.isEqual(timeRangeEnd) || time.isAfter(timeRangeEnd)) {
+            if (time.isEqual(timeRangeEnd) || time.isAfter(timeRangeEnd)) {
                 context.setActivity(currentTimePlan.getActivities().get(i));
-                context.setCurrentTime(time);
+                context.setCurrentDayPart(getDayPart(time));
                 break;
             }
         }
         return context;
     }
 
-    private void executeBehaviorInRealLife() {
-        if(checkedActionPlanIndex % 2 == 0) {
-
-        }
-    }
-
     public static class DynamicSimulatedWorldContext {
         private Activity activity;
-        private LocalTime currentTime;
+        private int currentDayPart;
         private int currentDayType;
         private ActionPlan.JitaiNature expectedJitaiNature;
 
@@ -268,12 +399,12 @@ public class SimulatedWorld extends SelfManagementEnvironment {
             this.activity = activity;
         }
 
-        public LocalTime getCurrentTime() {
-            return currentTime;
+        public int getCurrentDayPart() {
+            return currentDayPart;
         }
 
-        public void setCurrentTime(LocalTime currentTime) {
-            this.currentTime = currentTime;
+        public void setCurrentDayPart(int currentDayPart) {
+            this.currentDayPart = currentDayPart;
         }
 
         public int getCurrentDayType() {

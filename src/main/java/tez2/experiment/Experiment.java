@@ -40,8 +40,8 @@ public class Experiment {
     }
 
     private void runExperiment() {
-        //String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
-        String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        //String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
 
         // jitai selection related objects
         TerminalFunction tf = new DayTerminalFunction();

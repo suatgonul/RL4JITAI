@@ -45,6 +45,8 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     private Activity currentActivity;
     private boolean lastActivity;
     private boolean behaviorPerformed;
+    private int suitableActivityCount;
+    private int processedActivityCountForBehavior;
 
 
     private String personaFolder;
@@ -138,8 +140,13 @@ public class SimulatedWorld extends SelfManagementEnvironment {
                 jitaiSelectionEnvironment.initEpisode();
             }
 
+            // processing the first activity overlapping with this time range
             int rangeIndex = (Integer) currentRange.get(0);
             if (rangeIndex > checkedActionPlanIndex) {
+                behaviorPerformed = false;
+                suitableActivityCount = 0;
+                processedActivityCountForBehavior = 0;
+
                 ActionPlan.JitaiTimeRange timeRange = (ActionPlan.JitaiTimeRange) currentRange.get(1);
                 HashableState curJitaiSelectionState = jitaiSelectionLearning.stateHash(jitaiSelectionEnvironment.getCurrentObservation());
                 jitaiSelectionLearning.executeLearningStep(jitaiSelectionEnvironment, curJitaiSelectionState, jitaiSelectionEpisode);
@@ -149,16 +156,35 @@ public class SimulatedWorld extends SelfManagementEnvironment {
                 // check the last time range
                 if (checkedActionPlanIndex + 1 == actionPlan.getJitaiTimeRanges().size()) {
                     checkedActionPlanIndex = -1;
+                } else {
+                    if(checkedActionPlanIndex % 2 == 0) {
+                        // find the number of activities in which the behavior could be performed
+                        LocalTime time = currentTimePlan.getStart().toLocalTime();
+                        LocalTime timeRangeStart = actionPlan.getJitaiTimeRanges().get(checkedActionPlanIndex ).getStartTime();
+                        LocalTime timeRangeEnd = actionPlan.getJitaiTimeRanges().get(checkedActionPlanIndex ).getEndTime();
+
+
+                        for (int i = 0; i < currentTimePlan.getActivities().size(); i++) {
+                            time = time.plusMinutes(currentTimePlan.getActivities().get(i).getDuration());
+                            if (time.isAfter(timeRangeStart) && time.isBefore(timeRangeEnd)) {
+                                if(currentTimePlan.getActivities().get(i).isSuitableForBehavior()) {
+                                    suitableActivityCount++;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        //
-        simulateUserReactionToJitai();
+        if(!lastSelectedJitai.actionName().contentEquals(ACTION_NO_ACTION)) {
+            // based on the yes/no decision on delivering
+            simulateUserReactionToJitai();
 
-        // perform reaction to the JITAI
-        if (!lastSelectedJitai.actionName().contentEquals(ACTION_NO_ACTION)) {
-            simulateBehaviorPerformance();
+            if(checkedActionPlanIndex % 2 == 0 && currentActivity.isSuitableForBehavior()) {
+                // perform reaction to the JITAI
+                simulateBehaviorPerformance();
+            }
         }
 
         int currentActivityIndex = currentTimePlan.getActivities().indexOf(currentActivity);
@@ -248,18 +274,31 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     }
 
     void simulateBehaviorPerformance() {
-        // get number of activities in which the behavior could be performed
         // apply gaussian distribution to select
         NormalDistribution nd = new NormalDistribution();
-        //nd.inverseCumulativeProbability()cumulativeProbability()
-        //TODO implement this
+        double sample = nd.sample();
+        double cumulativeProbability = nd.cumulativeProbability(sample);
+        processedActivityCountForBehavior++;
+        double probabilityOfPerformanceInCurrentStep = (double) processedActivityCountForBehavior / (double) suitableActivityCount;
+        System.out.println("processedActivityCountForBehavior: " + processedActivityCountForBehavior);
+        System.out.println("probabilityOfPerformanceInCurrentStep: " + probabilityOfPerformanceInCurrentStep);
+
+        if(cumulativeProbability < (probabilityOfPerformanceInCurrentStep)) {
+            behaviorPerformed = true;
+        }
     }
 
     public static void main(String [] srgs ) {
         NormalDistribution nd = new NormalDistribution();
-        System.out.println(nd.cumulativeProbability(1.0));
-        System.out.println(nd.cumulativeProbability(-1.0));
-        System.out.println(nd.inverseCumulativeProbability(0.9999999999999));
+        for(int i=0; i<10; i++) {
+            double sample = nd.sample();
+            System.out.println(sample);
+            System.out.println(nd.cumulativeProbability(sample));
+        }
+//        System.out.println(nd.cumulativeProbability(1.0));
+//        System.out.println(nd.cumulativeProbability(-1.0));
+//        System.out.println(nd.inverseCumulativeProbability(0.25));
+//        System.out.println(nd.inverseCumulativeProbability(0.5));
     }
 
     /**
@@ -340,6 +379,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         }
 
         String[] preferences = prop.getProperty("reaction_to_jitais").split(",");
+        jitaiPreferences = new HashMap<>();
         for(int i = 0; i<preferences.length; i++) {
             jitaiPreferences.put("JITAI_" + (i+1), Double.parseDouble(preferences[i]));
         }

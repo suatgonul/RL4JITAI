@@ -177,7 +177,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
 
                         for (int i = 0; i < currentTimePlan.getActivities().size(); i++) {
                             time = time.plusMinutes(currentTimePlan.getActivities().get(i).getDuration());
-                            if (time.isAfter(timeRangeStart) && time.isBefore(timeRangeEnd)) {
+                            if (time.equals(timeRangeStart) || time.equals(timeRangeEnd) || (time.isAfter(timeRangeStart) && time.isBefore(timeRangeEnd))) {
                                 if(currentTimePlan.getActivities().get(i).isSuitableForBehavior()) {
                                     suitableActivityCount++;
                                 }
@@ -189,7 +189,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         }
 
         // simulate reaction to jitai and performance of behavior
-        if(!lastSelectedJitai.actionName().contentEquals(ACTION_NO_ACTION)) {
+        if(!lastSelectedJitai.actionName().contentEquals(ACTION_NO_ACTION) && !behaviorPerformed) {
             // based on the yes/no decision on delivering
             reactedToJitai = simulateUserReactionToJitai();
 
@@ -221,12 +221,13 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         double cumulativeProbability = nd.cumulativeProbability(sample);
         processedActivityCountForBehavior++;
         double probabilityOfPerformanceInCurrentStep = (double) processedActivityCountForBehavior / (double) suitableActivityCount;
-//        System.out.println("suitable activity count: " + suitableActivityCount);
-//        System.out.println("processedActivityCountForBehavior: " + processedActivityCountForBehavior);
-//        System.out.println("probabilityOfPerformanceInCurrentStep: " + probabilityOfPerformanceInCurrentStep);
+        System.out.println("suitable activity count: " + suitableActivityCount);
+        System.out.println("processedActivityCountForBehavior: " + processedActivityCountForBehavior);
+        System.out.println("probabilityOfPerformanceInCurrentStep: " + probabilityOfPerformanceInCurrentStep);
 
         if(cumulativeProbability < (probabilityOfPerformanceInCurrentStep)) {
             behaviorPerformed = true;
+            System.out.println("BEHAVIOR PERFORMED");
         }
     }
 

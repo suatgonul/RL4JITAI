@@ -79,7 +79,11 @@ public class Activity {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(name).append(", Start: ").append(start).append(", Duration: ").append(duration).append(", Context: ").append(context.toString());
+        sb.append(name)
+                .append(", Start: ").append(start)
+                .append(", Duration: ").append(duration)
+                .append(", Suitable: ").append(suitableForBehavior)
+                .append(", Context: ").append(context.toString());
         return sb.toString();
     }
 }

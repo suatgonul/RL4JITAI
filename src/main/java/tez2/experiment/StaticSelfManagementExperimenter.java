@@ -5,32 +5,22 @@ import burlap.behavior.singleagent.auxiliary.performance.ExperimentalEnvironment
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
-import burlap.behavior.valuefunction.QValue;
 import burlap.debugtools.DPrint;
-import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import org.apache.commons.io.FileUtils;
 import power2dm.reporting.visualization.VisualizationMetadata;
-import sun.management.resources.agent;
-import tez2.algorithm.collaborative_learning.SparkStateClassifier;
-import tez2.domain.SelfManagementDomain;
-import tez2.domain.action.SelfManagementAction;
-import tez2.environment.context.*;
 import tez2.experiment.debug.Reporter;
 import tez2.experiment.performance.*;
 import tez2.experiment.performance.visualization.ReactionHitRatioVisualizer;
 import tez2.experiment.performance.visualization.ReactionNumbersVisualizer;
 import tez2.experiment.performance.visualization.Visualizer;
-import tez2.environment.simulator.SimulatedWorld;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-
-import static tez2.domain.DomainConfig.*;
 
 /**
  * Created by suatgonul on 4/26/2017.
@@ -238,7 +228,7 @@ public class StaticSelfManagementExperimenter {
 
         this.plotter.startNewTrial();
 
-        List<SelfManagementEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
+        List<OmiEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
         Reporter reporter = new Reporter("output/" + agentFactory.getAgentName() + ".txt");
         reporter.report("New Trial");
         StringBuilder sb;
@@ -252,7 +242,7 @@ public class StaticSelfManagementExperimenter {
         long elapsedTrialTime = 0;
         for (int i = 0; i < this.trialLength; i++) {
             long episodeStarttime = System.currentTimeMillis();
-            SelfManagementEpisodeAnalysis ea = (SelfManagementEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
+            OmiEpisodeAnalysis ea = (OmiEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
             episodeAnalysisList.add(ea);
             //if (agentFactory.getAgentName().contains("colla")) {
                 elapsedTrialTime += (System.currentTimeMillis()-episodeStarttime);

@@ -1,9 +1,10 @@
-package tez2.domain.action;
+package tez2.domain.js;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import tez2.algorithm.ActionRestrictingState;
+import tez2.domain.SelfManagementAction;
 import tez2.persona.ActionPlan;
 
 /**

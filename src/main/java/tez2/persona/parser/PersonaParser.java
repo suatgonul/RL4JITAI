@@ -46,6 +46,7 @@ public class PersonaParser {
         generateActivitiesForTimePlan(filePath);
         TimePlan timePlan = new TimePlan();
         timePlan.setActivities(parsedActivityPool.getParsedActivities());
+        //printGeneratedTimePlan(timePlan);
         return timePlan;
     }
 
@@ -591,6 +592,12 @@ public class PersonaParser {
 
         public List<String> getLinesForActivities() {
             return linesForActivities;
+        }
+    }
+
+    private void printGeneratedTimePlan(TimePlan timePlan) {
+        for(Activity activity : timePlan.getActivities()) {
+            System.out.println(activity.toString());
         }
     }
 }

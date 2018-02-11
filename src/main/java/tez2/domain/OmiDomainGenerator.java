@@ -5,16 +5,15 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.environment.Environment;
-import tez2.domain.action.InterventionDeliveryAction;
-import tez2.domain.action.NoAction;
-import tez2.domain.action.SelfManagementAction;
+import tez2.domain.omi.InterventionDeliveryAction;
+import tez2.domain.omi.NoAction;
 
 import static tez2.domain.DomainConfig.*;
 
 /**
  * Created by suatgonul on 4/20/2017.
  */
-public class OpportuneMomentDomainGenerator implements DomainGenerator {
+public class OmiDomainGenerator implements DomainGenerator {
 
 
 

@@ -8,6 +8,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 import power2dm.reporting.visualization.VisualizationData;
+import tez2.experiment.performance.OmiEpisodeAnalysis;
 import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 
 import java.util.HashMap;
@@ -32,7 +33,7 @@ public abstract class Visualizer extends ApplicationFrame {
         this.visualizationMetadata = visualizationMetadata;
     }
 
-    public void createRewardGraph(List<SelfManagementEpisodeAnalysis> episodeAnalysisList) {
+    public void createRewardGraph(List<OmiEpisodeAnalysis> episodeAnalysisList) {
         VisualizationData visualizationData = createDataset(episodeAnalysisList);
 
         String xLabel = (String) visualizationMetadata.get(METADATA_X_LABEL);
@@ -51,7 +52,7 @@ public abstract class Visualizer extends ApplicationFrame {
         this.setVisible(true);
     }
 
-    public abstract VisualizationData createDataset(List<SelfManagementEpisodeAnalysis> episodeAnalysisList);
+    public abstract VisualizationData createDataset(List<OmiEpisodeAnalysis> episodeAnalysisList);
 
     protected abstract String getChartTitle();
 }

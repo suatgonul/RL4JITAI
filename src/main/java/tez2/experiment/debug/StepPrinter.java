@@ -5,7 +5,7 @@ import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import org.apache.log4j.Logger;
-import tez2.domain.action.SelfManagementAction;
+import tez2.domain.SelfManagementAction;
 import tez2.environment.context.*;
 import tez2.util.LogUtil;
 

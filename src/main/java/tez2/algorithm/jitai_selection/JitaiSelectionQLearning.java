@@ -1,18 +1,20 @@
 package tez2.algorithm.jitai_selection;
 
 import burlap.behavior.policy.Policy;
+import burlap.behavior.policy.SolverDerivedPolicy;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.options.Option;
 import burlap.behavior.singleagent.options.support.EnvironmentOptionOutcome;
 import burlap.behavior.valuefunction.QValue;
-import burlap.behavior.valuefunction.ValueFunctionInitialization;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
-import tez2.domain.ExtendedEnvironmentOutcome;
+import tez2.domain.js.JsEnvironmentOutcome;
+import tez2.domain.omi.OmiEnvironmentOutcome;
+import tez2.experiment.performance.JsEpisodeAnalysis;
 import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 
 import java.util.ArrayList;
@@ -25,9 +27,12 @@ public class JitaiSelectionQLearning extends QLearning {
     public JitaiSelectionQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory,
                                    double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize) {
         super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, maxEpisodeSize);
+        if (learningPolicy instanceof SolverDerivedPolicy) {
+            ((SolverDerivedPolicy) learningPolicy).setSolver(this);
+        }
     }
 
-    public void executeLearningStep(Environment env, HashableState curState, SelfManagementEpisodeAnalysis ea) {
+    public void executeLearningStep(Environment env, HashableState curState, JsEpisodeAnalysis ea) {
         GroundedAction action = (GroundedAction) learningPolicy.getAction(curState.s);
         QValue curQ = this.getQ(curState, action);
         List<QValue> currentQVals = copyCurrentQVals(this.qIndex.get(curState).qEntry);
@@ -49,8 +54,8 @@ public class JitaiSelectionQLearning extends QLearning {
         eStepCounter += stepInc;
 
         if (action.action.isPrimitive() || !this.shouldAnnotateOptions) {
-            ExtendedEnvironmentOutcome eeo = (ExtendedEnvironmentOutcome) eo;
-            ea.recordTransitionTo(action, nextState.s, r, currentQVals, eeo.getUserContext(), eeo.getUserReaction());
+            JsEnvironmentOutcome eeo = (JsEnvironmentOutcome) eo;
+            ea.recordTransitionTo(action, nextState.s, r, currentQVals, eeo);
         } else {
             ea.appendAndMergeEpisodeAnalysis(((Option) action.action).getLastExecutionResults());
         }

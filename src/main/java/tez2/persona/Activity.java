@@ -75,4 +75,11 @@ public class Activity {
         Activity activity = new Activity(getName(), getStart(), getDuration(), getContext());
         return activity;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(name).append(", Start: ").append(start).append(", Duration: ").append(duration).append(", Context: ").append(context.toString());
+        return sb.toString();
+    }
 }

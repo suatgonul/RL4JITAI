@@ -251,7 +251,7 @@ public class HabitSimulator3 {
         }
         double accGainRem = 0;
         if(selectedJitaiType != 0) {
-            accGainRem = (AGC_REM + (1.0 - AGC_REM) * WCI_REM * CI) * salienceReminders.get(selectedJitaiType) + (1-behaviorFrequency) * CI;
+            accGainRem = ((AGC_REM + (1.0 - AGC_REM) * WCI_REM * CI) * salienceReminders.get(selectedJitaiType) + (1-behaviorFrequency) * CI) * 2;
         }
         accessibility = Math.max(0, Math.min(1, accessibility - accDecay + accGainEvent + accGainBeh + accGainRem));
 

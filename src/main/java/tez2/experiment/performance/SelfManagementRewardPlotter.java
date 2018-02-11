@@ -18,8 +18,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.YIntervalSeries;
 import org.jfree.data.xy.YIntervalSeriesCollection;
-import tez2.domain.ExtendedEnvironmentOutcome;
-import tez2.experiment.performance.SelfManagementPerformanceMetric;
+import tez2.domain.omi.OmiEnvironmentOutcome;
 
 import javax.swing.*;
 import java.awt.*;
@@ -333,7 +332,7 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
             return;
         }
 
-        this.curTrial.stepIncrement((ExtendedEnvironmentOutcome) eo);
+        this.curTrial.stepIncrement((OmiEnvironmentOutcome) eo);
         this.curTimeStep++;
 
     }
@@ -989,7 +988,7 @@ public class SelfManagementRewardPlotter extends JFrame implements EnvironmentOb
          *
          * @param eeo the last environment outcome
          */
-        public void stepIncrement(ExtendedEnvironmentOutcome eeo) {
+        public void stepIncrement(OmiEnvironmentOutcome eeo) {
             double r = eeo.r;
             accumulate(this.trialRawData_cumulativeStepReward, r);
             this.curEpisodeReward += r;

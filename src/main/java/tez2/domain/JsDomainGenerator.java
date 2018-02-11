@@ -5,19 +5,22 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.environment.Environment;
-import tez2.domain.action.*;
+import tez2.domain.js.Jitai1Action;
+import tez2.domain.js.Jitai2Action;
+import tez2.domain.js.Jitai3Action;
+import tez2.domain.js.NoAction;
 
 import static tez2.domain.DomainConfig.*;
 
 /**
  * Created by suatgonul on 4/20/2017.
  */
-public class JitaiSelectionDomainGenerator implements DomainGenerator {
+public class JsDomainGenerator implements DomainGenerator {
 
     private SelfManagementDomain.DomainComplexity complexity;
     private Domain domain;
 
-    public JitaiSelectionDomainGenerator(SelfManagementDomain.DomainComplexity complexity) {
+    public JsDomainGenerator(SelfManagementDomain.DomainComplexity complexity) {
         this.complexity = complexity;
     }
 

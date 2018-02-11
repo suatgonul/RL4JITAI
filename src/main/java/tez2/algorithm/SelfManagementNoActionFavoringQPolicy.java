@@ -6,7 +6,7 @@ import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.AbstractObjectParameterizedGroundedAction;
 import burlap.oomdp.core.states.State;
 import org.apache.log4j.Logger;
-import tez2.domain.action.SelfManagementAction;
+import tez2.domain.SelfManagementAction;
 import tez2.util.LogUtil;
 
 import java.util.ArrayList;

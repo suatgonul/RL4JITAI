@@ -23,7 +23,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
-import tez2.domain.JitaiSelectionDomainGenerator;
+import tez2.domain.JsDomainGenerator;
 import tez2.domain.SelfManagementDomain;
 import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez2.util.LogUtil;
@@ -81,7 +81,7 @@ public class SparkStateClassifier extends StateClassifier {
     public static void main(String[] args) {
         System.setProperty("hadoop.home.dir", "D:\\tools\\spark-2.1.1-bin-hadoop2.7\\hadoop");
 
-        JitaiSelectionDomainGenerator smdg = new JitaiSelectionDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
+        JsDomainGenerator smdg = new JsDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
         Domain domain = smdg.generateDomain();
         ObjectClass oc = new ObjectClass(domain, CLASS_STATE);
 

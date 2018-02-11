@@ -1,4 +1,4 @@
-package tez2.domain;
+package tez2.domain.omi;
 
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
@@ -8,12 +8,12 @@ import tez2.environment.context.Context;
 /**
  * Created by suatgonul on 4/28/2017.
  */
-public class ExtendedEnvironmentOutcome extends EnvironmentOutcome {
+public class OmiEnvironmentOutcome extends EnvironmentOutcome {
 
     private boolean userReaction;
     private Context userContext;
 
-    public ExtendedEnvironmentOutcome(State o, GroundedAction a, State op, double r, boolean terminated, Context userContext, boolean userReaction) {
+    public OmiEnvironmentOutcome(State o, GroundedAction a, State op, double r, boolean terminated, Context userContext, boolean userReaction) {
         super(o, a, op, r, terminated);
         this.userContext = userContext;
         this.userReaction = userReaction;

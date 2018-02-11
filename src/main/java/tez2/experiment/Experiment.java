@@ -12,9 +12,10 @@ import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import tez2.algorithm.*;
 import tez2.algorithm.jitai_selection.JitaiSelectionQLearning;
 import tez2.domain.DayTerminalFunction;
-import tez2.domain.JitaiSelectionDomainGenerator;
-import tez2.domain.OpportuneMomentDomainGenerator;
-import tez2.domain.SelfManagementRewardFunction;
+import tez2.domain.JsDomainGenerator;
+import tez2.domain.OmiDomainGenerator;
+import tez2.domain.rf.JsRewardFunction;
+import tez2.domain.rf.OmiRewardFunction;
 import tez2.environment.simulator.JitaiSelectionEnvironment;
 import tez2.environment.simulator.SimulatedWorld;
 
@@ -40,29 +41,31 @@ public class Experiment {
     }
 
     private void runExperiment() {
-        String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
-        //String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        //String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
 
         // jitai selection related objects
         TerminalFunction tf = new DayTerminalFunction();
-        RewardFunction rf = new SelfManagementRewardFunction();
-        JitaiSelectionDomainGenerator domGen = new JitaiSelectionDomainGenerator(null);
+        RewardFunction rf = new JsRewardFunction();
+        JsDomainGenerator domGen = new JsDomainGenerator(null);
         Domain domain = domGen.generateDomain();
         JitaiSelectionEnvironment jitaiSelectionEnvironment = new JitaiSelectionEnvironment(domain, rf, tf, 60, personaFolder + "/config");
-
-        LearningAgentFactory[] omiLearningCases = getOpportuneMomentIdentificationLearningAlternatives(domain);
+        domGen.setEnvironment(jitaiSelectionEnvironment);
+        final SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
+        JitaiSelectionQLearning jsLearning = new JitaiSelectionQLearning(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE);
 
         // opportune moment identification related objects
-        OpportuneMomentDomainGenerator omiDomGen = new OpportuneMomentDomainGenerator();
-        omiDomGen.generateDomain();
-        final SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
-        environment = new SimulatedWorld(domain, rf, tf, 60, personaFolder, jitaiSelectionEnvironment, new JitaiSelectionQLearning(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE));
+        OmiDomainGenerator omiDomGen = new OmiDomainGenerator();
+        domain = omiDomGen.generateDomain();
+
+        rf = new OmiRewardFunction();
+        environment = new SimulatedWorld(domain, rf, tf, 60, personaFolder, jitaiSelectionEnvironment, jsLearning);
         //environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob");
         omiDomGen.setEnvironment(environment);
 
         jitaiSelectionEnvironment.setSimulatedWorld((SimulatedWorld) environment);
 
-
+        LearningAgentFactory[] omiLearningCases = getOpportuneMomentIdentificationLearningAlternatives(domain);
         StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
                 1, 100, omiLearningCases);
 
@@ -77,11 +80,6 @@ public class Experiment {
 
         //start experiment
         exp.startExperiment();
-    }
-
-    private LearningAgentFactory[] getJitaiSelectionLearningAlternatives() {
-        // TODO
-        return null;
     }
 
     private LearningAgentFactory[] getOpportuneMomentIdentificationLearningAlternatives(final Domain domain) {

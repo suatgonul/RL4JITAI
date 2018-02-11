@@ -2,7 +2,7 @@ package tez2.algorithm;
 
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.common.SimpleGroundedAction;
-import tez2.domain.action.SelfManagementAction;
+import tez2.domain.SelfManagementAction;
 
 /**
  * Created by suat on 18-May-17.

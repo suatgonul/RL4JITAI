@@ -4,6 +4,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import power2dm.reporting.visualization.VisualizationData;
+import tez2.experiment.performance.OmiEpisodeAnalysis;
 import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez2.experiment.performance.visualization.Visualizer;
 
@@ -30,7 +31,7 @@ public class ReactionHitRatioVisualizer extends Visualizer {
     }
 
     @Override
-    public VisualizationData createDataset(List<SelfManagementEpisodeAnalysis> episodeAnalysisList) {
+    public VisualizationData createDataset(List<OmiEpisodeAnalysis> episodeAnalysisList) {
         XYSeriesCollection dataSet = new XYSeriesCollection();
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         VisualizationData visualizationData = new VisualizationData(dataSet, renderer);

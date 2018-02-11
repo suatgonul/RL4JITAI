@@ -18,9 +18,9 @@ import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
 import org.apache.log4j.Logger;
 import tez2.algorithm.collaborative_learning.SparkStateClassifier;
-import tez2.domain.ExtendedEnvironmentOutcome;
-import tez2.domain.SelfManagementRewardFunction;
-import tez2.domain.action.SelfManagementAction;
+import tez2.domain.omi.OmiEnvironmentOutcome;
+import tez2.domain.rf.SelfManagementRewardFunction;
+import tez2.domain.SelfManagementAction;
 import tez2.experiment.debug.StepPrinter;
 import tez2.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 
@@ -82,7 +82,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
             }
 
             EnvironmentOutcome eo = action.executeIn(env);
-            ExtendedEnvironmentOutcome eeo = (ExtendedEnvironmentOutcome) eo;
+            OmiEnvironmentOutcome eeo = (OmiEnvironmentOutcome) eo;
 
             HashableState nextState = this.stateHash(eo.op);
             GroundedAction nextAction = (GroundedAction) learningPolicy.getAction(nextState.s);

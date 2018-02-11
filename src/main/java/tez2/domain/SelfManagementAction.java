@@ -1,4 +1,4 @@
-package tez2.domain.action;
+package tez2.domain;
 
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.TransitionProbability;

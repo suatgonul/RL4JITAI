@@ -9,7 +9,7 @@ import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import tez2.domain.SelfManagementDomain;
-import tez2.domain.SelfManagementRewardFunction;
+import tez2.domain.rf.SelfManagementRewardFunction;
 import tez2.domain.SelfManagementStateGenerator;
 import tez2.environment.context.DayPart;
 import tez2.environment.context.DayType;

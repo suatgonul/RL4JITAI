@@ -1,6 +1,7 @@
-package tez2.domain.action;
+package tez2.domain.omi;
 
 import burlap.oomdp.core.Domain;
+import tez2.domain.SelfManagementAction;
 
 /**
  * Created by suat on 08-Apr-16.

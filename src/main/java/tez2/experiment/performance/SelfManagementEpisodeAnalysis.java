@@ -20,30 +20,10 @@ public class SelfManagementEpisodeAnalysis extends EpisodeAnalysis {
     public int trialNo;
     public int episodeNo;
 
-    public List<List<QValue>> qValuesForStates;
-    public List<Context> userContexts;
-    public List<Boolean> userReactions;
-    public int phoneCheckNumber;
-    public int actionDeliveredDuringPhoneCheck;
+
 
     public SelfManagementEpisodeAnalysis(State initialState) {
         super(initialState);
-        qValuesForStates = new ArrayList<>();
-        userContexts = new ArrayList<>();
-        userReactions = new ArrayList<>();
     }
 
-    public void recordTransitionTo(GroundedAction usingAction, State nextState, double r, List<QValue> qValues, Context userContext, boolean userReaction) {
-        qValuesForStates.add(qValues);
-        userContexts.add(userContext);
-        userReactions.add(userReaction);
-        if (userReaction == true) {
-            phoneCheckNumber++;
-            if (usingAction.actionName().equals(ACTION_SEND_JITAI)) {
-                actionDeliveredDuringPhoneCheck++;
-            }
-        }
-
-        super.recordTransitionTo(usingAction, nextState, r);
-    }
 }

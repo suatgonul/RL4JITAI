@@ -5,18 +5,12 @@ import burlap.behavior.singleagent.auxiliary.performance.ExperimentalEnvironment
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
-import burlap.behavior.valuefunction.QValue;
 import burlap.debugtools.DPrint;
-import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import power2dm.reporting.visualization.VisualizationMetadata;
-import tez2.domain.SelfManagementDomain;
-import tez2.domain.action.SelfManagementAction;
-import tez2.environment.context.*;
-import tez2.environment.simulator.SimulatedWorld;
 import tez2.experiment.debug.Reporter;
-import tez2.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
+import tez2.experiment.performance.OmiEpisodeAnalysis;
 import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez2.experiment.performance.SelfManagementPerformanceMetric;
 import tez2.experiment.performance.SelfManagementRewardPlotter;
@@ -27,8 +21,6 @@ import tez2.experiment.performance.visualization.Visualizer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-
-import static tez2.domain.DomainConfig.*;
 
 /**
  * Created by suatgonul on 4/26/2017.
@@ -255,13 +247,13 @@ public class SelfManagementExperimenter {
 
         this.plotter.startNewTrial();
 
-        List<SelfManagementEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
+        List<OmiEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
         Reporter reporter = new Reporter("output/" + agentFactory.getAgentName() + ".txt");
         reporter.report("New Trial");
         StringBuilder sb;
 
         for (int i = 0; i < this.trialLength; i++) {
-            SelfManagementEpisodeAnalysis ea = (SelfManagementEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
+            OmiEpisodeAnalysis ea = (OmiEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
 
             this.plotter.endEpisode();
             this.environmentSever.resetEnvironment();

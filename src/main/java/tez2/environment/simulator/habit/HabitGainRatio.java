@@ -216,14 +216,14 @@ public class HabitGainRatio {
         double habitGainRatio = habitStrength * 100;
         if(difficulty == TaskDifficulty.EASY) {
             for(int i=0; i<easy.size(); i++) {
-                if(habitGainRatio >= easy.get(i)) {
+                if(habitGainRatio <= easy.get(i)) {
                     return Math.max(0, i-1);
                 }
             }
         } else if(difficulty == TaskDifficulty.MEDIUM) {
             habitGainRatio = habitGainRatio / 100.0 * 35.0;
             for(int i=0; i<easy.size(); i++) {
-                if(habitGainRatio >= easy.get(i)) {
+                if(habitGainRatio <= easy.get(i)) {
                     return Math.max(0, i-1);
                 }
             }

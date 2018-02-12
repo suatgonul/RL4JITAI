@@ -49,7 +49,7 @@ public class Experiment {
         RewardFunction rf = new SelfManagementRewardFunction();
         SelfManagementDomainGenerator domGen = new SelfManagementDomainGenerator(SelfManagementDomain.DomainComplexity.HARD);
         Domain domain = domGen.generateDomain();
-        //environment = new SimulatedWorld(domain, rf, tf, "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob", 60);
+        //environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob");
         environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob");
         //environment = new RealWorld(domain, rf, tf, 1, 100);
         domGen.setEnvironment(environment);
@@ -79,7 +79,7 @@ public class Experiment {
         //start experiment
         exp.startExperiment();*/
         StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                30, 1000, learningCases);
+                30, 500, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 CUMULATIVE_REWARD_PER_EPISODE,
@@ -109,19 +109,6 @@ public class Experiment {
                 return new SelfManagementSarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8);
             }
         };
-//        learningAlternatives.add(qLearningFactory);
-
-        qLearningFactory = new LearningAgentFactory() {
-            @Override
-            public String getAgentName() {
-                return "Sarsa-Lam  Lambda_0.8 Gamma_0.1 LR_0.1";
-            }
-
-            @Override
-            public LearningAgent generateAgent() {
-                return new QLearning(domain, 0.1, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE);
-            }
-        };
         learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
@@ -135,7 +122,7 @@ public class Experiment {
                 return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, false);
             }
         };
-//        learningAlternatives.add(qLearningFactory);
+        learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             @Override
@@ -159,7 +146,7 @@ public class Experiment {
                 return new SelfManagementSarsa(domain, 0.1, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8);
             }
         };
-        //learningAlternatives.add(qLearningFactory);
+        learningAlternatives.add(qLearningFactory);
 
         return learningAlternatives.toArray(new LearningAgentFactory[0]);
     }

@@ -10,6 +10,7 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import org.apache.commons.io.FileUtils;
 import power2dm.reporting.visualization.VisualizationMetadata;
+import tez2.algorithm.collaborative_learning.SparkStateClassifier;
 import tez2.experiment.debug.Reporter;
 import tez2.experiment.performance.*;
 import tez2.experiment.performance.visualization.ReactionHitRatioVisualizer;
@@ -326,7 +327,7 @@ public class StaticSelfManagementExperimenter {
 
         //long updateStartTime = System.currentTimeMillis();
         //H2OStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
-        //SparkStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
+        SparkStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
         //System.out.println("Model update completed in " + (System.currentTimeMillis() - updateStartTime) + " milliseconds");
 
         reporter.finalizeReporting();

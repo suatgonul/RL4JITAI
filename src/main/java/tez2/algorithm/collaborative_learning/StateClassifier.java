@@ -5,6 +5,7 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import tez2.domain.rf.SelfManagementRewardFunction;
+import tez2.experiment.performance.OmiEpisodeAnalysis;
 import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 
 import java.util.*;
@@ -19,11 +20,11 @@ public abstract class StateClassifier {
 
     private SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
 
-    public abstract void updateLearningModel(List<SelfManagementEpisodeAnalysis> ea);
+    public abstract void updateLearningModel(List<OmiEpisodeAnalysis> ea);
 
     public abstract Action guessAction(State state);
 
-    protected void updateStateActionCounts(List<SelfManagementEpisodeAnalysis> eaList) {
+    protected void updateStateActionCounts(List<OmiEpisodeAnalysis> eaList) {
         for (int t = 0; t < eaList.size(); t++) {
             SelfManagementEpisodeAnalysis ea = eaList.get(t);
             for (int i = 0; i < ea.actionSequence.size(); i++) {

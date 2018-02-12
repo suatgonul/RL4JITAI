@@ -135,7 +135,7 @@ public class Experiment {
                 return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, true);
             }
         };
-//        learningAlternatives.add(qLearningFactory);
+        learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {
@@ -146,7 +146,7 @@ public class Experiment {
                 return new SelfManagementSarsa(domain, 0.1, hashingFactory, 0, 0.1, new GreedyQPolicy(), Integer.MAX_VALUE, 0.8);
             }
         };
-        learningAlternatives.add(qLearningFactory);
+        //learningAlternatives.add(qLearningFactory);
 
         return learningAlternatives.toArray(new LearningAgentFactory[0]);
     }

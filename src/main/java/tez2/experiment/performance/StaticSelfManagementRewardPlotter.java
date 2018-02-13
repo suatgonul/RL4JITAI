@@ -2,6 +2,7 @@ package tez2.experiment.performance;
 
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
+import burlap.oomdp.singleagent.GroundedAction;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.jfree.chart.ChartFactory;
@@ -12,6 +13,11 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
 import org.jfree.data.xy.YIntervalSeries;
 import org.jfree.data.xy.YIntervalSeriesCollection;
+import tez2.domain.DomainConfig;
+import tez2.environment.context.EmotionalStatus;
+import tez2.environment.context.Location;
+import tez2.environment.context.PhoneUsage;
+import tez2.environment.context.PhysicalActivity;
 import tez2.experiment.performance.SelfManagementPerformanceMetric;
 
 import javax.swing.*;
@@ -87,6 +93,17 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
     protected YIntervalSeriesCollection allAgents_reactionInEachEpisodeAvg;
     protected YIntervalSeriesCollection allAgents_cumulativeReactionInAllEpisodesAvg;
 
+    /**
+     * MI Paper related collections
+     */
+    protected YIntervalSeriesCollection allAgents_ratioOfJitaisPerTimeOfDay; //Hypothesis 3
+    protected YIntervalSeriesCollection allAgents_totalJitaisPerEpisode; //Hypothesis 2 and 5
+    protected YIntervalSeriesCollection allAgents_ratioOfJitaisPerHabitStrength; // Hypothesis 1
+    protected Map<String, Map<PhysicalActivity, Double>> allAgents_ratioOfJitaisPhysicalActivity; // Hypothesis 4
+    protected Map<String, Map<PhoneUsage, Double>> allAgents_ratioOfJitaisPhoneUsage;
+    protected Map<String, Map<Location, Double>> allAgents_ratioOfJitaisLocation;
+    protected Map<String, Map<EmotionalStatus, Double>> allAgents_ratioOfJitaisEmotionalStatus;
+
 
     /**
      * A set specifying the performance metrics that will be plotted
@@ -108,11 +125,6 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
      */
     protected int lastEpisode = 0;
 
-
-    /**
-     * the current time step that was recorded
-     */
-    protected int curTimeStep = 0;
 
     /**
      * the current episode that was recorded
@@ -153,6 +165,13 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         allAgents_rewardInEachEpisodeAvg = new YIntervalSeriesCollection();
         allAgents_reactionInEachEpisodeAvg = new YIntervalSeriesCollection();
         allAgents_cumulativeReactionInAllEpisodesAvg = new YIntervalSeriesCollection();
+        allAgents_ratioOfJitaisPerTimeOfDay = new YIntervalSeriesCollection();
+        allAgents_totalJitaisPerEpisode = new YIntervalSeriesCollection();
+        allAgents_ratioOfJitaisPerHabitStrength = new YIntervalSeriesCollection();
+        allAgents_ratioOfJitaisPhysicalActivity = new HashMap<>();
+        allAgents_ratioOfJitaisPhoneUsage = new HashMap<>();
+        allAgents_ratioOfJitaisLocation = new HashMap<>();
+        allAgents_ratioOfJitaisEmotionalStatus = new HashMap<>();
 
         this.curTrial = new Trial();
         this.curAgentDatasets = new AgentDatasets(curAgentName);
@@ -195,6 +214,16 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
                 this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Episode User Reaction", "Episode", "Episode User Reaction", allAgents_reactionInEachEpisodeAvg);
             } else if (m == SelfManagementPerformanceMetric.CUMULATIVE_REACTION) {
                 this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Cumulative Reaction", "Episode", "Cumulative Reaction", allAgents_cumulativeReactionInAllEpisodesAvg);
+
+                // metrics added for thresholds in the mi paper
+            } else if (m == SelfManagementPerformanceMetric.RATIO_JITAIS_PER_TIME_OF_DAY) {
+                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Ratio of JITAIs per Hour of Day", "Hour", "JITAI Ratio", allAgents_ratioOfJitaisPerTimeOfDay);
+            } else if (m == SelfManagementPerformanceMetric.AVG_JITAIS_PER_EPISODE) {
+                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Average JITAIs per Episode", "Episode", "JITAI Count", allAgents_totalJitaisPerEpisode);
+            } else if (m == SelfManagementPerformanceMetric.RATIO_JITAIS_PER_HABIT_STRENGTH) {
+                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Ratio of JITAIs per Habit Strenth", "Habit Strength", "JITAI Ratio", allAgents_ratioOfJitaisPerHabitStrength);
+            } else if (m == SelfManagementPerformanceMetric.RATIO_JITAIS_PER_STATE_PARAM) {
+                //TODO
             }
         }
 
@@ -229,7 +258,11 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
     public void populateAgentDatasets(EpisodeAnalysis ea) {
         for (int i = 0; i < ea.rewardSequence.size(); i++) {
             this.curTrial.stepIncrement(ea.rewardSequence.get(i));
-            this.curTimeStep++;
+        }
+
+        JsEpisodeAnalysis jsEa = ((OmiEpisodeAnalysis) ea).jsEpisodeAnalysis;
+        for (int i =0; i<jsEa.rewardSequence.size(); i++) {
+            this.curTrial.jsStepIncrement(jsEa.actionSequence.get(i));
         }
     }
 
@@ -249,7 +282,6 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         this.curTrial = new Trial();
         this.lastTimeStepUpdate = 0;
         this.lastEpisode = 0;
-        this.curTimeStep = 0;
         this.curEpisode = 0;
     }
 
@@ -483,6 +515,19 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
                 curAgentDatasets.agentDataset_cumulativeReactionInallEpisodesAvgSeries.add(i, ci[0], ci[1], ci[2]);
             }
         }
+
+        // MI Paper-related additions
+        if (this.metricsSet.contains(SelfManagementPerformanceMetric.AVG_JITAIS_PER_EPISODE)) {
+            for (int i = 0; i < n[1]; i++) {
+                DescriptiveStatistics avgi = new DescriptiveStatistics();
+                for (Trial t : trials) {
+                    avgi.addValue(t.trialRawData_jitaiCountEachEpisode.get(i));
+                }
+                double[] ci = getCI(avgi, this.significance);
+                curAgentDatasets.agentDataset_jitaiCountEachEpisodeSeries.add(i, ci[0], ci[1], ci[2]);
+            }
+        }
+
         curAgentDatasets.fireAllAverages();
     }
 
@@ -585,6 +630,12 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         public List<Double> trialRawData_cumulativeReactionInAllEpisodes = new ArrayList<>();
 
         /**
+         * MI paper related data
+         */
+        public List<Integer> trialRawData_jitaiCountEachEpisode = new ArrayList<>();
+        //public List<Double> trialRawData_timeOfDay
+
+        /**
          * The cumulative reward of the episode so far
          */
         public double curEpisodeReward = 0.;
@@ -612,6 +663,11 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
          */
         protected List<Double> curEpisodeRewards = new ArrayList<Double>();
 
+        /**
+         * MI-related
+         */
+        public int curEpisodeJitais = 0;
+
 
         /**
          * Updates all datastructures with
@@ -623,6 +679,13 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             this.curEpisodeRewards.add(r);
             if (r > 0)
                 this.currentEpisodeUserReaction++;
+        }
+
+        public void jsStepIncrement(GroundedAction action) {
+            // MI-related
+            if(!action.actionName().equals(DomainConfig.ACTION_NO_ACTION)) {
+                curEpisodeJitais++;
+            }
         }
 
 
@@ -639,6 +702,9 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             this.trialRawData_userReactionInEachEpisode.add(this.currentEpisodeUserReaction);
             this.trialRawData_rewardInEachEpisode.add(this.curEpisodeReward);
             accumulate(this.trialRawData_cumulativeReactionInAllEpisodes, this.currentEpisodeUserReaction);
+
+            //MI-related
+            this.trialRawData_jitaiCountEachEpisode.add(this.curEpisodeJitais);
 
             Collections.sort(this.curEpisodeRewards);
             double med = 0.;
@@ -664,6 +730,8 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             this.currentEpisodeUserReaction = 0;
             this.curEpisodeRewards.clear();
 
+            //MI-related
+            this.curEpisodeJitais = 0;
         }
 
     }
@@ -709,6 +777,11 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         public YIntervalSeries agentDataset_reactionInEachEpisodeAvgSeries;
         public YIntervalSeries agentDataset_cumulativeReactionInallEpisodesAvgSeries;
 
+        /**
+         * MI-paper related datasets
+         */
+        public YIntervalSeries agentDataset_jitaiCountEachEpisodeSeries;
+
 
         /**
          * Initializes the datastructures for an agent with the given name
@@ -750,6 +823,12 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             this.agentDataset_cumulativeReactionInallEpisodesAvgSeries = new YIntervalSeries(agentName);
             this.agentDataset_cumulativeReactionInallEpisodesAvgSeries.setNotify(false);
             allAgents_cumulativeReactionInAllEpisodesAvg.addSeries(this.agentDataset_cumulativeReactionInallEpisodesAvgSeries);
+
+
+            // MI related
+            this.agentDataset_jitaiCountEachEpisodeSeries = new YIntervalSeries(agentName);
+            this.agentDataset_jitaiCountEachEpisodeSeries.setNotify(false);
+            allAgents_totalJitaisPerEpisode.addSeries(this.agentDataset_jitaiCountEachEpisodeSeries);
         }
 
 
@@ -792,6 +871,11 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             this.agentDataset_cumulativeReactionInallEpisodesAvgSeries.setNotify(true);
             this.agentDataset_cumulativeReactionInallEpisodesAvgSeries.fireSeriesChanged();
             this.agentDataset_cumulativeReactionInallEpisodesAvgSeries.setNotify(false);
+
+            // MI related
+            this.agentDataset_jitaiCountEachEpisodeSeries.setNotify(true);
+            this.agentDataset_jitaiCountEachEpisodeSeries.fireSeriesChanged();
+            this.agentDataset_jitaiCountEachEpisodeSeries.setNotify(false);
         }
     }
 }

@@ -4,6 +4,7 @@ import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import tez2.persona.Activity;
 import tez2.persona.TimePlan;
+import tez2.util.LogUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -597,7 +598,7 @@ public class PersonaParser {
 
     private void printGeneratedTimePlan(TimePlan timePlan) {
         for(Activity activity : timePlan.getActivities()) {
-            System.out.println(activity.toString());
+            //System.out.println(activity.toString());
         }
     }
 }

@@ -9,7 +9,7 @@ import burlap.oomdp.singleagent.environment.SimulatedEnvironment;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
 import tez2.domain.SelfManagementDomain;
-import tez2.domain.rf.SelfManagementRewardFunction;
+import tez2.domain.SelfManagementRewardFunction;
 import tez2.domain.SelfManagementStateGenerator;
 import tez2.environment.context.DayPart;
 import tez2.environment.context.DayType;
@@ -73,13 +73,9 @@ public abstract class SelfManagementEnvironment extends SimulatedEnvironment {
         }
     }
 
-    protected String getQuarterStateRepresentation() {
-        int minute = currentTime.getMinuteOfHour();
+    protected int getQuarterStateRepresentation() {
+        int minute = currentTime.getHourOfDay() * 60 + currentTime.getMinuteOfHour();
         int quarterIndex = minute / 15;
-        int quarterOffset = minute % 15;
-        if (quarterOffset > 7) {
-            quarterIndex++;
-        }
-        return currentTime.getHourOfDay() + "" + quarterIndex;
+        return quarterIndex;
     }
 }

@@ -9,14 +9,15 @@ import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
+import tez2.algorithm.collaborative_learning.SparkStateClassifier;
 import tez2.algorithm.*;
-import tez2.algorithm.jitai_selection.JitaiSelectionQLearning;
+import tez2.algorithm.jitai_selection.JsQLearning;
 import tez2.domain.DayTerminalFunction;
-import tez2.domain.JsDomainGenerator;
-import tez2.domain.OmiDomainGenerator;
-import tez2.domain.rf.JsRewardFunction;
-import tez2.domain.rf.OmiRewardFunction;
-import tez2.environment.simulator.JitaiSelectionEnvironment;
+import tez2.domain.js.JsDomainGenerator;
+import tez2.domain.omi.OmiDomainGenerator;
+import tez2.domain.js.JsRewardFunction;
+import tez2.domain.omi.OmiRewardFunction;
+import tez2.environment.simulator.JsEnvironment;
 import tez2.environment.simulator.SimulatedWorld;
 
 import java.util.ArrayList;
@@ -41,18 +42,18 @@ public class Experiment {
     }
 
     private void runExperiment() {
-        //String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
-        String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        //String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
 
         // jitai selection related objects
         TerminalFunction tf = new DayTerminalFunction();
         RewardFunction rf = new JsRewardFunction();
         JsDomainGenerator domGen = new JsDomainGenerator(null);
         Domain domain = domGen.generateDomain();
-        JitaiSelectionEnvironment jitaiSelectionEnvironment = new JitaiSelectionEnvironment(domain, rf, tf, 60, personaFolder + "/config");
+        JsEnvironment jitaiSelectionEnvironment = new JsEnvironment(domain, rf, tf, 60, personaFolder + "/config");
         domGen.setEnvironment(jitaiSelectionEnvironment);
         final SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
-        JitaiSelectionQLearning jsLearning = new JitaiSelectionQLearning(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE);
+        JsQLearning jsLearning = new JsQLearning(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE);
 
         // opportune moment identification related objects
         OmiDomainGenerator omiDomGen = new OmiDomainGenerator();
@@ -66,17 +67,24 @@ public class Experiment {
         jitaiSelectionEnvironment.setSimulatedWorld((SimulatedWorld) environment);
 
         LearningAgentFactory[] omiLearningCases = getOpportuneMomentIdentificationLearningAlternatives(domain);
+
+        SparkStateClassifier sparkClassifier = SparkStateClassifier.getInstance();
+        sparkClassifier.setDomain(domain);
+
         StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                1, 100, omiLearningCases);
+                3, 100, omiLearningCases);
 
+//        exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
+//                CUMULATIVE_REWARD_PER_EPISODE,
+//                CUMULATIVE_REACTION,
+//                AVERAGEEPISODEREWARD,
+//                REWARD_PER_EPISODE,
+//                USER_REACTION_PER_EPISODE
+//        );
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
-                CUMULATIVE_REWARD_PER_EPISODE,
-                CUMULATIVE_REACTION,
-                AVERAGEEPISODEREWARD,
-                REWARD_PER_EPISODE,
-                USER_REACTION_PER_EPISODE
+                //RATIO_JITAIS_PER_TIME_OF_DAY,
+                AVG_JITAIS_PER_EPISODE
         );
-
 
         //start experiment
         exp.startExperiment();
@@ -97,7 +105,7 @@ public class Experiment {
                 return new SelfManagementQLearning(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE);
             }
         };
-        learningAlternatives.add(qLearningFactory);
+        //learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             @Override
@@ -110,7 +118,7 @@ public class Experiment {
                 return new SelfManagementSarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8);
             }
         };
-        //learningAlternatives.add(qLearningFactory);
+        learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             @Override

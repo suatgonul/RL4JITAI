@@ -2,7 +2,7 @@ package tez2.algorithm.collaborative_learning;
 
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.State;
-import tez2.environment.context.StateOfMind;
+import tez2.domain.DomainConfig;
 import tez2.environment.context.*;
 
 import java.io.Serializable;
@@ -14,25 +14,18 @@ import static tez2.domain.DomainConfig.*;
  */
 public class StateBean implements Serializable {
     private int time;
-    private String dayType;
     private String location;
     private String activity;
     private String phoneUsage;
-    private String stateOfMind;
     private String emotionalStatus;
 
     public StateBean(State state) {
         ObjectInstance o = state.getObjectsOfClass(CLASS_STATE).get(0);
-        String time = o.getStringValForAttribute(ATT_ACTIVITY_TIME);
-        int hour = Integer.valueOf(time.split(":")[0]);
-        int minute = Integer.valueOf(time.split(":")[1]);
-        this.time = hour * 60 + minute;
-        this.dayType = DayType.values()[o.getIntValForAttribute(ATT_DAY_TYPE)].toString();
         this.location = Location.values()[o.getIntValForAttribute(ATT_LOCATION)].toString();
         this.activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)].toString();
         this.phoneUsage = PhoneUsage.APPS_ACTIVE.values()[o.getIntValForAttribute(ATT_PHONE_USAGE)].toString();
-        this.stateOfMind = StateOfMind.values()[o.getIntValForAttribute(ATT_STATE_OF_MIND)].toString();
         this.emotionalStatus = EmotionalStatus.values()[o.getIntValForAttribute(ATT_EMOTIONAL_STATUS)].toString();
+        this.time = o.getIntValForAttribute(ATT_QUARTER_HOUR_OF_DAY);
     }
 
     public int getTime() {
@@ -41,14 +34,6 @@ public class StateBean implements Serializable {
 
     public void setTime(int time) {
         this.time = time;
-    }
-
-    public String getDayType() {
-        return dayType;
-    }
-
-    public void setDayType(String dayType) {
-        this.dayType = dayType;
     }
 
     public String getLocation() {
@@ -73,14 +58,6 @@ public class StateBean implements Serializable {
 
     public void setPhoneUsage(String phoneUsage) {
         this.phoneUsage = phoneUsage;
-    }
-
-    public String getStateOfMind() {
-        return stateOfMind;
-    }
-
-    public void setStateOfMind(String stateOfMind) {
-        this.stateOfMind = stateOfMind;
     }
 
     public String getEmotionalStatus() {

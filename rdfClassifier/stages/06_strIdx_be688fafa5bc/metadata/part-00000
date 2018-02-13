@@ -1,1 +1,0 @@
-{"class":"org.apache.spark.ml.feature.StringIndexerModel","timestamp":1498859753066,"sparkVersion":"2.1.1","uid":"strIdx_be688fafa5bc","paramMap":{"outputCol":"EmotionalStatusIndex","handleInvalid":"error","inputCol":"emotionalStatus"}}

@@ -14,7 +14,7 @@ import burlap.oomdp.statehashing.HashableState;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
-import tez2.algorithm.jitai_selection.JitaiSelectionQLearning;
+import tez2.algorithm.jitai_selection.JsQLearning;
 import tez2.domain.omi.OmiEnvironmentOutcome;
 import tez2.domain.TerminalState;
 import tez2.environment.SelfManagementEnvironment;
@@ -48,13 +48,15 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     private int suitableActivityCount;
     private int processedActivityCountForBehavior;
 
+    // variables keeping the values in the previous step of the execution to populate the environment outcome
+    private Activity previousActivity;
+
     private String personaFolder;
 
     // jitai selection related objects
     private boolean behaviorPerformed;
-    private JitaiSelectionEnvironment jitaiSelectionEnvironment;
-    private JitaiSelectionQLearning jitaiSelectionLearning;
-    private List<SelfManagementEpisodeAnalysis> jitaiSelectionResults = new ArrayList<>();
+    private JsEnvironment jitaiSelectionEnvironment;
+    private JsQLearning jitaiSelectionLearning;
     private JsEpisodeAnalysis jitaiSelectionEpisode;
     private int checkedActionPlanIndex;
     private ActionPlan actionPlan;
@@ -63,7 +65,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     private Map<String, Double> jitaiPreferences;
 
 
-    public SimulatedWorld(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String personaFolder, JitaiSelectionEnvironment jitaiSelectionEnvironment, JitaiSelectionQLearning jitaiSelectionLearning) {
+    public SimulatedWorld(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String personaFolder, JsEnvironment jitaiSelectionEnvironment, JsQLearning jitaiSelectionLearning) {
         super(domain, rf, tf, stateChangeFrequency);
         this.personaFolder = personaFolder;
         this.currentDay = 1;
@@ -108,7 +110,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
             this.lastReward = 0.;
         }
 
-        EnvironmentOutcome eo = new OmiEnvironmentOutcome(this.curState.copy(), simGA, nextState.copy(), this.lastReward, this.tf.isTerminal(nextState), null, false);
+        EnvironmentOutcome eo = new OmiEnvironmentOutcome(this.curState.copy(), simGA, nextState.copy(), this.lastReward, this.tf.isTerminal(nextState), previousActivity.getContext(), reactedToJitai);
 
         this.curState = nextState;
 
@@ -144,7 +146,6 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         if (currentRange != null) {
             // initialize the jitai selection environment state
             if (checkedActionPlanIndex == -1) {
-                jitaiSelectionResults.add(jitaiSelectionEpisode);
                 jitaiSelectionEnvironment.initEpisode();
                 jitaiSelectionEpisode = new JsEpisodeAnalysis(jitaiSelectionEnvironment.getCurrentObservation());
             }
@@ -152,6 +153,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
             // processing the first activity overlapping with this time range
             int rangeIndex = (Integer) currentRange.get(0);
             if (rangeIndex > checkedActionPlanIndex) {
+                reactedToJitai = false;
                 behaviorPerformed = false;
                 suitableActivityCount = 0;
                 processedActivityCountForBehavior = 0;
@@ -162,11 +164,10 @@ public class SimulatedWorld extends SelfManagementEnvironment {
                 lastSelectedJitai = jitaiSelectionEnvironment.getLastAction();
                 checkedActionPlanIndex++;
 
-                System.out.println("CHECKED action plan (INCREASED) INDEX: " + checkedActionPlanIndex);
-
                 // check the last time range
                 if (checkedActionPlanIndex + 1 == actionPlan.getJitaiTimeRanges().size()) {
                     jitaiSelectionEnvironment.resetEnvironment();
+
                 } else {
                     if(checkedActionPlanIndex % 2 == 0) {
                         // find the number of activities in which the behavior could be performed
@@ -191,7 +192,9 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         // simulate reaction to jitai and performance of behavior
         if(!lastSelectedJitai.actionName().contentEquals(ACTION_NO_ACTION) && !behaviorPerformed) {
             // based on the yes/no decision on delivering
-            reactedToJitai = simulateUserReactionToJitai();
+            if(!reactedToJitai) {
+                reactedToJitai = simulateUserReactionToJitai();
+            }
 
             if(checkedActionPlanIndex % 2 == 0 && currentActivity.isSuitableForBehavior()) {
                 // perform reaction to the JITAI
@@ -200,6 +203,8 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         }
 
         // advance the time plan
+        previousActivity = currentActivity;
+
         int currentActivityIndex = currentTimePlan.getActivities().indexOf(currentActivity);
         DateTime activityEndTime = currentActivity.getEndTime();
         if (activityEndTime.isAfter(currentTime.plusMinutes(stateChangeFrequency))) {
@@ -221,13 +226,9 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         double cumulativeProbability = nd.cumulativeProbability(sample);
         processedActivityCountForBehavior++;
         double probabilityOfPerformanceInCurrentStep = (double) processedActivityCountForBehavior / (double) suitableActivityCount;
-        System.out.println("suitable activity count: " + suitableActivityCount);
-        System.out.println("processedActivityCountForBehavior: " + processedActivityCountForBehavior);
-        System.out.println("probabilityOfPerformanceInCurrentStep: " + probabilityOfPerformanceInCurrentStep);
 
         if(cumulativeProbability < (probabilityOfPerformanceInCurrentStep)) {
             behaviorPerformed = true;
-            System.out.println("BEHAVIOR PERFORMED");
         }
     }
 
@@ -302,19 +303,6 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         return s;
     }
 
-    public static void main(String [] srgs ) {
-        NormalDistribution nd = new NormalDistribution();
-        for(int i=0; i<10; i++) {
-            double sample = nd.sample();
-            System.out.println(sample);
-            System.out.println(nd.cumulativeProbability(sample));
-        }
-//        System.out.println(nd.cumulativeProbability(1.0));
-//        System.out.println(nd.cumulativeProbability(-1.0));
-//        System.out.println(nd.inverseCumulativeProbability(0.25));
-//        System.out.println(nd.inverseCumulativeProbability(0.5));
-    }
-
     /**
      * Initializes the variables that are reset for each episode. Variables that preserve the value across episodes
      * are not changed in this method such as habit strength.
@@ -322,7 +310,6 @@ public class SimulatedWorld extends SelfManagementEnvironment {
      * @throws WorldSimulationException
      */
     protected void initEpisode() throws WorldSimulationException {
-        System.out.println("in omi init");
         // initialize time plan
         PersonaParser personaParser = new PersonaParser();
         String personaPath = personaFolder + "/weekdayv2.csv";
@@ -348,7 +335,6 @@ public class SimulatedWorld extends SelfManagementEnvironment {
 
     @Override
     public void resetEnvironment() {
-        System.out.println("in omi reset");
         currentDay++;
         initEpisode();
         super.resetEnvironment();
@@ -436,6 +422,10 @@ public class SimulatedWorld extends SelfManagementEnvironment {
 
     public boolean isBehaviorPerformed() {
         return behaviorPerformed;
+    }
+
+    public JsEpisodeAnalysis getJsEpisodeAnalysis() {
+        return jitaiSelectionEpisode;
     }
 
     public static class DynamicSimulatedWorldContext {

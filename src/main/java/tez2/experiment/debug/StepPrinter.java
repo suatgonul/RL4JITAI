@@ -25,7 +25,8 @@ public class StepPrinter {
         // Context details from the state object
         ObjectInstance o = state.getObjectsOfClass(CLASS_STATE).get(0);
         Location location = Location.values()[o.getIntValForAttribute(ATT_LOCATION)];
-        DayType dayType = DayType.values()[o.getIntValForAttribute(ATT_DAY_TYPE)];
+        //DayType dayType = DayType.values()[o.getIntValForAttribute(ATT_DAY_TYPE)];
+        DayType dayType = DayType.WEEKDAY;
 
         // Context details from the context object
         Location location_c = context.getLocation();

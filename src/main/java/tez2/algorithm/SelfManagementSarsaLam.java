@@ -12,9 +12,11 @@ import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
+import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
 import tez2.domain.omi.OmiEnvironmentOutcome;
+import tez2.environment.simulator.SimulatedWorld;
 import tez2.experiment.performance.OmiEpisodeAnalysis;
 import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 
@@ -132,6 +134,7 @@ public class SelfManagementSarsaLam extends SarsaLam {
 
         }
 
+        ea.jsEpisodeAnalysis = ((SimulatedWorld) ((EnvironmentServer) env).getEnvironmentDelegate()).getJsEpisodeAnalysis();
 
         if (episodeHistory.size() >= numEpisodesToStore) {
             episodeHistory.poll();

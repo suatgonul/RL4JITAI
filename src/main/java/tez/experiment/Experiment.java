@@ -79,7 +79,7 @@ public class Experiment {
         //start experiment
         exp.startExperiment();*/
         StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                30, 500, learningCases);
+                2, 10, learningCases);
 
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 CUMULATIVE_REWARD_PER_EPISODE,
@@ -135,7 +135,7 @@ public class Experiment {
                 return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, true);
             }
         };
-        learningAlternatives.add(qLearningFactory);
+        //learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             public String getAgentName() {

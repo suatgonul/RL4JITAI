@@ -7,6 +7,7 @@ import burlap.oomdp.core.AbstractObjectParameterizedGroundedAction;
 import burlap.oomdp.core.states.State;
 import tez2.domain.SelfManagementAction;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,18 +18,17 @@ public class SelfManagementGreedyQPolicy extends GreedyQPolicy {
 
     @Override
     public AbstractGroundedAction getAction(State s) {
-        List<QValue> qValues = this.qplanner.getQs(s);
-        List <QValue> maxActions = new ArrayList<QValue>();
+        List<QValue> qValues = filterQValues(this.qplanner.getQs(s), s);
+        List<QValue> maxActions = new ArrayList<QValue>();
         maxActions.add(qValues.get(0));
         double maxQ = qValues.get(0).q;
         SelfManagementAction.SelectedBy selectedBy = SelfManagementAction.SelectedBy.QLEARNING;
-        for(int i = 1; i < qValues.size(); i++){
+        for (int i = 1; i < qValues.size(); i++) {
             QValue q = qValues.get(i);
-            if(q.q == maxQ){
+            if (q.q == maxQ) {
                 maxActions.add(q);
                 selectedBy = SelfManagementAction.SelectedBy.RANDOM;
-            }
-            else if(q.q > maxQ){
+            } else if (q.q > maxQ) {
                 maxActions.clear();
                 maxActions.add(q);
                 maxQ = q.q;
@@ -41,5 +41,19 @@ public class SelfManagementGreedyQPolicy extends GreedyQPolicy {
         a.setSelectedBy(selectedBy);
         AbstractGroundedAction srcA = maxActions.get(selected).a;
         return AbstractObjectParameterizedGroundedAction.Helper.translateParameters(srcA, maxActions.get(selected).s, s);
+    }
+
+    private List<QValue> filterQValues(List<QValue> allQValues, State s) {
+        if (s instanceof ActionRestrictingState) {
+            List<QValue> filteredQValues = new ArrayList<>();
+            for (QValue qVal : allQValues) {
+                if (((SelfManagementSimpleGroundedAction) qVal.a).action.applicableInState(s, null)) {
+                    filteredQValues.add(qVal);
+                }
+            }
+            return filteredQValues;
+        } else {
+            return allQValues;
+        }
     }
 }

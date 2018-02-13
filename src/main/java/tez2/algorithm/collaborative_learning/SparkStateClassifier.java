@@ -23,12 +23,8 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
-import tez2.domain.DomainConfig;
-import tez2.domain.JsDomainGenerator;
-import tez2.domain.OmiDomainGenerator;
-import tez2.domain.SelfManagementDomain;
+import tez2.domain.omi.OmiDomainGenerator;
 import tez2.experiment.performance.OmiEpisodeAnalysis;
-import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez2.util.LogUtil;
 
 import java.io.IOException;
@@ -91,14 +87,13 @@ public class SparkStateClassifier extends StateClassifier {
         State s = new MutableState();
         s.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
         ObjectInstance o = s.getObjectsOfClass(CLASS_STATE).get(0);
-        //o.setValue(ATT_DAY_TYPE, 0);
+
+        o.setValue(ATT_QUARTER_HOUR_OF_DAY, 0);
         o.setValue(ATT_LOCATION, 0);
-        //o.setValue(ATT_ACTIVITY_TIME, "10:40");
         o.setValue(ATT_ACTIVITY, 0);
         o.setValue(ATT_PHONE_USAGE, 0);
         o.setValue(ATT_EMOTIONAL_STATUS, 0);
-        //o.setValue(ATT_STATE_OF_MIND, 0);
-        o.setValue(ATT_QUARTER_HOUR_OF_DAY, 0);
+
 
 
         State s2 = s.copy();
@@ -115,11 +110,9 @@ public class SparkStateClassifier extends StateClassifier {
 
         StructType testDataStruct = new StructType()
                 .add("Time", DataTypes.IntegerType, true)
-                .add("DayType", DataTypes.StringType, true)
                 .add("Location", DataTypes.StringType, true)
                 .add("Activity", DataTypes.StringType, true)
                 .add("PhoneUsage", DataTypes.StringType, true)
-                .add("StateOfMind", DataTypes.StringType, true)
                 .add("EmotionalStatus", DataTypes.StringType, true);
 
         StructType trainingDataStruct = new StructType().copy(testDataStruct.fields());
@@ -128,7 +121,8 @@ public class SparkStateClassifier extends StateClassifier {
         Dataset<Row> trainingData = spark.read()
                 .schema(trainingDataStruct)
                 .option("header", true)
-                .csv("D:\\mine\\odtu\\6\\tez\\codes\\dummy_data\\trainingData.csv");
+                .csv("D:\\mine\\odtu\\6\\tez\\codes\\dummy_data\\trainingDatav2.csv");
+        System.out.println("Training");
         trainingData.printSchema();
         trainingData.show();
 
@@ -136,6 +130,7 @@ public class SparkStateClassifier extends StateClassifier {
         sbs.add(new StateBean(s));
         sbs.add(new StateBean(s2));
         Dataset<Row> sbsDf = spark.createDataFrame(sbs, StateBean.class);
+        System.out.println("States");
         sbsDf.printSchema();
         sbsDf.show();
 
@@ -145,23 +140,19 @@ public class SparkStateClassifier extends StateClassifier {
         sabList.add(new StateActionBean(di1));
         sabList.add(new StateActionBean(di2));
         Dataset<Row> sabsDf = spark.createDataFrame(sabList, StateActionBean.class);
+        System.out.println("States with predictions");
         sabsDf.printSchema();
         sabsDf.show();
-
-        System.exit(1);
 
         Dataset<Row> testData = spark.read()
                 .schema(testDataStruct)
                 .option("header", true)
-                .csv("D:\\mine\\odtu\\6\\tez\\codes\\dummy_data\\testData.csv");
+                .csv("D:\\mine\\odtu\\6\\tez\\codes\\dummy_data\\testDatav2.csv");
         //testData = new DataFrameNaFunctions(testData).fill("", new String[]{"Action"});
+        System.out.println("Test");
         testData.printSchema();
         testData.show();
 
-        StringIndexerModel dayTypeIndexer = new StringIndexer()
-                .setInputCol("DayType")
-                .setOutputCol("DayTypeIndex")
-                .fit(trainingData);
         StringIndexerModel locationIndexer = new StringIndexer()
                 .setInputCol("Location")
                 .setOutputCol("LocationIndex")
@@ -174,10 +165,6 @@ public class SparkStateClassifier extends StateClassifier {
                 .setInputCol("PhoneUsage")
                 .setOutputCol("PhoneUsageIndex")
                 .fit(trainingData);
-        StringIndexerModel stateOfMindIndexer = new StringIndexer()
-                .setInputCol("StateOfMind")
-                .setOutputCol("StateOfMindIndex")
-                .fit(trainingData);
         StringIndexerModel emotionalStatusIndexer = new StringIndexer()
                 .setInputCol("EmotionalStatus")
                 .setOutputCol("EmotionalStatusIndex")
@@ -188,8 +175,7 @@ public class SparkStateClassifier extends StateClassifier {
                 .fit(trainingData);
 
         VectorAssembler featureVectorAssembler = new VectorAssembler()
-                .setInputCols(new String[]{"Time", "DayTypeIndex", "LocationIndex", "ActivityIndex", "PhoneUsageIndex",
-                        "StateOfMindIndex", "EmotionalStatusIndex"})
+                .setInputCols(new String[]{"Time", "DayTypeIndex", "LocationIndex", "ActivityIndex", "PhoneUsageIndex", "EmotionalStatusIndex"})
                 .setOutputCol("features");
 
         RandomForestClassifier rf = new RandomForestClassifier()
@@ -203,11 +189,12 @@ public class SparkStateClassifier extends StateClassifier {
                 .setLabels(actionIndexer.labels());
 
         Pipeline pipeline = new Pipeline()
-                .setStages(new PipelineStage[]{actionIndexer, dayTypeIndexer, locationIndexer, activityIndexer, phoneUsageIndexer, stateOfMindIndexer, emotionalStatusIndexer, featureVectorAssembler, rf, labelConverter});
+                .setStages(new PipelineStage[]{actionIndexer, locationIndexer, activityIndexer, phoneUsageIndexer, emotionalStatusIndexer, featureVectorAssembler, rf, labelConverter});
 
         PipelineModel model = pipeline.fit(trainingData);
 
         Dataset<Row> predictions = model.transform(testData);
+        System.out.println("Predictions");
         predictions.printSchema();
         predictions.show();
 
@@ -228,11 +215,6 @@ public class SparkStateClassifier extends StateClassifier {
         stateActionData = spark.createDataFrame(stateActionBeans, StateActionBean.class);
         stateActionData.cache();
 
-        StringIndexerModel dayTypeIndexer = new StringIndexer()
-                .setInputCol("dayType")
-                .setOutputCol("DayTypeIndex")
-                .fit(stateActionData);
-
         StringIndexerModel locationIndexer = new StringIndexer()
                 .setInputCol("location")
                 .setOutputCol("LocationIndex")
@@ -248,11 +230,6 @@ public class SparkStateClassifier extends StateClassifier {
                 .setOutputCol("PhoneUsageIndex")
                 .fit(stateActionData);
 
-        StringIndexerModel stateOfMindIndexer = new StringIndexer()
-                .setInputCol("stateOfMind")
-                .setOutputCol("StateOfMindIndex")
-                .fit(stateActionData);
-
         StringIndexerModel emotionalStatusIndexer = new StringIndexer()
                 .setInputCol("emotionalStatus")
                 .setOutputCol("EmotionalStatusIndex")
@@ -264,8 +241,8 @@ public class SparkStateClassifier extends StateClassifier {
                 .fit(stateActionData);
 
         VectorAssembler featureVectorAssembler = new VectorAssembler()
-                .setInputCols(new String[]{"time", "DayTypeIndex", "LocationIndex", "ActivityIndex", "PhoneUsageIndex",
-                        "StateOfMindIndex", "EmotionalStatusIndex"})
+                .setInputCols(new String[]{"time", "LocationIndex", "ActivityIndex", "PhoneUsageIndex",
+                        "EmotionalStatusIndex"})
                 .setOutputCol("features");
 
         RandomForestClassifier rf = new RandomForestClassifier()
@@ -279,7 +256,7 @@ public class SparkStateClassifier extends StateClassifier {
                 .setLabels(actionIndexer.labels());
 
         Pipeline pipeline = new Pipeline()
-                .setStages(new PipelineStage[]{actionIndexer, dayTypeIndexer, locationIndexer, activityIndexer, phoneUsageIndexer, stateOfMindIndexer, emotionalStatusIndexer, featureVectorAssembler, rf, labelConverter});
+                .setStages(new PipelineStage[]{actionIndexer, locationIndexer, activityIndexer, phoneUsageIndexer, emotionalStatusIndexer, featureVectorAssembler, rf, labelConverter});
 
         rdfClassifier = pipeline.fit(stateActionData);
         try {

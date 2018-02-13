@@ -327,20 +327,20 @@ public class StaticSelfManagementExperimenter {
 
         //long updateStartTime = System.currentTimeMillis();
         //H2OStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
-        SparkStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
+        //SparkStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
         //System.out.println("Model update completed in " + (System.currentTimeMillis() - updateStartTime) + " milliseconds");
 
         reporter.finalizeReporting();
 
         //TODO do it properly
-        VisualizationMetadata visualizerMetadata = new VisualizationMetadata();
+        /*VisualizationMetadata visualizerMetadata = new VisualizationMetadata();
         visualizerMetadata
                 .setMetadataForVisualizer(ReactionHitRatioVisualizer.class, Visualizer.METADATA_LEARNING_ALGORITHM, agentFactory.getAgentName())
                 .setMetadataForVisualizer(ReactionHitRatioVisualizer.class, Visualizer.METADATA_POLICY, agent);
         Visualizer visualizer = new ReactionHitRatioVisualizer(visualizerMetadata.getVisualizerMetadata(ReactionHitRatioVisualizer.class));
         visualizer.createRewardGraph(episodeAnalysisList);
         visualizer = new ReactionNumbersVisualizer(visualizerMetadata.getVisualizerMetadata(ReactionNumbersVisualizer.class));
-        visualizer.createRewardGraph(episodeAnalysisList);
+        visualizer.createRewardGraph(episodeAnalysisList);*/
         this.plotter.endTrial();
 
     }

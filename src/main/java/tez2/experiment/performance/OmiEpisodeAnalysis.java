@@ -16,6 +16,7 @@ public class OmiEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
     public List<Boolean> userReactions;
     public int phoneCheckNumber;
     public int actionDeliveredDuringPhoneCheck;
+    public JsEpisodeAnalysis jsEpisodeAnalysis;
 
     public OmiEpisodeAnalysis(State initialState) {
         super(initialState);

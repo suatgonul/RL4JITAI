@@ -19,9 +19,8 @@ import burlap.oomdp.statehashing.HashableStateFactory;
 import org.apache.log4j.Logger;
 import tez2.algorithm.collaborative_learning.SparkStateClassifier;
 import tez2.domain.omi.OmiEnvironmentOutcome;
-import tez2.domain.rf.SelfManagementRewardFunction;
+import tez2.domain.SelfManagementRewardFunction;
 import tez2.domain.SelfManagementAction;
-import tez2.experiment.debug.StepPrinter;
 import tez2.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 
 import java.util.ArrayList;
@@ -196,7 +195,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
                 if (action.action.isPrimitive() || !this.shouldAnnotateOptions) {
                     ea.recordTransitionTo(action, nextState.s, r, currentQVals, eeo.getUserContext(), eeo.getUserReaction(), interference, selectedBy);
-                    StepPrinter.printStep(action, curState.s, r, currentQVals, eeo.getUserContext(), eeo.getUserReaction(), interference, selectedBy);
+                    //StepPrinter.printStep(action, curState.s, r, currentQVals, eeo.getUserContext(), eeo.getUserReaction(), interference, selectedBy);
                 } else {
                     ea.appendAndMergeEpisodeAnalysis(((Option) action.action).getLastExecutionResults());
                 }

@@ -4,7 +4,7 @@ import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
-import tez2.domain.rf.SelfManagementRewardFunction;
+import tez2.domain.SelfManagementRewardFunction;
 import tez2.experiment.performance.OmiEpisodeAnalysis;
 import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 

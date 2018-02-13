@@ -12,5 +12,11 @@ public enum SelfManagementPerformanceMetric {
     STEPSPEREPISODE,
     REWARD_PER_EPISODE,
     USER_REACTION_PER_EPISODE,
-    CUMULATIVE_REACTION;
+    CUMULATIVE_REACTION,
+
+    // metrics added for thresholds in the mi paper
+    RATIO_JITAIS_PER_TIME_OF_DAY,
+    AVG_JITAIS_PER_EPISODE,
+    RATIO_JITAIS_PER_HABIT_STRENGTH,
+    RATIO_JITAIS_PER_STATE_PARAM
 }

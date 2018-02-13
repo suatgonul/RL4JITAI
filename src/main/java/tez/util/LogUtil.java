@@ -7,14 +7,14 @@ import org.apache.log4j.Logger;
  */
 public class LogUtil {
     public static void log_info(Logger logger, String deviceIdentifier, String message) {
-        logger.info(deviceIdentifier + " " + message);
+        //logger.info(deviceIdentifier + " " + message);
     }
 
     public static void log_debug(Logger logger, String deviceIdentifier, String message) {
-        logger.debug(deviceIdentifier + " " + message);
+        //logger.debug(deviceIdentifier + " " + message);
     }
 
     public static void log_generic(Logger logger, String message) {
-        logger.info(message);
+        //logger.info(message);
     }
 }

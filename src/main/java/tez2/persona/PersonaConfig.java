@@ -15,7 +15,7 @@ public class PersonaConfig {
     private List<Integer> actionPlanRanges;
 
     public static void main(String[] args) {
-        List<PersonaConfig> configs = getConfigs("D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob\\config");
+        List<PersonaConfig> configs = getConfigs("D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob");
         System.out.println(configs);
     }
 

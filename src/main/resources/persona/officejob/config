@@ -1,6 +1,6 @@
 number_of_configs=2
-jitai_types=2,1
-commitment_intensity=0.3
-behavior_frequency=0.3
-reaction_to_jitais=0.3,0.,0.1
-action_plan_ranges=3,4,3,4,3,7
+jitai_types=2,1:2,1
+commitment_intensity=0.3:0.7
+behavior_frequency=0.3:0.7
+reaction_to_jitais=0.3,0.,0.1:0.5,0.7,0.7
+action_plan_ranges=3,4,3,4,3,7:3,4,3,4,3,7

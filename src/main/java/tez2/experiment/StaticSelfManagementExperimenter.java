@@ -80,7 +80,6 @@ public class StaticSelfManagementExperimenter {
      * Whether the experimenter has completed.
      */
     protected boolean completedExperiment = false;
-    private int tempLength;
 
 
     /**
@@ -102,7 +101,6 @@ public class StaticSelfManagementExperimenter {
         this.testEnvironment = testEnvironment;
         this.nTrials = nTrials;
         this.trialLength = trialLength;
-        this.tempLength = trialLength;
         this.agentFactories = agentFactories;
     }
 

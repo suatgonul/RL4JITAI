@@ -11,6 +11,7 @@ import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import org.apache.commons.io.FileUtils;
 import power2dm.reporting.visualization.VisualizationMetadata;
 import tez2.algorithm.collaborative_learning.SparkStateClassifier;
+import tez2.environment.simulator.SimulatedWorld;
 import tez2.experiment.debug.Reporter;
 import tez2.experiment.performance.*;
 import tez2.experiment.performance.visualization.ReactionHitRatioVisualizer;
@@ -206,7 +207,7 @@ public class StaticSelfManagementExperimenter {
                 DPrint.cl(this.debugCode, "Beginning " + this.agentFactories[i].getAgentName() + " trial " + (j + 1) + "/" + this.nTrials);
 
                 if (this.trialLengthIsInEpisodes) {
-                    this.runEpisodeBoundTrial(this.agentFactories[i]);
+                    this.runEpisodeBoundTrial(this.agentFactories[i], j);
                 } else {
                     this.runStepBoundTrial(this.agentFactories[i]);
                 }
@@ -223,7 +224,7 @@ public class StaticSelfManagementExperimenter {
      *
      * @param agentFactory the agent factory used to generate the agent to test.
      */
-    protected void runEpisodeBoundTrial(LearningAgentFactory agentFactory) {
+    protected void runEpisodeBoundTrial(LearningAgentFactory agentFactory, int trialNo) {
 
         LearningAgent agent = agentFactory.generateAgent();
 
@@ -244,11 +245,15 @@ public class StaticSelfManagementExperimenter {
         for (int i = 0; i < this.trialLength; i++) {
             long episodeStarttime = System.currentTimeMillis();
             OmiEpisodeAnalysis ea = (OmiEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
+            ea.setTrialNo(trialNo);
+            if(i < 10) {
+//                ea.jsEpisodeAnalysis.printEpisodeAnalysis();
+            }
             episodeAnalysisList.add(ea);
             //if (agentFactory.getAgentName().contains("colla")) {
                 elapsedTrialTime += (System.currentTimeMillis()-episodeStarttime);
-                System.out.println("Episode: " + (i + 1) + " completed in " + (System.currentTimeMillis()-episodeStarttime) + " milliseconds");
-                System.out.println("Elapsed trial time: " + elapsedTrialTime + " milliseconds");
+//                System.out.println("Episode: " + (i + 1) + " completed in " + (System.currentTimeMillis()-episodeStarttime) + " milliseconds");
+//                System.out.println("Elapsed trial time: " + elapsedTrialTime + " milliseconds");
             //}
 
             this.plotter.populateAgentDatasets(ea);
@@ -323,6 +328,7 @@ public class StaticSelfManagementExperimenter {
                 }
             }*/
         }
+        ((SimulatedWorld) this.environmentSever.getEnvironmentDelegate()).endTrial();
         System.out.println("Trial completed in " + (System.currentTimeMillis() - trialStartTime) + " milliseconds");
 
         //long updateStartTime = System.currentTimeMillis();

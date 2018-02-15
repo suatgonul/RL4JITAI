@@ -4,6 +4,7 @@ import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import tez2.environment.context.Context;
+import tez2.experiment.performance.js.JsEpisodeAnalysis;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,10 @@ public class OmiEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
         userReactions = new ArrayList<>();
     }
 
+    public void setTrialNo(int trialNo) {
+        this.trialNo = trialNo;
+        jsEpisodeAnalysis.trialNo = trialNo;
+    }
 
     public void recordTransitionTo(GroundedAction usingAction, State nextState, double r, List<QValue> qValues, Context userContext, boolean userReaction) {
         qValuesForStates.add(qValues);

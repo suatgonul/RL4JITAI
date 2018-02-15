@@ -13,6 +13,7 @@ import tez2.algorithm.collaborative_learning.SparkStateClassifier;
 import tez2.algorithm.*;
 import tez2.algorithm.jitai_selection.JsQLearning;
 import tez2.domain.DayTerminalFunction;
+import tez2.domain.DomainConfig;
 import tez2.domain.js.JsDomainGenerator;
 import tez2.domain.omi.OmiDomainGenerator;
 import tez2.domain.js.JsRewardFunction;
@@ -49,18 +50,17 @@ public class Experiment {
         TerminalFunction tf = new DayTerminalFunction();
         RewardFunction rf = new JsRewardFunction();
         JsDomainGenerator domGen = new JsDomainGenerator(null);
-        Domain domain = domGen.generateDomain();
-        JsEnvironment jitaiSelectionEnvironment = new JsEnvironment(domain, rf, tf, 60, personaFolder + "/config");
+        Domain jsDomain = domGen.generateDomain();
+        JsEnvironment jitaiSelectionEnvironment = new JsEnvironment(jsDomain, rf, tf, 60, personaFolder + "/config");
         domGen.setEnvironment(jitaiSelectionEnvironment);
         final SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
-        JsQLearning jsLearning = new JsQLearning(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE);
 
         // opportune moment identification related objects
         OmiDomainGenerator omiDomGen = new OmiDomainGenerator();
-        domain = omiDomGen.generateDomain();
+        Domain domain = omiDomGen.generateDomain();
 
         rf = new OmiRewardFunction();
-        environment = new SimulatedWorld(domain, rf, tf, 60, personaFolder, jitaiSelectionEnvironment, jsLearning);
+        environment = new SimulatedWorld(domain, rf, tf, 60, personaFolder, jitaiSelectionEnvironment, getJsLearningAlternatives(jsDomain));
         //environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob");
         omiDomGen.setEnvironment(environment);
 
@@ -72,7 +72,7 @@ public class Experiment {
         sparkClassifier.setDomain(domain);
 
         StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                3, 100, omiLearningCases);
+                100, 100, omiLearningCases);
 
 //        exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
 //                CUMULATIVE_REWARD_PER_EPISODE,
@@ -88,6 +88,26 @@ public class Experiment {
 
         //start experiment
         exp.startExperiment();
+    }
+
+    private LearningAgentFactory[] getJsLearningAlternatives(final Domain domain) {
+
+        List<LearningAgentFactory> learningAlternatives = new ArrayList<>();
+        final SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
+
+        LearningAgentFactory qLearningFactory = new LearningAgentFactory() {
+            @Override
+            public String getAgentName() {
+                return "Sarsa-Lam  Lambda_0.8 Gamma_0.1 LR_0.1";
+            }
+
+            @Override
+            public LearningAgent generateAgent() {
+                return new JsQLearning(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE);
+            }
+        };
+        learningAlternatives.add(qLearningFactory);
+        return learningAlternatives.toArray(new LearningAgentFactory[0]);
     }
 
     private LearningAgentFactory[] getOpportuneMomentIdentificationLearningAlternatives(final Domain domain) {

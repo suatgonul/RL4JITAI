@@ -13,9 +13,7 @@ import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
 import tez2.domain.js.JsEnvironmentOutcome;
-import tez2.domain.omi.OmiEnvironmentOutcome;
-import tez2.experiment.performance.JsEpisodeAnalysis;
-import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
+import tez2.experiment.performance.js.JsEpisodeAnalysis;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +22,8 @@ import java.util.List;
  * Created by suat on 07-Feb-18.
  */
 public class JsQLearning extends QLearning {
+    protected GroundedAction lastSelectedAction;
+
     public JsQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory,
                        double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize) {
         super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, maxEpisodeSize);
@@ -32,12 +32,16 @@ public class JsQLearning extends QLearning {
         }
     }
 
+    public GroundedAction selectAction(HashableState curState) {
+        lastSelectedAction = (GroundedAction) learningPolicy.getAction(curState.s);
+        return lastSelectedAction;
+    }
+
     public void executeLearningStep(Environment env, HashableState curState, JsEpisodeAnalysis ea) {
-        GroundedAction action = (GroundedAction) learningPolicy.getAction(curState.s);
-        QValue curQ = this.getQ(curState, action);
+        QValue curQ = this.getQ(curState, lastSelectedAction);
         List<QValue> currentQVals = copyCurrentQVals(this.qIndex.get(curState).qEntry);
 
-        EnvironmentOutcome eo = action.executeIn(env);
+        EnvironmentOutcome eo = lastSelectedAction.executeIn(env);
 
 
         HashableState nextState = this.stateHash(eo.op);
@@ -53,17 +57,17 @@ public class JsQLearning extends QLearning {
         int stepInc = eo instanceof EnvironmentOptionOutcome ? ((EnvironmentOptionOutcome) eo).numSteps : 1;
         eStepCounter += stepInc;
 
-        if (action.action.isPrimitive() || !this.shouldAnnotateOptions) {
+        if (lastSelectedAction.action.isPrimitive() || !this.shouldAnnotateOptions) {
             JsEnvironmentOutcome eeo = (JsEnvironmentOutcome) eo;
-            ea.recordTransitionTo(action, nextState.s, r, currentQVals, eeo);
+            ea.recordTransitionTo(lastSelectedAction, nextState.s, r, currentQVals, eeo);
         } else {
-            ea.appendAndMergeEpisodeAnalysis(((Option) action.action).getLastExecutionResults());
+            ea.appendAndMergeEpisodeAnalysis(((Option) lastSelectedAction.action).getLastExecutionResults());
         }
 
         double oldQ = curQ.q;
 
         //update Q-value
-        curQ.q = curQ.q + this.learningRate.pollLearningRate(this.totalNumberOfSteps, curState.s, action) * (r + (discount * maxQ) - curQ.q);
+        curQ.q = curQ.q + this.learningRate.pollLearningRate(this.totalNumberOfSteps, curState.s, lastSelectedAction) * (r + (discount * maxQ) - curQ.q);
 
         double deltaQ = Math.abs(oldQ - curQ.q);
         if (deltaQ > maxQChangeInLastEpisode) {

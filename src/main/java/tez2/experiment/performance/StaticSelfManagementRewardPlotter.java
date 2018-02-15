@@ -18,7 +18,7 @@ import tez2.environment.context.EmotionalStatus;
 import tez2.environment.context.Location;
 import tez2.environment.context.PhoneUsage;
 import tez2.environment.context.PhysicalActivity;
-import tez2.experiment.performance.SelfManagementPerformanceMetric;
+import tez2.experiment.performance.js.JsEpisodeAnalysis;
 
 import javax.swing.*;
 import java.awt.*;
@@ -517,12 +517,16 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         }
 
         // MI Paper-related additions
+        int acc = 0;
         if (this.metricsSet.contains(SelfManagementPerformanceMetric.AVG_JITAIS_PER_EPISODE)) {
             for (int i = 0; i < n[1]; i++) {
                 DescriptiveStatistics avgi = new DescriptiveStatistics();
                 for (Trial t : trials) {
                     avgi.addValue(t.trialRawData_jitaiCountEachEpisode.get(i));
+                    acc += t.trialRawData_jitaiCountEachEpisode.get(i);
                 }
+                System.out.println("t" + i + "=" + acc);
+                acc = 0;
                 double[] ci = getCI(avgi, this.significance);
                 curAgentDatasets.agentDataset_jitaiCountEachEpisodeSeries.add(i, ci[0], ci[1], ci[2]);
             }

@@ -64,10 +64,8 @@ public class JsEnvironment extends SelfManagementEnvironment {
     // weight for habit on accessability threshold
     private double WH_AT;
 
-
     private double CI;
     private int day;
-    private int dailyStep;
     private LinkedHashMap<Integer, Integer> jitaiGroups;
     private int selectedJitaiGroup;
     private int selectedJitaiType;
@@ -86,6 +84,7 @@ public class JsEnvironment extends SelfManagementEnvironment {
     private int stepCount = 0;
     private int reminderCount = 0;
     private GroundedAction lastAction;
+    private boolean reactedToJitai;
     private SimulatedWorld simulatedWorld;
     // parameters keeping the previous values to be used in the episode analysis
     private boolean previousBehaviorPerformed;
@@ -102,29 +101,11 @@ public class JsEnvironment extends SelfManagementEnvironment {
     private List<Double> behaviorFrequencies = new ArrayList<>();
     private List<Integer> jitais = new ArrayList<>();
 
+    private String configFilePath;
+
     public JsEnvironment(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String configFilePath) {
         super(domain, rf, tf, stateChangeFrequency);
 
-        Properties prop = new Properties();
-        try {
-            prop.load(new FileInputStream(configFilePath));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read config file at: " + configFilePath);
-        }
-
-        String[] jitaiTypes = prop.getProperty("jitai_types").split(",");
-        LinkedHashMap jitaiTypeMap = new LinkedHashMap();
-        for (int i = 0; i < jitaiTypes.length; i++) {
-            jitaiTypeMap.put(i + 1, Integer.parseInt(jitaiTypes[i]));
-        }
-
-        double behaviorFrequency = Double.parseDouble(prop.getProperty("behavior_frequency"));
-        double commitmentIntensity = Double.parseDouble(prop.getProperty("commitment_intensity"));
-
-        setInitialValues(behaviorFrequency, commitmentIntensity, jitaiTypeMap);
-    }
-
-    private void setInitialValues(double initialBehaviorFrequency, double commitmentIntensity, LinkedHashMap<Integer, Integer> jitaiGroups) {
         ADP = 0.641;
         //ADP = 0.3;
         AGC_EVENT = 0.111;
@@ -146,10 +127,33 @@ public class JsEnvironment extends SelfManagementEnvironment {
         WCI_REM = 0.083;
         WH_AT = 1.0;
 
+        windowSize = 15;
+        this.configFilePath = configFilePath;
+
+        setInitialValues();
+    }
+
+    public void setInitialValues() {
+        Properties prop = new Properties();
+        try {
+            prop.load(new FileInputStream(configFilePath));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read config file at: " + configFilePath);
+        }
+
+        String[] jitaiTypes = prop.getProperty("jitai_types").split(",");
+        this.jitaiGroups = new LinkedHashMap();
+        for (int i = 0; i < jitaiTypes.length; i++) {
+            jitaiGroups.put(i + 1, Integer.parseInt(jitaiTypes[i]));
+        }
+
+        double behaviorFrequency = Double.parseDouble(prop.getProperty("behavior_frequency"));
+        double commitmentIntensity = Double.parseDouble(prop.getProperty("commitment_intensity"));
+
+
         // initial values
-        behaviorFrequency = initialBehaviorFrequency;
+        this.behaviorFrequency = behaviorFrequency;
         CI = commitmentIntensity;
-        this.jitaiGroups = jitaiGroups;
         int actionTypeNumber = 0;
         for (int jitaiNum : jitaiGroups.values()) {
             actionTypeNumber += jitaiNum;
@@ -157,7 +161,7 @@ public class JsEnvironment extends SelfManagementEnvironment {
         for (int i = 1; i <= actionTypeNumber; i++) {
             salienceReminders.put(i, 1.0);
         }
-        windowSize = 15;
+
         accessibility = habitStrength = commitmentIntensity;
         initiateBehaviorList();
 
@@ -169,7 +173,7 @@ public class JsEnvironment extends SelfManagementEnvironment {
         this.simulatedWorld = simulatedWorld;
     }
 
-    private void simulateStep(GroundedAction action) {
+    private void simulateHabitModelStep(GroundedAction action) {
         ActionRestrictingState currentState = (ActionRestrictingState) getCurrentObservation();
         int jitaiGroup = currentState.getExpectedJitaiType() == ActionPlan.JitaiNature.REMINDER ? 1 : 2;
         int jitaiType = 0;
@@ -181,10 +185,10 @@ public class JsEnvironment extends SelfManagementEnvironment {
             jitaiType = 3;
         }
 
-        simulateStep(jitaiGroup, jitaiType);
+        simulateHabitModelStep(jitaiGroup, jitaiType);
     }
 
-    private void simulateStep(int jitaiGroup, int jitaiType) {
+    private void simulateHabitModelStep(int jitaiGroup, int jitaiType) {
         selectedJitaiGroup = jitaiGroup;
         selectedJitaiType = jitaiType;
 
@@ -258,7 +262,7 @@ public class JsEnvironment extends SelfManagementEnvironment {
         double accDecay = accessibility * ADP;
         double accGainBeh = 0;
         double accGainEvent = 0;
-        if (day == 0 && dailyStep == 0) {
+        if (day == 0 && stepCount == 0) {
             accGainEvent = AGC_EVENT * (1.0 - AGC_EVENT) * WCI_EVENT * CI;
         }
         if (behaviorPerformed) {
@@ -345,14 +349,23 @@ public class JsEnvironment extends SelfManagementEnvironment {
 //            example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 //            example.setVisible(true);
 //        });
-        SwingUtilities.invokeLater(() -> {
+        //SwingUtilities.invokeLater(() -> {
             AccessibilityThresholdChart example = new AccessibilityThresholdChart("Acc / Thresh");
             example.showChart(accessibilities, thresholds, behaviorFrequencies, habitStrengths);
             example.setSize(800, 400);
             example.setLocationRelativeTo(null);
             example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             example.setVisible(true);
-        });
+
+            // reset visualization data
+            behaviors = new ArrayList<>();
+            remembers = new ArrayList<>();
+            accessibilities = new ArrayList<>();
+            thresholds = new ArrayList<>();
+            habitStrengths = new ArrayList<>();
+            behaviorFrequencies = new ArrayList<>();
+            jitais = new ArrayList<>();
+        //});
     }
 
     private void initiateBehaviorList() {
@@ -418,6 +431,7 @@ public class JsEnvironment extends SelfManagementEnvironment {
     @Override
     public State getNextState(GroundedAction action) {
         lastAction = action;
+        reactedToJitai = this.simulatedWorld.isReactedToJitai();
         State nextState;
 
         if (action.action instanceof Jitai1Action || action.action instanceof Jitai3Action || action.action instanceof Jitai3Action) {
@@ -428,23 +442,29 @@ public class JsEnvironment extends SelfManagementEnvironment {
         // only simulate the habit model when the environment is in a reminder state
         ActionRestrictingState currentState = (ActionRestrictingState) getCurrentObservation();
         if (currentState.getExpectedJitaiType() == ActionPlan.JitaiNature.REMINDER) {
-            simulateStep(action);
+            simulateHabitModelStep(action);
             reminderCount = 0;
         }
 
-        SimulatedWorld.DynamicSimulatedWorldContext simulatedWorldContext = this.simulatedWorld.getLastContextForJitai(stepCount);
-        ActionPlan.JitaiNature expectedJitai = simulatedWorldContext.getExpectedJitaiNature();
-
-        nextState = new ActionRestrictingState(expectedJitai);
-        nextState.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
-        ObjectInstance o = nextState.getObjectsOfClass(CLASS_STATE).get(0);
-        o.setValue(ATT_HABIT_STRENGTH, habitStrength);
-        o.setValue(ATT_BEHAVIOR_FREQUENCY, behaviorFrequency);
-        o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
-        o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
-        o.setValue(ATT_PART_OF_DAY, simulatedWorldContext.getCurrentDayPart());
-
         stepCount++;
+
+        if(stepCount < 6) {
+            SimulatedWorld.DynamicSimulatedWorldContext simulatedWorldContext = this.simulatedWorld.getLastContextForJitai(stepCount);
+            ActionPlan.JitaiNature expectedJitai = simulatedWorldContext.getExpectedJitaiNature();
+
+            nextState = new ActionRestrictingState(expectedJitai);
+            nextState.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
+            ObjectInstance o = nextState.getObjectsOfClass(CLASS_STATE).get(0);
+            o.setValue(ATT_HABIT_STRENGTH, (int) (habitStrength * 10));
+            o.setValue(ATT_BEHAVIOR_FREQUENCY, (int) (behaviorFrequency * 10));
+            o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
+            o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
+            o.setValue(ATT_PART_OF_DAY, simulatedWorldContext.getCurrentDayPart());
+
+        } else {
+            nextState = new TerminalState();
+        }
+
         return nextState;
     }
 
@@ -469,19 +489,30 @@ public class JsEnvironment extends SelfManagementEnvironment {
 
     @Override
     public void resetEnvironment() {
-        log("in js reset", true);
         stepCount = 0;
         super.resetEnvironment();
     }
 
     public void initEpisode() {
-        log("in js init", true);
         State s = getStateFromCurrentContext();
         setCurStateTo(s);
     }
 
+    public void endTrial() {
+        //drawCharts();
+        setInitialValues();
+    }
+
     public GroundedAction getLastAction() {
         return lastAction;
+    }
+
+    public boolean isReactedToJitai() {
+        return reactedToJitai;
+    }
+
+    public boolean isBehaviorPerformed() {
+        return behaviorPerformed;
     }
 
     private void log(String msg) {

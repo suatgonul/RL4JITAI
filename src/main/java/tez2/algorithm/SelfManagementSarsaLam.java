@@ -134,7 +134,9 @@ public class SelfManagementSarsaLam extends SarsaLam {
 
         }
 
-        ea.jsEpisodeAnalysis = ((SimulatedWorld) ((EnvironmentServer) env).getEnvironmentDelegate()).getJsEpisodeAnalysis();
+        if(ea instanceof OmiEpisodeAnalysis) {
+            ea.jsEpisodeAnalysis = ((SimulatedWorld) ((EnvironmentServer) env).getEnvironmentDelegate()).getJsEpisodeAnalysis();
+        }
 
         if (episodeHistory.size() >= numEpisodesToStore) {
             episodeHistory.poll();

@@ -246,87 +246,19 @@ public class StaticSelfManagementExperimenter {
             long episodeStarttime = System.currentTimeMillis();
             OmiEpisodeAnalysis ea = (OmiEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
             ea.setTrialNo(trialNo);
-            if(i < 10) {
-//                ea.jsEpisodeAnalysis.printEpisodeAnalysis();
+            if(i < 7) {
+                ea.jsEpisodeAnalysis.printEpisodeAnalysis();
             }
             episodeAnalysisList.add(ea);
             //if (agentFactory.getAgentName().contains("colla")) {
                 elapsedTrialTime += (System.currentTimeMillis()-episodeStarttime);
-//                System.out.println("Episode: " + (i + 1) + " completed in " + (System.currentTimeMillis()-episodeStarttime) + " milliseconds");
-//                System.out.println("Elapsed trial time: " + elapsedTrialTime + " milliseconds");
+                System.out.println("Episode: " + (i + 1) + " completed in " + (System.currentTimeMillis()-episodeStarttime) + " milliseconds");
+                System.out.println("Elapsed trial time: " + elapsedTrialTime + " milliseconds");
             //}
 
             this.plotter.populateAgentDatasets(ea);
             this.plotter.endEpisode();
             this.environmentSever.resetEnvironment();
-
-            /*if (ea instanceof SelfManagementEpisodeAnalysis) {
-                if (i < 50 || i > this.trialLength - 50) {
-                    //System.out.println("Episode " + (i + 1));
-                    reporter.report("Episode " + (i + 1));
-                    for (int j = 0; j < ea.rewardSequence.size(); j++) {
-                        sb = new StringBuilder();
-
-                        // Context details from the state object
-                        ObjectInstance o = ea.stateSequence.get(j).getObjectsOfClass(CLASS_STATE).get(0);
-                        Location location = Location.values()[o.getIntValForAttribute(ATT_LOCATION)];
-                        DayType dayType = DayType.values()[o.getIntValForAttribute(ATT_DAY_TYPE)];
-
-                        // Context details from the context object
-                        Context context = ea.userContexts.get(j);
-                        Location location_c = context.getLocation();
-                        PhoneUsage phoneUsage_c = context.getPhoneUsage();
-                        EmotionalStatus emotionalStatus_c = context.getEmotionalStatus();
-                        PhysicalActivity physicalActivity_c = context.getPhysicalActivity();
-
-                        //if (hourOfDay > 16) {
-
-                        SelfManagementDomain smDomain = ((SimulatedWorld) environmentSever.getEnvironmentDelegate()).getDomain();
-                        SelfManagementDomain.DomainComplexity complexity = smDomain.getComplexity();
-
-                        if (complexity == SelfManagementDomain.DomainComplexity.EASY) {
-                            int hourOfDay = o.getIntValForAttribute(ATT_HOUR_OF_DAY);
-                            System.out.print("(" + hourOfDay + ", " + location + ", " + dayType + ") ");
-
-                        } else if (complexity == SelfManagementDomain.DomainComplexity.MEDIUM) {
-                            String quarterHourOfDay = o.getStringValForAttribute(ATT_QUARTER_HOUR_OF_DAY);
-                            PhysicalActivity activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)];
-                            System.out.print("(" + quarterHourOfDay + ", " + activity + ", " + location + ", " + dayType + ") ");
-
-                        } else if (complexity == SelfManagementDomain.DomainComplexity.HARD) {
-                            String activityTime = o.getStringValForAttribute(ATT_ACTIVITY_TIME);
-                            PhysicalActivity activity = PhysicalActivity.values()[o.getIntValForAttribute(ATT_ACTIVITY)];
-                            PhoneUsage phoneUsage = PhoneUsage.values()[o.getIntValForAttribute(ATT_PHONE_USAGE)];
-                            EmotionalStatus emotionalStatus = EmotionalStatus.values()[o.getIntValForAttribute(ATT_EMOTIONAL_STATUS)];
-                            //System.out.print("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + stateOfMind + ", " + emotionalStatus + ") ");
-                            sb.append("(" + activityTime + ", " + location + ", " + activity + ", " + dayType + ", " + emotionalStatus + ") ");
-                        }
-
-                        //System.out.print("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + stateOfMind_c + ", " + emotionalStatus_c + ") ");
-                        sb.append("(" + location_c + ", " + physicalActivity_c + ", " + phoneUsage_c + ", " + emotionalStatus_c + ") ");
-                        int actionNo;
-                        for (QValue qv : ea.qValuesForStates.get(j)) {
-                            actionNo = qv.a.actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
-
-                            //System.out.print(actionNo + ": " + qValPrecision.format(qv.q) + ", ");
-                            sb.append(actionNo + ": " + qValPrecision.format(qv.q) + ", ");
-                        }
-                        actionNo = ea.actionSequence.get(j).actionName().equals(ACTION_INT_DELIVERY) ? 1 : 0;
-                        //System.out.print(") A:" + actionNo + ", R:" + ea.rewardSequence.get(j));
-                        sb.append(") A:" + actionNo + ", R:" + ea.rewardSequence.get(j));
-                        if (ea instanceof SelfManagementEligibilityEpisodeAnalysis) {
-                            //System.out.println(ea.userReactions.get(j) == true ? " (X)" : "" + " Inter: " + ((SelfManagementEligibilityEpisodeAnalysis) ea).interferenceList.get(j));
-                            String interference = ((SelfManagementEligibilityEpisodeAnalysis) ea).interferenceList.get(j);
-                            SelfManagementAction.SelectedBy selectedBy = ((SelfManagementEligibilityEpisodeAnalysis) ea).selectedByList.get(j);
-                            sb.append(ea.userReactions.get(j) == true ? " (X) Inter: " + interference + " Selected by:" + selectedBy : "" + " Inter: " + interference + " Selected by: " + selectedBy);
-                        } else {
-                            //System.out.println(ea.userReactions.get(j) == true ? " (X)" : "");
-                            sb.append(ea.userReactions.get(j) == true ? " (X)" : "");
-                        }
-                        reporter.report(sb.toString());
-                    }
-                }
-            }*/
         }
         ((SimulatedWorld) this.environmentSever.getEnvironmentDelegate()).endTrial();
         System.out.println("Trial completed in " + (System.currentTimeMillis() - trialStartTime) + " milliseconds");

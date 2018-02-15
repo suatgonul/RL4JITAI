@@ -13,7 +13,6 @@ import tez2.algorithm.collaborative_learning.SparkStateClassifier;
 import tez2.algorithm.*;
 import tez2.algorithm.jitai_selection.JsQLearning;
 import tez2.domain.DayTerminalFunction;
-import tez2.domain.DomainConfig;
 import tez2.domain.js.JsDomainGenerator;
 import tez2.domain.omi.OmiDomainGenerator;
 import tez2.domain.js.JsRewardFunction;
@@ -72,7 +71,7 @@ public class Experiment {
         sparkClassifier.setDomain(domain);
 
         StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                100, 100, omiLearningCases);
+                10, 100, omiLearningCases);
 
 //        exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
 //                CUMULATIVE_REWARD_PER_EPISODE,
@@ -83,7 +82,7 @@ public class Experiment {
 //        );
         exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                 //RATIO_JITAIS_PER_TIME_OF_DAY,
-                AVG_JITAIS_PER_EPISODE
+                AVG_TOTAL_JITAIS_PER_EPISODE
         );
 
         //start experiment

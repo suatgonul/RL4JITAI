@@ -16,7 +16,7 @@ public enum SelfManagementPerformanceMetric {
 
     // metrics added for thresholds in the mi paper
     RATIO_JITAIS_PER_TIME_OF_DAY,
-    AVG_JITAIS_PER_EPISODE,
+    AVG_TOTAL_JITAIS_PER_EPISODE,
     RATIO_JITAIS_PER_HABIT_STRENGTH,
     RATIO_JITAIS_PER_STATE_PARAM
 }

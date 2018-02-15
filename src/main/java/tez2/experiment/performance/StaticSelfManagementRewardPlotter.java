@@ -8,9 +8,13 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.DefaultDrawingSupplier;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.YIntervalSeries;
 import org.jfree.data.xy.YIntervalSeriesCollection;
 import tez2.domain.DomainConfig;
@@ -218,8 +222,9 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
                 // metrics added for thresholds in the mi paper
             } else if (m == SelfManagementPerformanceMetric.RATIO_JITAIS_PER_TIME_OF_DAY) {
                 this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Ratio of JITAIs per Hour of Day", "Hour", "JITAI Ratio", allAgents_ratioOfJitaisPerTimeOfDay);
-            } else if (m == SelfManagementPerformanceMetric.AVG_JITAIS_PER_EPISODE) {
-                this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Average JITAIs per Episode", "Episode", "JITAI Count", allAgents_totalJitaisPerEpisode);
+            } else if (m == SelfManagementPerformanceMetric.AVG_TOTAL_JITAIS_PER_EPISODE) {
+                //this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Average JITAIs per Episode", "Episode", "JITAI Count", allAgents_totalJitaisPerEpisode);
+                this.insertJitaiCountChart(plotContainer, c, columns, chartWidth, chartHeight, "Average JITAIs per Episode", "Episode", "JITAI Count", allAgents_totalJitaisPerEpisode);
             } else if (m == SelfManagementPerformanceMetric.RATIO_JITAIS_PER_HABIT_STRENGTH) {
                 this.insertChart(plotContainer, c, columns, chartWidth, chartHeight, "Ratio of JITAIs per Habit Strenth", "Habit Strength", "JITAI Ratio", allAgents_ratioOfJitaisPerHabitStrength);
             } else if (m == SelfManagementPerformanceMetric.RATIO_JITAIS_PER_STATE_PARAM) {
@@ -362,6 +367,45 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             plotContainer.add(chartPanelCSRAvg, c);
             this.updateGBConstraint(c, columns);
         }
+    }
+
+    private void insertJitaiCountChart(Container plotContainer, GridBagConstraints c, int columns, int chartWidth, int chartHeight,
+                                       String title, String xlab, String ylab, YIntervalSeriesCollection averageCollection) {
+        final JFreeChart chartCSRAvg = ChartFactory.createXYLineChart("Average " + title, xlab, ylab, averageCollection);
+
+        XYSeries series2 = new XYSeries("series2");
+        series2.add(10, 2);
+        series2.add(30, 4);
+        series2.add(60, 5);
+
+        XYSeriesCollection dataset2 = new XYSeriesCollection();
+        dataset2.addSeries(series2);
+
+        //construct the plot
+        XYPlot plot = new XYPlot();
+
+        plot.setDataset(0, allAgents_totalJitaisPerEpisode);
+        plot.setDataset(1, dataset2);
+//
+        //customize the plot with renderers and axis
+        plot.setRenderer(0, this.createDeviationRenderer());//use default fill paint for first series
+        plot.setRenderer(1, new XYLineAndShapeRenderer());
+        plot.setRangeAxis(0, new NumberAxis("Series 1"));
+        plot.setRangeAxis(1, new NumberAxis("Series 2"));
+        plot.setDomainAxis(new NumberAxis("X Axis"));
+
+        //Map the data to the appropriate axis
+        plot.mapDatasetToRangeAxis(0, 0);
+        plot.mapDatasetToRangeAxis(1, 1);
+
+        //generate the chart
+        JFreeChart chart = new JFreeChart("MyPlot", Font.getFont(Font.MONOSPACED), plot, true);
+        chart.setBackgroundPaint(Color.WHITE);
+        JPanel chartPanelCSRAvg = new ChartPanel(chart);
+
+        chartPanelCSRAvg.setPreferredSize(new Dimension(chartWidth, chartHeight));
+        plotContainer.add(chartPanelCSRAvg, c);
+        this.updateGBConstraint(c, columns);
     }
 
 
@@ -518,7 +562,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
 
         // MI Paper-related additions
         int acc = 0;
-        if (this.metricsSet.contains(SelfManagementPerformanceMetric.AVG_JITAIS_PER_EPISODE)) {
+        if (this.metricsSet.contains(SelfManagementPerformanceMetric.AVG_TOTAL_JITAIS_PER_EPISODE)) {
             for (int i = 0; i < n[1]; i++) {
                 DescriptiveStatistics avgi = new DescriptiveStatistics();
                 for (Trial t : trials) {

@@ -499,7 +499,7 @@ public class JsEnvironment extends SelfManagementEnvironment {
     }
 
     public void endTrial() {
-        //drawCharts();
+        drawCharts();
         setInitialValues();
     }
 

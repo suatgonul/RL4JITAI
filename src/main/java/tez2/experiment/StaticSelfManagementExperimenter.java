@@ -17,6 +17,7 @@ import tez2.experiment.performance.*;
 import tez2.experiment.performance.visualization.ReactionHitRatioVisualizer;
 import tez2.experiment.performance.visualization.ReactionNumbersVisualizer;
 import tez2.experiment.performance.visualization.Visualizer;
+import tez2.persona.PersonaConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -268,15 +269,6 @@ public class StaticSelfManagementExperimenter {
 
         reporter.finalizeReporting();
 
-        //TODO do it properly
-        /*VisualizationMetadata visualizerMetadata = new VisualizationMetadata();
-        visualizerMetadata
-                .setMetadataForVisualizer(ReactionHitRatioVisualizer.class, Visualizer.METADATA_LEARNING_ALGORITHM, agentFactory.getAgentName())
-                .setMetadataForVisualizer(ReactionHitRatioVisualizer.class, Visualizer.METADATA_POLICY, agent);
-        Visualizer visualizer = new ReactionHitRatioVisualizer(visualizerMetadata.getVisualizerMetadata(ReactionHitRatioVisualizer.class));
-        visualizer.createRewardGraph(episodeAnalysisList);
-        visualizer = new ReactionNumbersVisualizer(visualizerMetadata.getVisualizerMetadata(ReactionNumbersVisualizer.class));
-        visualizer.createRewardGraph(episodeAnalysisList);*/
         this.plotter.endTrial();
 
     }
@@ -310,5 +302,9 @@ public class StaticSelfManagementExperimenter {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public StaticSelfManagementRewardPlotter getPlotterForExperiment() {
+        return plotter;
     }
 }

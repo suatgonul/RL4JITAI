@@ -15,7 +15,7 @@ public class PersonaConfig {
     private List<Integer> actionPlanRanges;
 
     public static void main(String[] args) {
-        List<PersonaConfig> configs = getConfigs("D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob");
+        List<PersonaConfig> configs = getConfigs("D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob");
         System.out.println(configs);
     }
 
@@ -42,7 +42,7 @@ public class PersonaConfig {
             String[] jitaiTypes = jitaiTypesList[i].split(",");
             config.jitaiGroups = new LinkedHashMap();
             for (int j = 0; j < jitaiTypesList.length; j++) {
-                config.jitaiGroups.put(i + 1, Integer.parseInt(jitaiTypes[j]));
+                config.jitaiGroups.put(j + 1, Integer.parseInt(jitaiTypes[j]));
             }
 
             // commitment intensity
@@ -57,7 +57,7 @@ public class PersonaConfig {
             config.jitaiPreferences = new HashMap();
             String[] preferenceListList = prop.getProperty("reaction_to_jitais").split(":");
             String[] preferenceList = preferenceListList[i].split(",");
-            for (int j = 0; j < preferenceListList.length; j++) {
+            for (int j = 0; j < preferenceList.length; j++) {
                 config.jitaiPreferences.put("JITAI_" + (j + 1), Double.parseDouble(preferenceList[j]));
             }
 
@@ -71,5 +71,25 @@ public class PersonaConfig {
         }
 
         return configs;
+    }
+
+    public LinkedHashMap<Integer, Integer> getJitaiGroups() {
+        return jitaiGroups;
+    }
+
+    public double getCommitmentIntensity() {
+        return commitmentIntensity;
+    }
+
+    public double getBehaviorFrequency() {
+        return behaviorFrequency;
+    }
+
+    public Map<String, Double> getJitaiPreferences() {
+        return jitaiPreferences;
+    }
+
+    public List<Integer> getActionPlanRanges() {
+        return actionPlanRanges;
     }
 }

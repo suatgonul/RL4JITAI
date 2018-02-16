@@ -9,21 +9,24 @@ import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
-import tez2.algorithm.collaborative_learning.SparkStateClassifier;
 import tez2.algorithm.*;
+import tez2.algorithm.collaborative_learning.SparkStateClassifier;
 import tez2.algorithm.jitai_selection.JsQLearning;
 import tez2.domain.DayTerminalFunction;
 import tez2.domain.js.JsDomainGenerator;
-import tez2.domain.omi.OmiDomainGenerator;
 import tez2.domain.js.JsRewardFunction;
+import tez2.domain.omi.OmiDomainGenerator;
 import tez2.domain.omi.OmiRewardFunction;
 import tez2.environment.simulator.JsEnvironment;
 import tez2.environment.simulator.SimulatedWorld;
+import tez2.experiment.performance.StaticSelfManagementRewardPlotter;
+import tez2.experiment.performance.visualization.EpisodeJitaiCountHabitStrengthPlotter;
+import tez2.persona.PersonaConfig;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static tez2.experiment.performance.SelfManagementPerformanceMetric.*;
+import static tez2.experiment.performance.SelfManagementPerformanceMetric.AVG_TOTAL_JITAIS_PER_EPISODE;
 
 /**
  * Created by suatgonul on 12/22/2016.
@@ -42,15 +45,17 @@ public class Experiment {
     }
 
     private void runExperiment() {
-        String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
-        //String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        //String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
+
+        List<PersonaConfig> configs = PersonaConfig.getConfigs(personaFolder);
 
         // jitai selection related objects
         TerminalFunction tf = new DayTerminalFunction();
         RewardFunction rf = new JsRewardFunction();
         JsDomainGenerator domGen = new JsDomainGenerator(null);
         Domain jsDomain = domGen.generateDomain();
-        JsEnvironment jitaiSelectionEnvironment = new JsEnvironment(jsDomain, rf, tf, 60, personaFolder + "/config");
+        JsEnvironment jitaiSelectionEnvironment = new JsEnvironment(jsDomain, rf, tf, 60);
         domGen.setEnvironment(jitaiSelectionEnvironment);
         final SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
 
@@ -80,13 +85,22 @@ public class Experiment {
 //                REWARD_PER_EPISODE,
 //                USER_REACTION_PER_EPISODE
 //        );
-        exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
-                //RATIO_JITAIS_PER_TIME_OF_DAY,
-                AVG_TOTAL_JITAIS_PER_EPISODE
-        );
 
         //start experiment
-        exp.startExperiment();
+        List<StaticSelfManagementRewardPlotter> experimentResultsForPersonas = new ArrayList<>();
+        for(PersonaConfig config : configs) {
+            ((SimulatedWorld) environment).setConfig(config);
+            exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
+                    //RATIO_JITAIS_PER_TIME_OF_DAY,
+                    AVG_TOTAL_JITAIS_PER_EPISODE
+            );
+            exp.startExperiment();
+            System.out.println(exp.plotter.allAgents_totalJitaisPerEpisode.getItemCount(0));
+            experimentResultsForPersonas.add(exp.plotter);
+        }
+
+        EpisodeJitaiCountHabitStrengthPlotter plotter = new EpisodeJitaiCountHabitStrengthPlotter();
+        plotter.drawCharts(experimentResultsForPersonas);
     }
 
     private LearningAgentFactory[] getJsLearningAlternatives(final Domain domain) {

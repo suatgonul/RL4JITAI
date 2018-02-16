@@ -20,6 +20,7 @@ import tez2.environment.SelfManagementEnvironment;
 import tez2.environment.simulator.habit.HabitGainRatio;
 import tez2.environment.simulator.habit.visualization.AccessibilityThresholdChart;
 import tez2.persona.ActionPlan;
+import tez2.persona.PersonaConfig;
 
 import javax.swing.*;
 import java.io.FileInputStream;
@@ -101,9 +102,9 @@ public class JsEnvironment extends SelfManagementEnvironment {
     private List<Double> behaviorFrequencies = new ArrayList<>();
     private List<Integer> jitais = new ArrayList<>();
 
-    private String configFilePath;
+    private PersonaConfig config;
 
-    public JsEnvironment(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency, String configFilePath) {
+    public JsEnvironment(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency) {
         super(domain, rf, tf, stateChangeFrequency);
 
         ADP = 0.641;
@@ -128,27 +129,18 @@ public class JsEnvironment extends SelfManagementEnvironment {
         WH_AT = 1.0;
 
         windowSize = 15;
-        this.configFilePath = configFilePath;
+    }
 
+    public void setConfig(PersonaConfig config) {
+        this.config = config;
         setInitialValues();
     }
 
     public void setInitialValues() {
-        Properties prop = new Properties();
-        try {
-            prop.load(new FileInputStream(configFilePath));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read config file at: " + configFilePath);
-        }
 
-        String[] jitaiTypes = prop.getProperty("jitai_types").split(",");
-        this.jitaiGroups = new LinkedHashMap();
-        for (int i = 0; i < jitaiTypes.length; i++) {
-            jitaiGroups.put(i + 1, Integer.parseInt(jitaiTypes[i]));
-        }
-
-        double behaviorFrequency = Double.parseDouble(prop.getProperty("behavior_frequency"));
-        double commitmentIntensity = Double.parseDouble(prop.getProperty("commitment_intensity"));
+        this.jitaiGroups = config.getJitaiGroups();
+        double behaviorFrequency = config.getBehaviorFrequency();
+        double commitmentIntensity = config.getCommitmentIntensity();
 
 
         // initial values
@@ -499,7 +491,7 @@ public class JsEnvironment extends SelfManagementEnvironment {
     }
 
     public void endTrial() {
-        drawCharts();
+        //drawCharts();
         setInitialValues();
     }
 

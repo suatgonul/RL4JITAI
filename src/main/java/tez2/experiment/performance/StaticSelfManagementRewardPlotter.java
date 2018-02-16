@@ -66,47 +66,47 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
     /**
      * All agent plot series for the average of all trial's cumulative reward per step
      */
-    protected YIntervalSeriesCollection allAgents_cumulativeRewardInAllStepsAvg;
+    public YIntervalSeriesCollection allAgents_cumulativeRewardInAllStepsAvg;
 
     /**
      * All agent plot series for the average of all trial's cumulative reward per episode
      */
-    protected YIntervalSeriesCollection allAgents_cumulativeRewardInAllEpisodesAvg;
+    public YIntervalSeriesCollection allAgents_cumulativeRewardInAllEpisodesAvg;
 
     /**
      * All agent plot series for the average of all trial's average reward per episode
      */
-    protected YIntervalSeriesCollection allAgents_averageRewardInEachEpisodeAvg;
+    public YIntervalSeriesCollection allAgents_averageRewardInEachEpisodeAvg;
 
     /**
      * All agent plot series for the average of all trial's median reward per episode
      */
-    protected YIntervalSeriesCollection allAgents_medianRewardInEachEpisodeAvg;
+    public YIntervalSeriesCollection allAgents_medianRewardInEachEpisodeAvg;
 
     /**
      * All agent plot series for the average of all trial's cumulative steps per episode
      */
-    protected YIntervalSeriesCollection allAgents_cumulativeStepsInAllEpisodesAvg;
+    public YIntervalSeriesCollection allAgents_cumulativeStepsInAllEpisodesAvg;
 
     /**
      * All agent plot series for the average of all trial's steps per episode
      */
-    protected YIntervalSeriesCollection allAgents_stepsInEachEpisodeAvg;
+    public YIntervalSeriesCollection allAgents_stepsInEachEpisodeAvg;
 
-    protected YIntervalSeriesCollection allAgents_rewardInEachEpisodeAvg;
-    protected YIntervalSeriesCollection allAgents_reactionInEachEpisodeAvg;
-    protected YIntervalSeriesCollection allAgents_cumulativeReactionInAllEpisodesAvg;
+    public YIntervalSeriesCollection allAgents_rewardInEachEpisodeAvg;
+    public YIntervalSeriesCollection allAgents_reactionInEachEpisodeAvg;
+    public YIntervalSeriesCollection allAgents_cumulativeReactionInAllEpisodesAvg;
 
     /**
      * MI Paper related collections
      */
-    protected YIntervalSeriesCollection allAgents_ratioOfJitaisPerTimeOfDay; //Hypothesis 3
-    protected YIntervalSeriesCollection allAgents_totalJitaisPerEpisode; //Hypothesis 2 and 5
-    protected YIntervalSeriesCollection allAgents_ratioOfJitaisPerHabitStrength; // Hypothesis 1
-    protected Map<String, Map<PhysicalActivity, Double>> allAgents_ratioOfJitaisPhysicalActivity; // Hypothesis 4
-    protected Map<String, Map<PhoneUsage, Double>> allAgents_ratioOfJitaisPhoneUsage;
-    protected Map<String, Map<Location, Double>> allAgents_ratioOfJitaisLocation;
-    protected Map<String, Map<EmotionalStatus, Double>> allAgents_ratioOfJitaisEmotionalStatus;
+    public YIntervalSeriesCollection allAgents_ratioOfJitaisPerTimeOfDay; //Hypothesis 3
+    public YIntervalSeriesCollection allAgents_totalJitaisPerEpisode; //Hypothesis 2 and 5
+    public YIntervalSeriesCollection allAgents_ratioOfJitaisPerHabitStrength; // Hypothesis 1
+    public Map<String, Map<PhysicalActivity, Double>> allAgents_ratioOfJitaisPhysicalActivity; // Hypothesis 4
+    public Map<String, Map<PhoneUsage, Double>> allAgents_ratioOfJitaisPhoneUsage;
+    public Map<String, Map<Location, Double>> allAgents_ratioOfJitaisLocation;
+    public Map<String, Map<EmotionalStatus, Double>> allAgents_ratioOfJitaisEmotionalStatus;
 
 
     /**
@@ -574,6 +574,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
                 double[] ci = getCI(avgi, this.significance);
                 curAgentDatasets.agentDataset_jitaiCountEachEpisodeSeries.add(i, ci[0], ci[1], ci[2]);
             }
+            System.out.println(curAgentDatasets.agentDataset_jitaiCountEachEpisodeSeries.getItemCount());
         }
 
         curAgentDatasets.fireAllAverages();

@@ -23,6 +23,7 @@ import tez2.environment.context.*;
 import tez2.experiment.performance.js.JsEpisodeAnalysis;
 import tez2.persona.ActionPlan;
 import tez2.persona.Activity;
+import tez2.persona.PersonaConfig;
 import tez2.persona.TimePlan;
 import tez2.persona.parser.PersonaParser;
 import tez2.persona.parser.PersonaParserException;
@@ -52,6 +53,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     private Activity previousActivity;
 
     private String personaFolder;
+    private PersonaConfig config;
 
     // jitai selection related objects
     private boolean willRemember;
@@ -76,8 +78,13 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         this.jitaiSelectionEnvironment = jitaiSelectionEnvironment;
         initEpisode();
         this.curState = stateGenerator.generateState();
+    }
+
+    public void setConfig(PersonaConfig config) {
+        this.config = config;
+        this.jitaiPreferences = config.getJitaiPreferences();
+        this.jitaiSelectionEnvironment.setConfig(config);
         initActionPlan();
-        initJitaiPreferences(personaFolder);
     }
 
     /**
@@ -360,39 +367,17 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     }
 
     private void initActionPlan() {
-        Properties prop = new Properties();
-        try {
-            prop.load(new FileInputStream(personaFolder + "/config"));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read config file");
-        }
 
         actionPlan = new ActionPlan();
         actionPlanRanges = new ArrayList<>();
         LocalTime time = new LocalTime().withMillisOfDay(21600000); // 6 o'clock
-        String[] ranges = prop.getProperty("action_plan_ranges").split(",");
+        List<Integer> ranges = config.getActionPlanRanges();
 
-        for(int i=0; i<ranges.length; i++) {
-            String rangeStr = ranges[i];
-            actionPlanRanges.add(Integer.parseInt(rangeStr));
+        for(int i=0; i<ranges.size(); i++) {
+            actionPlanRanges.add(ranges.get(i));
             ActionPlan.JitaiTimeRange tr = new ActionPlan.JitaiTimeRange(time, time.plusHours(actionPlanRanges.get(i)), i % 2 == 0 ? ActionPlan.JitaiNature.REMINDER : ActionPlan.JitaiNature.MOTIVATION);
             actionPlan.addJITAITimeRange(tr);
-            time = time.plusHours(Integer.parseInt(rangeStr));
-        }
-    }
-
-    private void initJitaiPreferences(String personaFolder) {
-        Properties prop = new Properties();
-        try {
-            prop.load(new FileInputStream(personaFolder + "/config"));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read config file");
-        }
-
-        String[] preferences = prop.getProperty("reaction_to_jitais").split(",");
-        jitaiPreferences = new HashMap<>();
-        for(int i = 0; i<preferences.length; i++) {
-            jitaiPreferences.put("JITAI_" + (i+1), Double.parseDouble(preferences[i]));
+            time = time.plusHours(ranges.get(i));
         }
     }
 

@@ -5,31 +5,41 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.xy.YIntervalSeries;
 import org.jfree.data.xy.YIntervalSeriesCollection;
+import tez2.experiment.performance.StaticSelfManagementRewardPlotter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Created by suat on 15-Feb-18.
  */
 public class EpisodeJitaiCountHabitStrengthPlotter extends JFrame {
-    YIntervalSeriesCollection jitaiCountsForPersonas;
 
-    public void setJitaiCountsForPersonas() {
-        this.jitaiCountsForPersonas = jitaiCountsForPersonas;
+    public void drawCharts(List<StaticSelfManagementRewardPlotter> datasets) {
+        // first merge the plotter data
+        YIntervalSeriesCollection firstSeries = datasets.get(0).allAgents_totalJitaisPerEpisode;
+        firstSeries.addSeries(datasets.get(1).allAgents_totalJitaisPerEpisode.getSeries(0));
+        firstSeries.setNotify(true);
+        drawChart(firstSeries);
+        for(int i=0; i<firstSeries.getSeriesCount(); i++) {
+            YIntervalSeries series = firstSeries.getSeries(i);
+            System.out.println("Series " + i + " count: " + series.getItemCount());
+            for(int j=0; j<series.getItemCount(); j++) {
+                System.out.println("x: " + series.getX(j) + ", y: " + series.getYValue(j));
+            }
+        }
     }
 
-    public void drawChart() {
+    public void drawChart(YIntervalSeriesCollection jitaiCountsForPersonas) {
         XYSeries series2 = new XYSeries("series2");
-        series2.add(1000, 1000);
-        series2.add(1150, 1150);
-        series2.add(1250, 1250);
+        series2.add(10, 2);
+        series2.add(30, 4);
+        series2.add(60, 5);
 
         XYSeriesCollection dataset2 = new XYSeriesCollection();
         dataset2.addSeries(series2);

@@ -15,8 +15,7 @@ public enum SelfManagementPerformanceMetric {
     CUMULATIVE_REACTION,
 
     // metrics added for thresholds in the mi paper
-    RATIO_JITAIS_PER_TIME_OF_DAY,
     AVG_TOTAL_JITAIS_PER_EPISODE,
-    RATIO_JITAIS_PER_HABIT_STRENGTH,
+    TOTAL_NUMBER_OF_JITAI_TYPES,
     RATIO_JITAIS_PER_STATE_PARAM
 }

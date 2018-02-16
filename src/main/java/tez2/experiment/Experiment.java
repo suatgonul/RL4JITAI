@@ -21,12 +21,14 @@ import tez2.environment.simulator.JsEnvironment;
 import tez2.environment.simulator.SimulatedWorld;
 import tez2.experiment.performance.StaticSelfManagementRewardPlotter;
 import tez2.experiment.performance.visualization.EpisodeJitaiCountHabitStrengthPlotter;
+import tez2.experiment.performance.visualization.JitaiTypeCountPlotter;
 import tez2.persona.PersonaConfig;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static tez2.experiment.performance.SelfManagementPerformanceMetric.AVG_TOTAL_JITAIS_PER_EPISODE;
+import static tez2.experiment.performance.SelfManagementPerformanceMetric.TOTAL_NUMBER_OF_JITAI_TYPES;
 
 /**
  * Created by suatgonul on 12/22/2016.
@@ -45,8 +47,8 @@ public class Experiment {
     }
 
     private void runExperiment() {
-        //String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
-        String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        //String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
 
         List<PersonaConfig> configs = PersonaConfig.getConfigs(personaFolder);
 
@@ -75,8 +77,6 @@ public class Experiment {
         SparkStateClassifier sparkClassifier = SparkStateClassifier.getInstance();
         sparkClassifier.setDomain(domain);
 
-        StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                10, 100, omiLearningCases);
 
 //        exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
 //                CUMULATIVE_REWARD_PER_EPISODE,
@@ -89,9 +89,12 @@ public class Experiment {
         //start experiment
         List<StaticSelfManagementRewardPlotter> experimentResultsForPersonas = new ArrayList<>();
         for(PersonaConfig config : configs) {
+            StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
+                    10, 10, omiLearningCases);
             ((SimulatedWorld) environment).setConfig(config);
             exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                     //RATIO_JITAIS_PER_TIME_OF_DAY,
+                    TOTAL_NUMBER_OF_JITAI_TYPES,
                     AVG_TOTAL_JITAIS_PER_EPISODE
             );
             exp.startExperiment();
@@ -100,7 +103,9 @@ public class Experiment {
         }
 
         EpisodeJitaiCountHabitStrengthPlotter plotter = new EpisodeJitaiCountHabitStrengthPlotter();
-        plotter.drawCharts(experimentResultsForPersonas);
+        plotter.drawEpisodeCountHabitStrengthChart(experimentResultsForPersonas);
+        JitaiTypeCountPlotter jitaiTypeCountPlotter = new JitaiTypeCountPlotter();
+        jitaiTypeCountPlotter.drawJitaiTypeRatios(experimentResultsForPersonas);
     }
 
     private LearningAgentFactory[] getJsLearningAlternatives(final Domain domain) {

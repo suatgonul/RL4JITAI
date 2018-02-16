@@ -9,9 +9,9 @@ import java.util.Map;
  * Created by suat on 07-Jun-16.
  */
 public class HabitGainRatio {
-    private static Map<Integer, Integer> easy = new HashMap<Integer, Integer>();
-    private static Map<Integer, Double> medium = new HashMap<Integer, Double>();
-    private static Map<Integer, Integer> hard = new HashMap<Integer, Integer>();
+    public static Map<Integer, Integer> easy = new HashMap<Integer, Integer>();
+    public static Map<Integer, Double> medium = new HashMap<Integer, Double>();
+    public static Map<Integer, Integer> hard = new HashMap<Integer, Integer>();
 
     static {
         // fill ratios for habit gain for easy tasks

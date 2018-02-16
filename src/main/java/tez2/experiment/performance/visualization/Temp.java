@@ -1,13 +1,20 @@
 package tez2.experiment.performance.visualization;
 
+import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYSplineRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DatasetUtilities;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.RefineryUtilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +22,7 @@ import java.awt.*;
 /**
  * Created by suat on 15-Feb-18.
  */
-public class Temp extends  JFrame {
+public class Temp extends JFrame {
     public static void main(String[] args) {
         Temp temp = new Temp();
 
@@ -23,46 +30,36 @@ public class Temp extends  JFrame {
 //        example.setLocationRelativeTo(null);
 //        example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+        temp.pack();
+        RefineryUtilities.centerFrameOnScreen(temp);
+        temp.setVisible(true);
 
         //create the series - add some dummy data
-        XYSeries series1 = new XYSeries("series1");
-        XYSeries series2 = new XYSeries("series2");
-        series1.add(1000, 1000);
-        series1.add(1150, 1150);
-        series1.add(1250, 1250);
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
-        series2.add(1000, 111250);
-        series2.add(1150, 211250);
-        series2.add(1250, 311250);
+        dataset.addValue(0.2, "Jitai 1", "Person 1");
+        dataset.addValue(0.4, "Jitai 2", "Person 1");
+        dataset.addValue(0.4, "Jitai 3", "Person 1");
 
-        //create the datasets
-        XYSeriesCollection dataset1 = new XYSeriesCollection();
-        XYSeriesCollection dataset2 = new XYSeriesCollection();
-        dataset1.addSeries(series1);
-        dataset2.addSeries(series2);
+        dataset.addValue(0.8, "Jitai 1", "Person 2");
+        dataset.addValue(0.1, "Jitai 2", "Person 2");
+        dataset.addValue(0.1, "Jitai 3", "Person 2");
 
-        //construct the plot
-        XYPlot plot = new XYPlot();
-        plot.setDataset(0, dataset1);
-        plot.setDataset(1, dataset2);
+        final JFreeChart chart = ChartFactory.createStackedBarChart(
+                "Stacked Bar Chart Demo 2",
+                "Person",                  // domain axis label
+                "Jitais",                     // range axis label
+                dataset,                     // data
+                PlotOrientation.VERTICAL,  // the plot orientation
+                true,                        // include legend
+                true,                        // tooltips
+                false                        // urls
+        );
 
-        //customize the plot with renderers and axis
-        plot.setRenderer(0, new XYLineAndShapeRenderer());//use default fill paint for first series
-        plot.setRenderer(1, new XYLineAndShapeRenderer());
-        plot.setRangeAxis(0, new NumberAxis("Series 1"));
-        plot.setRangeAxis(1, new NumberAxis("Series 2"));
-        plot.setDomainAxis(new NumberAxis("X Axis"));
+        final CategoryPlot plot = (CategoryPlot) chart.getPlot();
 
-        //Map the data to the appropriate axis
-        plot.mapDatasetToRangeAxis(0, 0);
-        plot.mapDatasetToRangeAxis(1, 1);
-
-        //generate the chart
-        JFreeChart chart = new JFreeChart("MyPlot", Font.getFont(Font.MONOSPACED), plot, true);
-        chart.setBackgroundPaint(Color.WHITE);
-        JPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setVisible(true);
+        final ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
         temp.setContentPane(chartPanel);
-        temp.setVisible(true);
     }
 }

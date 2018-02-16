@@ -1,14 +1,21 @@
 package tez2.experiment.performance.visualization;
 
+import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.YIntervalSeries;
 import org.jfree.data.xy.YIntervalSeriesCollection;
+import tez2.environment.simulator.habit.HabitGainRatio;
 import tez2.experiment.performance.StaticSelfManagementRewardPlotter;
 
 import javax.swing.*;
@@ -20,35 +27,20 @@ import java.util.List;
  */
 public class EpisodeJitaiCountHabitStrengthPlotter extends JFrame {
 
-    public void drawCharts(List<StaticSelfManagementRewardPlotter> datasets) {
-        // first merge the plotter data
-        YIntervalSeriesCollection firstSeries = datasets.get(0).allAgents_totalJitaisPerEpisode;
-        firstSeries.addSeries(datasets.get(1).allAgents_totalJitaisPerEpisode.getSeries(0));
-        firstSeries.setNotify(true);
-        drawChart(firstSeries);
-        for(int i=0; i<firstSeries.getSeriesCount(); i++) {
-            YIntervalSeries series = firstSeries.getSeries(i);
-            System.out.println("Series " + i + " count: " + series.getItemCount());
-            for(int j=0; j<series.getItemCount(); j++) {
-                System.out.println("x: " + series.getX(j) + ", y: " + series.getYValue(j));
-            }
-        }
-    }
+    public void drawEpisodeCountHabitStrengthChart(List<StaticSelfManagementRewardPlotter> datasets) {
+        YIntervalSeriesCollection jitaiCountsForPersonas = datasets.get(0).allAgents_totalJitaisPerEpisode;
+        jitaiCountsForPersonas.addSeries(datasets.get(1).allAgents_totalJitaisPerEpisode.getSeries(0));
 
-    public void drawChart(YIntervalSeriesCollection jitaiCountsForPersonas) {
         XYSeries series2 = new XYSeries("series2");
         series2.add(10, 2);
         series2.add(30, 4);
         series2.add(60, 5);
 
-        XYSeriesCollection dataset2 = new XYSeriesCollection();
-        dataset2.addSeries(series2);
-
         //construct the plot
         XYPlot plot = new XYPlot();
 
         plot.setDataset(0, jitaiCountsForPersonas);
-        plot.setDataset(1, dataset2);
+        plot.setDataset(1, getHabitSeries());
 //
         //customize the plot with renderers and axis
         plot.setRenderer(0, new XYLineAndShapeRenderer());//use default fill paint for first series
@@ -65,8 +57,35 @@ public class EpisodeJitaiCountHabitStrengthPlotter extends JFrame {
         JFreeChart chart = new JFreeChart("MyPlot", Font.getFont(Font.MONOSPACED), plot, true);
         chart.setBackgroundPaint(Color.WHITE);
         JPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setVisible(true);
         setContentPane(chartPanel);
+
+        setSize(800, 400);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setVisible(true);
+    }
+
+    private XYSeriesCollection getHabitSeries() {
+        XYSeries easyHabitSeries = new XYSeries("Easy Habit Series");
+        int i=0;
+        for(; i<HabitGainRatio.easy.size(); i++) {
+            easyHabitSeries.add(i, HabitGainRatio.easy.get(i));
+        }
+        for(; i<100; i++) {
+            easyHabitSeries.add(i, 100);
+        }
+
+        XYSeries mediumHabitSeries = new XYSeries("Medium Habit Series");
+        for(i=0; i<HabitGainRatio.medium.size(); i++) {
+            mediumHabitSeries.add(i, HabitGainRatio.medium.get(i) * 100. / 35.);
+        }
+        for(; i<100; i++) {
+            mediumHabitSeries.add(i, 100);
+        }
+
+        XYSeriesCollection habitSeriesCollection = new XYSeriesCollection();
+        habitSeriesCollection.addSeries(easyHabitSeries);
+        habitSeriesCollection.addSeries(mediumHabitSeries);
+        return habitSeriesCollection;
     }
 }

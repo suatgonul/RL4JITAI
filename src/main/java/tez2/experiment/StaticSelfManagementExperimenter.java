@@ -246,13 +246,13 @@ public class StaticSelfManagementExperimenter {
             OmiEpisodeAnalysis ea = (OmiEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
             ea.setTrialNo(trialNo);
             if(i < 7) {
-                ea.jsEpisodeAnalysis.printEpisodeAnalysis();
+                //ea.jsEpisodeAnalysis.printEpisodeAnalysis();
             }
             episodeAnalysisList.add(ea);
             //if (agentFactory.getAgentName().contains("colla")) {
                 elapsedTrialTime += (System.currentTimeMillis()-episodeStarttime);
-                System.out.println("Episode: " + (i + 1) + " completed in " + (System.currentTimeMillis()-episodeStarttime) + " milliseconds");
-                System.out.println("Elapsed trial time: " + elapsedTrialTime + " milliseconds");
+                //System.out.println("Episode: " + (i + 1) + " completed in " + (System.currentTimeMillis()-episodeStarttime) + " milliseconds");
+                //System.out.println("Elapsed trial time: " + elapsedTrialTime + " milliseconds");
             //}
 
             this.plotter.populateAgentDatasets(ea);

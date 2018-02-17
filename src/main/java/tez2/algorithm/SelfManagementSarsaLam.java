@@ -74,7 +74,7 @@ public class SelfManagementSarsaLam extends SarsaLam {
 
             if (action.action.isPrimitive() || !this.shouldAnnotateOptions) {
                 OmiEnvironmentOutcome eeo = (OmiEnvironmentOutcome) eo;
-                ea.recordTransitionTo(action, nextState.s, r, currentQVals, eeo.getUserContext(), eeo.getUserReaction());
+                ea.recordTransitionTo(action, nextState.s, r, currentQVals, eeo.getStateTime(), eeo.getUserContext(), eeo.getUserReaction());
             } else {
                 ea.appendAndMergeEpisodeAnalysis(((Option) action.action).getLastExecutionResults());
             }

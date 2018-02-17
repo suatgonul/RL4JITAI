@@ -21,13 +21,16 @@ import tez2.environment.simulator.JsEnvironment;
 import tez2.environment.simulator.SimulatedWorld;
 import tez2.experiment.performance.StaticSelfManagementRewardPlotter;
 import tez2.experiment.performance.visualization.EpisodeJitaiCountHabitStrengthPlotter;
-import tez2.experiment.performance.visualization.JitaiTypeCountPlotter;
+import tez2.experiment.performance.visualization.JitaiTypeRatioPlotter;
+import tez2.experiment.performance.visualization.PlotContainer;
+import tez2.experiment.performance.visualization.TimeOfDayJitaiCountPlotter;
 import tez2.persona.PersonaConfig;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static tez2.experiment.performance.SelfManagementPerformanceMetric.AVG_TOTAL_JITAIS_PER_EPISODE;
+import static tez2.experiment.performance.SelfManagementPerformanceMetric.RATIO_JITAIS_PER_STATE_PARAM;
 import static tez2.experiment.performance.SelfManagementPerformanceMetric.TOTAL_NUMBER_OF_JITAI_TYPES;
 
 /**
@@ -66,7 +69,7 @@ public class Experiment {
         Domain domain = omiDomGen.generateDomain();
 
         rf = new OmiRewardFunction();
-        environment = new SimulatedWorld(domain, rf, tf, 60, personaFolder, jitaiSelectionEnvironment, getJsLearningAlternatives(jsDomain));
+        environment = new SimulatedWorld(domain, rf, tf, 15, personaFolder, jitaiSelectionEnvironment, getJsLearningAlternatives(jsDomain));
         //environment = new SimulatedWorld(domain, rf, tf, 60,"D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob");
         omiDomGen.setEnvironment(environment);
 
@@ -93,7 +96,7 @@ public class Experiment {
                     10, 10, omiLearningCases);
             ((SimulatedWorld) environment).setConfig(config);
             exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
-                    //RATIO_JITAIS_PER_TIME_OF_DAY,
+                    RATIO_JITAIS_PER_STATE_PARAM,
                     TOTAL_NUMBER_OF_JITAI_TYPES,
                     AVG_TOTAL_JITAIS_PER_EPISODE
             );
@@ -102,10 +105,14 @@ public class Experiment {
             experimentResultsForPersonas.add(exp.plotter);
         }
 
+        PlotContainer plotContainer = new PlotContainer();
         EpisodeJitaiCountHabitStrengthPlotter plotter = new EpisodeJitaiCountHabitStrengthPlotter();
-        plotter.drawEpisodeCountHabitStrengthChart(experimentResultsForPersonas);
-        JitaiTypeCountPlotter jitaiTypeCountPlotter = new JitaiTypeCountPlotter();
-        jitaiTypeCountPlotter.drawJitaiTypeRatios(experimentResultsForPersonas);
+        JitaiTypeRatioPlotter jitaiTypeCountPlotter = new JitaiTypeRatioPlotter();
+        TimeOfDayJitaiCountPlotter todJitaCountPlotter = new TimeOfDayJitaiCountPlotter();
+
+        plotContainer.insertChart(plotter.getChart(experimentResultsForPersonas));
+        plotContainer.insertChart(jitaiTypeCountPlotter.getChart(experimentResultsForPersonas));
+        plotContainer.insertChart(todJitaCountPlotter.getChart(experimentResultsForPersonas));
     }
 
     private LearningAgentFactory[] getJsLearningAlternatives(final Domain domain) {

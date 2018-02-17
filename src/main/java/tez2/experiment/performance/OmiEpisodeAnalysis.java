@@ -3,6 +3,7 @@ package tez2.experiment.performance;
 import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
+import org.joda.time.LocalTime;
 import tez2.environment.context.Context;
 import tez2.experiment.performance.js.JsEpisodeAnalysis;
 
@@ -14,6 +15,7 @@ import static tez2.domain.DomainConfig.ACTION_SEND_JITAI;
 public class OmiEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
     public List<List<QValue>> qValuesForStates;
     public List<Context> userContexts;
+    public List<LocalTime> stateTimes;
     public List<Boolean> userReactions;
     public int phoneCheckNumber;
     public int actionDeliveredDuringPhoneCheck;
@@ -23,6 +25,7 @@ public class OmiEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
         super(initialState);
         qValuesForStates = new ArrayList<>();
         userContexts = new ArrayList<>();
+        stateTimes = new ArrayList<>();
         userReactions = new ArrayList<>();
     }
 
@@ -31,9 +34,10 @@ public class OmiEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
         jsEpisodeAnalysis.trialNo = trialNo;
     }
 
-    public void recordTransitionTo(GroundedAction usingAction, State nextState, double r, List<QValue> qValues, Context userContext, boolean userReaction) {
+    public void recordTransitionTo(GroundedAction usingAction, State nextState, double r, List<QValue> qValues, LocalTime stateTime, Context userContext, boolean userReaction) {
         qValuesForStates.add(qValues);
         userContexts.add(userContext);
+        stateTimes.add(stateTime);
         userReactions.add(userReaction);
         if (userReaction == true) {
             phoneCheckNumber++;

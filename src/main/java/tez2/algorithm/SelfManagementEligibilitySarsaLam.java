@@ -194,7 +194,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                 log_generic(log, "Backward rewarding is done");
 
                 if (action.action.isPrimitive() || !this.shouldAnnotateOptions) {
-                    ea.recordTransitionTo(action, nextState.s, r, currentQVals, eeo.getUserContext(), eeo.getUserReaction(), interference, selectedBy);
+                    ea.recordTransitionTo(action, nextState.s, r, currentQVals, eeo.getStateTime(), eeo.getUserContext(), eeo.getUserReaction(), interference, selectedBy);
                     //StepPrinter.printStep(action, curState.s, r, currentQVals, eeo.getUserContext(), eeo.getUserReaction(), interference, selectedBy);
                 } else {
                     ea.appendAndMergeEpisodeAnalysis(((Option) action.action).getLastExecutionResults());

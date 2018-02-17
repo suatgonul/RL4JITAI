@@ -51,6 +51,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
 
     // variables keeping the values in the previous step of the execution to populate the environment outcome
     private Activity previousActivity;
+    private LocalTime previousStateTime;
 
     private String personaFolder;
     private PersonaConfig config;
@@ -120,7 +121,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
             this.lastReward = 0.;
         }
 
-        EnvironmentOutcome eo = new OmiEnvironmentOutcome(this.curState.copy(), simGA, nextState.copy(), this.lastReward, this.tf.isTerminal(nextState), previousActivity.getContext(), reactedToJitai);
+        EnvironmentOutcome eo = new OmiEnvironmentOutcome(this.curState.copy(), simGA, nextState.copy(), this.lastReward, this.tf.isTerminal(nextState), previousActivity.getContext(), reactedToJitai, currentTime.toLocalTime());
 
         this.curState = nextState;
 
@@ -224,6 +225,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
 
         // advance the time plan
         previousActivity = currentActivity;
+        previousStateTime = currentTime.toLocalTime();
 
         int currentActivityIndex = currentTimePlan.getActivities().indexOf(currentActivity);
         DateTime activityEndTime = currentActivity.getEndTime();
@@ -349,6 +351,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         // All activities are processed. Set lastActivity to false to set the initial state of the next episode properly
         lastActivity = false;
 
+        previousStateTime = currentTime.toLocalTime();
         checkedActionPlanIndex = -1;
         behaviorPerformed = false;
     }

@@ -89,7 +89,7 @@ public class EpisodeJitaiCountHabitStrengthPlotter extends JFrame {
 
         //generate the chart
         JFreeChart chart = new JFreeChart("MyPlot", Font.getFont(Font.MONOSPACED), plot, true);
-        chart.setBackgroundPaint(Color.WHITE);
+        //chart.setBackgroundPaint(Color.WHITE);
         JPanel chartPanel = new ChartPanel(chart);
         setContentPane(chartPanel);
 

@@ -423,7 +423,7 @@ public class JsEnvironment extends SelfManagementEnvironment {
     @Override
     public State getNextState(GroundedAction action) {
         lastAction = action;
-        reactedToJitai = this.simulatedWorld.isReactedToJitai();
+        reactedToJitai = this.simulatedWorld.isReactedToJitaiForAction();
         State nextState;
 
         if (action.action instanceof Jitai1Action || action.action instanceof Jitai3Action || action.action instanceof Jitai3Action) {
@@ -438,8 +438,6 @@ public class JsEnvironment extends SelfManagementEnvironment {
             reminderCount = 0;
         }
 
-        stepCount++;
-
         if(stepCount < 6) {
             SimulatedWorld.DynamicSimulatedWorldContext simulatedWorldContext = this.simulatedWorld.getLastContextForJitai(stepCount);
             ActionPlan.JitaiNature expectedJitai = simulatedWorldContext.getExpectedJitaiNature();
@@ -450,12 +448,15 @@ public class JsEnvironment extends SelfManagementEnvironment {
             o.setValue(ATT_HABIT_STRENGTH, (int) (habitStrength * 10));
             o.setValue(ATT_BEHAVIOR_FREQUENCY, (int) (behaviorFrequency * 10));
             o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
-            o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
+            //o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
+            o.setValue(ATT_DAY_TYPE, 0);
             o.setValue(ATT_PART_OF_DAY, simulatedWorldContext.getCurrentDayPart());
 
         } else {
             nextState = new TerminalState();
         }
+
+        stepCount++;
 
         return nextState;
     }
@@ -474,7 +475,8 @@ public class JsEnvironment extends SelfManagementEnvironment {
         o.setValue(ATT_BEHAVIOR_FREQUENCY, (int) (behaviorFrequency * 10));
         o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
         o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
-        o.setValue(ATT_PART_OF_DAY, simulatedWorldContext.getCurrentDayPart());
+        //o.setValue(ATT_PART_OF_DAY, simulatedWorldContext.getCurrentDayPart());
+        o.setValue(ATT_PART_OF_DAY, 0);
 
         return s;
     }
@@ -505,6 +507,10 @@ public class JsEnvironment extends SelfManagementEnvironment {
 
     public boolean isBehaviorPerformed() {
         return behaviorPerformed;
+    }
+
+    public int getStepCount() {
+        return stepCount;
     }
 
     private void log(String msg) {

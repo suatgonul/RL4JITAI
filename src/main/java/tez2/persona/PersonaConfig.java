@@ -13,6 +13,7 @@ public class PersonaConfig {
     private double behaviorFrequency;
     private Map<String, Double> jitaiPreferences;
     private List<Integer> actionPlanRanges;
+    private String personaFile;
 
     public static void main(String[] args) {
         List<PersonaConfig> configs = getConfigs("D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob");
@@ -68,6 +69,10 @@ public class PersonaConfig {
             for (int j = 0; j < rangeList.length; j++) {
                 config.actionPlanRanges.add(Integer.parseInt(rangeList[j]));
             }
+
+            // persona file
+            String[] personaFiles = prop.getProperty("persona_file").split(":");
+            config.personaFile = personaFiles[i];
         }
 
         return configs;
@@ -91,5 +96,9 @@ public class PersonaConfig {
 
     public List<Integer> getActionPlanRanges() {
         return actionPlanRanges;
+    }
+
+    public String getPersonaFile() {
+        return personaFile;
     }
 }

@@ -2,12 +2,9 @@ package tez2.experiment.performance.visualization;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.Plot;
-import tez2.experiment.performance.StaticSelfManagementRewardPlotter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 
 /**
  * Created by suat on 17-Feb-18.
@@ -30,7 +27,7 @@ public class PlotContainer extends JFrame {
         c.gridy = 0;
         c.insets = new Insets(0, 0, 10, 10);
 
-        int totalChartHeight = ((4 / columns) + 1) * (chartHeight + 10);
+        int totalChartHeight = ((8 / columns) + 1) * (chartHeight + 10);
         if (totalChartHeight > maxHeight) {
             JScrollPane scrollPane = new JScrollPane(plotContainer);
             scrollPane.setPreferredSize(new Dimension(chartWidth * columns + 50, maxHeight));
@@ -49,6 +46,7 @@ public class PlotContainer extends JFrame {
         chartPanelCSRAvg.setPreferredSize(new Dimension(chartWidth, chartHeight));
         plotContainer.add(chartPanelCSRAvg, c);
         this.updateGBConstraint(c, columns);
+        chartPanelCSRAvg.setVisible(true);
     }
 
     private void updateGBConstraint(GridBagConstraints c, int maxCol) {

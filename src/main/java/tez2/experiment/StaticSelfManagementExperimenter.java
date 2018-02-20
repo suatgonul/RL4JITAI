@@ -165,7 +165,9 @@ public class StaticSelfManagementExperimenter {
     /**
      * Starts the experiment and runs all trails for all agents.
      */
-    public void startExperiment() {
+    private int personaIndex;
+    public void startExperiment(int personaIndex) {
+        this.personaIndex = personaIndex;
 
         if (this.completedExperiment) {
             System.out.println("Experiment was already run and has completed. If you want to run a new experiment create a new Experiment object.");
@@ -203,7 +205,7 @@ public class StaticSelfManagementExperimenter {
             }
             for (int j = 0; j < this.nTrials; j++) {
 
-                DPrint.cl(this.debugCode, "Beginning " + this.agentFactories[i].getAgentName() + " trial " + (j + 1) + "/" + this.nTrials);
+                //DPrint.cl(this.debugCode, "Beginning " + this.agentFactories[i].getAgentName() + " trial " + (j + 1) + "/" + this.nTrials);
 
                 if (this.trialLengthIsInEpisodes) {
                     this.runEpisodeBoundTrial(this.agentFactories[i], j);
@@ -245,9 +247,15 @@ public class StaticSelfManagementExperimenter {
             long episodeStarttime = System.currentTimeMillis();
             OmiEpisodeAnalysis ea = (OmiEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
             ea.setTrialNo(trialNo);
-            if(i < 7) {
-                //ea.jsEpisodeAnalysis.printEpisodeAnalysis();
+            if(personaIndex == 1) {
+                if ((trialNo < 5 && i > 15 && i <= 25) || (trialNo == 40 && i < 50)) {
+                    ea.jsEpisodeAnalysis.printEpisodeAnalysis();
+                    System.out.println("Episode: " + (i + 1) + " completed in " + (System.currentTimeMillis() - episodeStarttime) + " milliseconds");
+                    System.out.println("Elapsed trial time: " + elapsedTrialTime + " milliseconds");
+                }
             }
+
+
             episodeAnalysisList.add(ea);
             //if (agentFactory.getAgentName().contains("colla")) {
                 elapsedTrialTime += (System.currentTimeMillis()-episodeStarttime);
@@ -260,7 +268,10 @@ public class StaticSelfManagementExperimenter {
             this.environmentSever.resetEnvironment();
         }
         ((SimulatedWorld) this.environmentSever.getEnvironmentDelegate()).endTrial();
-        System.out.println("Trial completed in " + (System.currentTimeMillis() - trialStartTime) + " milliseconds");
+        if(trialNo % 50 == 0) {
+            System.out.println("Trial completed in " + (System.currentTimeMillis() - trialStartTime) + " milliseconds");
+        }
+
 
         //long updateStartTime = System.currentTimeMillis();
         //H2OStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);

@@ -1,7 +1,6 @@
 package tez2.experiment.performance.visualization;
 
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.*;
 import org.jfree.chart.plot.CategoryPlot;
@@ -20,17 +19,17 @@ import java.util.List;
 /**
  * Created by suat on 15-Feb-18.
  */
-public class TimeOfDayJitaiCountPlotter extends JFrame {
+public class TimeOfDayJitaiCountBehaviorPerformancePlotter extends JFrame {
 
-    public JFreeChart getChart(List<StaticSelfManagementRewardPlotter> datasets) {
+    public JFreeChart getChart(StaticSelfManagementRewardPlotter dataset) {
         final DefaultCategoryDataset chartDataset = new DefaultCategoryDataset();
-        for(int p=0; p<datasets.size(); p++) {
-            StaticSelfManagementRewardPlotter dataset = datasets.get(p);
-            int totalCount = getTotalJitaiCount(dataset);
-            for(int i=0; i<96; i++) {
-                int count = dataset.allAgents_totalNumberOfJitaisPerTimeOfDay.getY(0, i).intValue();
-                chartDataset.addValue((double) count / (double) totalCount,  "Person" + (p+1), getQuerterHourFromIndex(i));
-            }
+        int totalCount = getTotalJitaiCount(dataset);
+        int totalBehaviorCount = getTotalBehaviorPerformanceCount(dataset);
+        for (int i = 0; i < 96; i++) {
+            int count = dataset.allAgents_totalNumberOfJitaisPerTimeOfDay.getY(0, i).intValue();
+            chartDataset.addValue((double) count / (double) totalCount, "Jitai Ratio", getQuerterHourFromIndex(i));
+            count = dataset.allAgents_totalNumberOfBehaviorPerformancePerTimeOfDay.getY(0, i).intValue();
+            chartDataset.addValue((double) count / (double) totalBehaviorCount, "Performance Ratio", getQuerterHourFromIndex(i));
         }
 
         final JFreeChart chart = ChartFactory.createBarChart("Bar Chart Demo", // chart
@@ -69,11 +68,28 @@ public class TimeOfDayJitaiCountPlotter extends JFrame {
         return (index / 4) + "";
     }
 
+    private int getTotalJitaiCount(StaticSelfManagementRewardPlotter dataset) {
+        int totalCount = 0;
+        for (int i = 0; i < 96; i++) {
+            totalCount += dataset.allAgents_totalNumberOfJitaisPerTimeOfDay.getY(0, i).intValue();
+        }
+        return totalCount;
+    }
+
+    private int getTotalBehaviorPerformanceCount(StaticSelfManagementRewardPlotter dataset) {
+        int totalCount = 0;
+        for (int i = 0; i < 96; i++) {
+            totalCount += dataset.allAgents_totalNumberOfBehaviorPerformancePerTimeOfDay.getY(0, i).intValue();
+        }
+        return totalCount;
+    }
+
     private class SparselyLabeledCategoryAxis extends CategoryAxis {
         private static final long serialVersionUID = 478725789943763302L;
 
         /**
          * Construct and axis with a label.
+         *
          * @param label the axis label
          */
         public SparselyLabeledCategoryAxis(String label) {
@@ -97,21 +113,12 @@ public class TimeOfDayJitaiCountPlotter extends JFrame {
                 CategoryTick tick = standardTicks.get(i);
                 if (i % tickEvery == 0) {
                     fixedTicks.add(tick);
-                }
-                else {
+                } else {
                     fixedTicks.add(new CategoryTick(tick.getCategory(), new TextBlock(), tick
                             .getLabelAnchor(), tick.getRotationAnchor(), tick.getAngle()));
                 }
             }
             return fixedTicks;
         }
-    }
-
-    private int getTotalJitaiCount(StaticSelfManagementRewardPlotter dataset) {
-        int totalCount = 0;
-        for(int i=0; i<96; i++) {
-            totalCount += dataset.allAgents_totalNumberOfJitaisPerTimeOfDay.getY(0, i).intValue();
-        }
-        return totalCount;
     }
 }

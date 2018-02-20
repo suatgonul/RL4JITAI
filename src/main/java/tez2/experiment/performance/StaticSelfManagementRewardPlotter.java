@@ -99,7 +99,9 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
     public YIntervalSeriesCollection allAgents_ratioOfJitaisPerTimeOfDay; //Hypothesis 3
     public YIntervalSeriesCollection allAgents_totalJitaisPerEpisode; //Hypothesis 2 and 5
     public XYSeriesCollection allAgents_totalNumberOfJitaisTypes; //Hypothesis 3
+    public List<XYSeriesCollection> allAgents_totalNumberOfJitaiTypesPerEpisode;
     public XYSeriesCollection allAgents_totalNumberOfJitaisPerTimeOfDay;
+    public XYSeriesCollection allAgents_totalNumberOfBehaviorPerformancePerTimeOfDay;
     public XYSeriesCollection allAgents_ratioOfJitaisPhysicalActivity; // Hypothesis 4
     public XYSeriesCollection allAgents_ratioOfJitaisPhoneUsage;
     public XYSeriesCollection allAgents_ratioOfJitaisLocation;
@@ -170,7 +172,12 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
 
         allAgents_totalJitaisPerEpisode = new YIntervalSeriesCollection();
         allAgents_totalNumberOfJitaisTypes = new XYSeriesCollection();
+        allAgents_totalNumberOfJitaiTypesPerEpisode = new ArrayList<>();
+        for(int i=0; i<3; i++) {
+            allAgents_totalNumberOfJitaiTypesPerEpisode.add(new XYSeriesCollection());
+        }
         allAgents_totalNumberOfJitaisPerTimeOfDay = new XYSeriesCollection();
+        allAgents_totalNumberOfBehaviorPerformancePerTimeOfDay = new XYSeriesCollection();
         allAgents_ratioOfJitaisPhysicalActivity = new XYSeriesCollection();
         allAgents_ratioOfJitaisPhoneUsage = new XYSeriesCollection();
         allAgents_ratioOfJitaisLocation = new XYSeriesCollection();
@@ -250,7 +257,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
 
     public void populateAgentDatasets(EpisodeAnalysis ea) {
         for (int i = 0; i < ea.rewardSequence.size(); i++) {
-            this.curTrial.stepIncrement(ea.rewardSequence.get(i), ea.actionSequence.get(i), ((OmiEpisodeAnalysis) ea).stateTimes.get(i), ((OmiEpisodeAnalysis) ea).userContexts.get(i));
+            this.curTrial.stepIncrement(ea.rewardSequence.get(i), ea.actionSequence.get(i), ((OmiEpisodeAnalysis) ea).stateTimes.get(i), ((OmiEpisodeAnalysis) ea).userContexts.get(i), ((OmiEpisodeAnalysis) ea).userReactions.get(i));
         }
 
         JsEpisodeAnalysis jsEa = ((OmiEpisodeAnalysis) ea).jsEpisodeAnalysis;
@@ -517,6 +524,20 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
                 }
                 double[] ci = getCI(avgi, this.significance);
                 curAgentDatasets.agentDataset_jitaiCountEachEpisodeSeries.add(i, ci[0], ci[1], ci[2]);
+
+                List<Integer> jitaiTypeCountTotal = new ArrayList<>();
+                jitaiTypeCountTotal.add(0);
+                jitaiTypeCountTotal.add(0);
+                jitaiTypeCountTotal.add(0);
+                for (Trial t : trials) {
+                    for(int a=0; a<3; a++) {
+                        jitaiTypeCountTotal.set(a, jitaiTypeCountTotal.get(a) + t.trialRawData_jitaiTypeCountsPerEpisode.get(a).get(i));
+                    }
+                }
+
+                for(int a=0; a<3; a++) {
+                    curAgentDatasets.agentDataset_totalCountOfJitaiTypesPerEpisode.get(a).add(i, jitaiTypeCountTotal.get(a));
+                }
             }
         }
         if (this.metricsSet.contains(SelfManagementPerformanceMetric.TOTAL_NUMBER_OF_JITAI_TYPES)) {
@@ -532,13 +553,17 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
 
         if (this.metricsSet.contains(SelfManagementPerformanceMetric.RATIO_JITAIS_PER_STATE_PARAM)) {
             int totalCountInTrials;
+            int totalBehaviorPerformanceCountInTrials;
             // time of day
             for (int i = 0; i < 96; i++) {
                 totalCountInTrials = 0;
+                totalBehaviorPerformanceCountInTrials = 0;
                 for (Trial t : trials) {
                     totalCountInTrials += t.trialRawData_jitaiCountPerTimeOfDayInTrial.get(i);
+                    totalBehaviorPerformanceCountInTrials += t.trialRawData_behaviorPerformancePerTimeOfDayInTrial.get(i);
                 }
                 curAgentDatasets.agentDataset_totalCountOfJitaisPerTimeOfDay.add(i, totalCountInTrials);
+                curAgentDatasets.agentDataset_totalCountOfBehaviorPerformancePerTimeOfDay.add(i, totalBehaviorPerformanceCountInTrials);
             }
 
             // physical activity
@@ -684,7 +709,9 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
          */
         public List<Integer> trialRawData_jitaiCountEachEpisode = new ArrayList<>();
         public List<Integer> trialRawData_jitaiTypeCountsInTrial = new ArrayList<>();
+        public List<List<Integer>> trialRawData_jitaiTypeCountsPerEpisode = new ArrayList<>();
         public List<Integer> trialRawData_jitaiCountPerTimeOfDayInTrial = new ArrayList<>();
+        public List<Integer> trialRawData_behaviorPerformancePerTimeOfDayInTrial = new ArrayList<>();
         public List<Integer> trialRawData_jitaiCountPerPhysicalActivityInTrial = new ArrayList<>();
         public List<Integer> trialRawData_jitaiCountPerLocationInTrial = new ArrayList<>();
         public List<Integer> trialRawData_jitaiCountPerPhoneUsageInTrial = new ArrayList<>();
@@ -722,18 +749,24 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         /**
          * MI-related
          */
-        public int curEpisodeJitais = 0;
+        public LinkedHashMap<String, Integer> curEpisodeJitais = new LinkedHashMap<>();
 
 
         public Trial() {
+            curEpisodeJitais.put(DomainConfig.ACTION_JITAI_1, 0);
+            curEpisodeJitais.put(DomainConfig.ACTION_JITAI_2, 0);
+            curEpisodeJitais.put(DomainConfig.ACTION_JITAI_3, 0);
+
             // initialize jitai type count list
             for(int i=0; i<3; i++) {
                 trialRawData_jitaiTypeCountsInTrial.add(0);
+                trialRawData_jitaiTypeCountsPerEpisode.add(new ArrayList<>());
             }
 
             // initialize time of day count list
             for(int i=0; i<96; i++) {
                 trialRawData_jitaiCountPerTimeOfDayInTrial.add(0);
+                trialRawData_behaviorPerformancePerTimeOfDayInTrial.add(0);
             }
 
             // initialize physical activity count list
@@ -760,7 +793,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         /**
          * Updates all datastructures with
          */
-        public void stepIncrement(double r, GroundedAction a, LocalTime stateTime, Context context) {
+        public void stepIncrement(double r, GroundedAction a, LocalTime stateTime, Context context, boolean behaviorPerformed) {
             accumulate(this.trialRawData_cumulativeStepReward, r);
             this.curEpisodeReward += r;
             this.curEpisodeSteps++;
@@ -780,21 +813,30 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
                 trialRawData_jitaiCountPerPhoneUsageInTrial.set(context.getPhoneUsage().ordinal(), trialRawData_jitaiCountPerPhoneUsageInTrial.get(context.getPhoneUsage().ordinal()) + 1);
                 // populate emotional status jitai counts
                 trialRawData_jitaiCountPerEmotionalStatusInTrial.set(context.getEmotionalStatus().ordinal(), trialRawData_jitaiCountPerEmotionalStatusInTrial.get(context.getEmotionalStatus().ordinal()) + 1);
+                // behavior performance
+            }
+
+            if(behaviorPerformed) {
+                trialRawData_behaviorPerformancePerTimeOfDayInTrial.set(querterIndex, trialRawData_behaviorPerformancePerTimeOfDayInTrial.get(querterIndex)+1);
             }
         }
 
         public void jsStepIncrement(GroundedAction action) {
             // MI-related
             if(!action.actionName().equals(DomainConfig.ACTION_NO_ACTION)) {
-                curEpisodeJitais++;
 
                 // populate jitai type counts
                 if(action.actionName().equals(DomainConfig.ACTION_JITAI_1)) {
                     trialRawData_jitaiTypeCountsInTrial.set(0, trialRawData_jitaiTypeCountsInTrial.get(0) + 1);
+                    curEpisodeJitais.put(DomainConfig.ACTION_JITAI_1, curEpisodeJitais.get(DomainConfig.ACTION_JITAI_1)+1);
+
                 } else if(action.actionName().equals(DomainConfig.ACTION_JITAI_2)) {
                     trialRawData_jitaiTypeCountsInTrial.set(1, trialRawData_jitaiTypeCountsInTrial.get(1) + 1);
+                    curEpisodeJitais.put(DomainConfig.ACTION_JITAI_2, curEpisodeJitais.get(DomainConfig.ACTION_JITAI_2)+1);
+
                 } else if(action.actionName().equals(DomainConfig.ACTION_JITAI_3)) {
                     trialRawData_jitaiTypeCountsInTrial.set(2, trialRawData_jitaiTypeCountsInTrial.get(2) + 1);
+                    curEpisodeJitais.put(DomainConfig.ACTION_JITAI_3, curEpisodeJitais.get(DomainConfig.ACTION_JITAI_3)+1);
                 }
             }
         }
@@ -815,7 +857,12 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             accumulate(this.trialRawData_cumulativeReactionInAllEpisodes, this.currentEpisodeUserReaction);
 
             //MI-related
-            this.trialRawData_jitaiCountEachEpisode.add(this.curEpisodeJitais);
+            int totalJitaiCount = 0;
+            for(int a=0; a<3; a++) {
+                totalJitaiCount += curEpisodeJitais.get("JITAI_" + (a+1));
+                this.trialRawData_jitaiTypeCountsPerEpisode.get(a).add(curEpisodeJitais.get("JITAI_" + (a+1)));
+            }
+            this.trialRawData_jitaiCountEachEpisode.add(totalJitaiCount);
 
             Collections.sort(this.curEpisodeRewards);
             double med = 0.;
@@ -842,7 +889,9 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             this.curEpisodeRewards.clear();
 
             //MI-related
-            this.curEpisodeJitais = 0;
+            curEpisodeJitais.put(DomainConfig.ACTION_JITAI_1, 0);
+            curEpisodeJitais.put(DomainConfig.ACTION_JITAI_2, 0);
+            curEpisodeJitais.put(DomainConfig.ACTION_JITAI_3, 0);
         }
 
     }
@@ -899,7 +948,9 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
          */
         public YIntervalSeries agentDataset_jitaiCountEachEpisodeSeries;
         public XYSeries agentDataset_totalCountOfJitaiTypes;
+        public List<XYSeries> agentDataset_totalCountOfJitaiTypesPerEpisode;
         public XYSeries agentDataset_totalCountOfJitaisPerTimeOfDay;
+        public XYSeries agentDataset_totalCountOfBehaviorPerformancePerTimeOfDay;
         public XYSeries agentDataset_totalCountOfJitaisPerPhysicalActivity;
         public XYSeries agentDataset_totalCountOfJitaisPerPhoneUsage;
         public XYSeries agentDataset_totalCountOfJitaisPerLocation;
@@ -957,6 +1008,14 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             this.agentDataset_totalCountOfJitaiTypes.setNotify(false);
             allAgents_totalNumberOfJitaisTypes.addSeries(this.agentDataset_totalCountOfJitaiTypes);
 
+            this.agentDataset_totalCountOfJitaiTypesPerEpisode = new ArrayList<>();
+            for(int i=0; i<3; i++) {
+                XYSeries jitaiSeries = new XYSeries("Jitai " + (i+1));
+                jitaiSeries.setNotify(false);
+                agentDataset_totalCountOfJitaiTypesPerEpisode.add(jitaiSeries);
+                allAgents_totalNumberOfJitaiTypesPerEpisode.get(i).addSeries(jitaiSeries);
+            }
+
             this.agentDataset_totalCountOfJitaisPerTimeOfDay = new XYSeries(agentName);
             this.agentDataset_totalCountOfJitaisPerTimeOfDay.setNotify(false);
             allAgents_totalNumberOfJitaisPerTimeOfDay.addSeries(this.agentDataset_totalCountOfJitaisPerTimeOfDay);
@@ -976,6 +1035,10 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             this.agentDataset_totalCountOfJitaisPerEmotionalStatus = new XYSeries(agentName);
             this.agentDataset_totalCountOfJitaisPerEmotionalStatus.setNotify(false);
             allAgents_ratioOfJitaisEmotionalStatus.addSeries(this.agentDataset_totalCountOfJitaisPerEmotionalStatus);
+
+            this.agentDataset_totalCountOfBehaviorPerformancePerTimeOfDay = new XYSeries(agentName);
+            this.agentDataset_totalCountOfBehaviorPerformancePerTimeOfDay.setNotify(false);
+            allAgents_totalNumberOfBehaviorPerformancePerTimeOfDay.addSeries(this.agentDataset_totalCountOfBehaviorPerformancePerTimeOfDay);
         }
 
 

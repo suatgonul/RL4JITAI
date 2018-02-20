@@ -10,6 +10,7 @@ public class DomainConfig {
     public static final String ATT_ACTIVITY = "Activity";
     public static final String ATT_PHONE_USAGE = "PhoneUsage";
     public static final String ATT_EMOTIONAL_STATUS = "EmotionalStatus";
+    public static final String ATT_NUMBER_OF_JITAIS_SENT = "JitaisSent";
 
     public static final String ATT_PART_OF_DAY = "PartOfDay";
     public static final String ATT_DAY_TYPE = "DayType";
@@ -49,6 +50,9 @@ public class DomainConfig {
             case ATT_EMOTIONAL_STATUS:
                 att = new Attribute(domain, ATT_EMOTIONAL_STATUS, Attribute.AttributeType.INT);
                 att.setDiscValuesForRange(0, 2, 1);
+                break;
+            case ATT_NUMBER_OF_JITAIS_SENT:
+                att = new Attribute(domain, ATT_NUMBER_OF_JITAIS_SENT, Attribute.AttributeType.INT);
                 break;
             case ATT_PART_OF_DAY:
                 att = new Attribute(domain, ATT_PART_OF_DAY, Attribute.AttributeType.INT);

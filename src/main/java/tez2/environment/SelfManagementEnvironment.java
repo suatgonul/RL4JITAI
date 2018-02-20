@@ -19,7 +19,7 @@ import tez2.environment.context.DayType;
  */
 public abstract class SelfManagementEnvironment extends SimulatedEnvironment {
     protected int stateChangeFrequency;
-    protected DateTime currentTime;
+    public DateTime currentTime;
 
     public SelfManagementEnvironment(Domain domain, RewardFunction rf, TerminalFunction tf, int stateChangeFrequency) {
         super(domain, rf, tf);

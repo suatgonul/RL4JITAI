@@ -12,31 +12,32 @@ public class JsRewardFunction extends SelfManagementRewardFunction {
 
     @Override
     public double reward(State s, GroundedAction a, State sprime) {
+        JsEnvironment env = (JsEnvironment) environment;
+
         ObjectInstance stateInstance = s.getObject(CLASS_STATE);
         int rememberedBehavior = stateInstance.getIntValForAttribute(ATT_REMEMBER_BEHAVIOR);
-        boolean performedBehavior = ((JsEnvironment) environment).isBehaviorPerformed();
+
 
         if (!a.action.getName().equals(ACTION_NO_ACTION)) {
             //if(rememberedBehavior == 0) {
-            if(performedBehavior == false) {
-                boolean reactedToJitai = ((JsEnvironment) environment).isReactedToJitai();
-                if(reactedToJitai) {
-                    return 10;
+            boolean reactedToJitai = ((JsEnvironment) environment).isReactedToJitai();
+            if (rememberedBehavior == 1) {
+                if (reactedToJitai) {
+                    return -3;
                 } else {
-                    return 5;
+                    return -10;
                 }
 
             } else {
-                return -1;
+                if (reactedToJitai) {
+                    return 10;
+                } else {
+                    return -1;
+                }
             }
 
         } else {
-            //if(rememberedBehavior == 0) {
-            if(performedBehavior == false) {
-                return -10;
-            } else {
-                return 0;
-            }
+            return -0.2;
         }
     }
 }

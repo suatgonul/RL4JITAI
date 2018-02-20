@@ -20,10 +20,7 @@ import tez2.domain.omi.OmiRewardFunction;
 import tez2.environment.simulator.JsEnvironment;
 import tez2.environment.simulator.SimulatedWorld;
 import tez2.experiment.performance.StaticSelfManagementRewardPlotter;
-import tez2.experiment.performance.visualization.EpisodeJitaiCountHabitStrengthPlotter;
-import tez2.experiment.performance.visualization.JitaiTypeRatioPlotter;
-import tez2.experiment.performance.visualization.PlotContainer;
-import tez2.experiment.performance.visualization.TimeOfDayJitaiCountPlotter;
+import tez2.experiment.performance.visualization.*;
 import tez2.persona.PersonaConfig;
 
 import java.util.ArrayList;
@@ -91,28 +88,35 @@ public class Experiment {
 
         //start experiment
         List<StaticSelfManagementRewardPlotter> experimentResultsForPersonas = new ArrayList<>();
-        for(PersonaConfig config : configs) {
+        for(int i=0; i<configs.size(); i++) {
+            PersonaConfig config = configs.get(i);
             StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                    10, 10, omiLearningCases);
+                    10, 100, omiLearningCases);
             ((SimulatedWorld) environment).setConfig(config);
             exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                     RATIO_JITAIS_PER_STATE_PARAM,
                     TOTAL_NUMBER_OF_JITAI_TYPES,
                     AVG_TOTAL_JITAIS_PER_EPISODE
             );
-            exp.startExperiment();
-            System.out.println(exp.plotter.allAgents_totalJitaisPerEpisode.getItemCount(0));
+            exp.startExperiment(i);
             experimentResultsForPersonas.add(exp.plotter);
+            System.out.println("Persona " + i + " completed");
         }
 
         PlotContainer plotContainer = new PlotContainer();
         EpisodeJitaiCountHabitStrengthPlotter plotter = new EpisodeJitaiCountHabitStrengthPlotter();
         JitaiTypeRatioPlotter jitaiTypeCountPlotter = new JitaiTypeRatioPlotter();
         TimeOfDayJitaiCountPlotter todJitaCountPlotter = new TimeOfDayJitaiCountPlotter();
+        TimeOfDayJitaiCountBehaviorPerformancePlotter bpJcPlotter = new TimeOfDayJitaiCountBehaviorPerformancePlotter();
+        EpisodeJitaiTypeCountPlotter epJtcPlotter = new EpisodeJitaiTypeCountPlotter();
 
         plotContainer.insertChart(plotter.getChart(experimentResultsForPersonas));
         plotContainer.insertChart(jitaiTypeCountPlotter.getChart(experimentResultsForPersonas));
         plotContainer.insertChart(todJitaCountPlotter.getChart(experimentResultsForPersonas));
+        plotContainer.insertChart(bpJcPlotter.getChart(experimentResultsForPersonas.get(0)));
+        plotContainer.insertChart(bpJcPlotter.getChart(experimentResultsForPersonas.get(1)));
+        plotContainer.insertChart(epJtcPlotter.getChart(experimentResultsForPersonas.get(0)));
+        plotContainer.insertChart(epJtcPlotter.getChart(experimentResultsForPersonas.get(1)));
     }
 
     private LearningAgentFactory[] getJsLearningAlternatives(final Domain domain) {

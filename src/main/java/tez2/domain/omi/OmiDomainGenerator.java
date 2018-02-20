@@ -44,6 +44,7 @@ public class OmiDomainGenerator implements DomainGenerator {
         stateClass.addAttribute(DomainConfig.getAtt(ATT_ACTIVITY, domain));
         stateClass.addAttribute(DomainConfig.getAtt(ATT_PHONE_USAGE, domain));
         stateClass.addAttribute(DomainConfig.getAtt(ATT_EMOTIONAL_STATUS, domain));
+        stateClass.addAttribute(DomainConfig.getAtt(ATT_NUMBER_OF_JITAIS_SENT, domain));
 
         new InterventionDeliveryAction(ACTION_SEND_JITAI, domain);
         new NoAction(ACTION_NO_ACTION, domain);

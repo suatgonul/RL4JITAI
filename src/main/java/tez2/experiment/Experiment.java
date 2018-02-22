@@ -10,7 +10,8 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import tez2.algorithm.*;
-import tez2.algorithm.collaborative_learning.SparkStateClassifier;
+import tez2.algorithm.collaborative_learning.js.SparkJsStateClassifier;
+import tez2.algorithm.collaborative_learning.omi.SparkOmiStateClassifier;
 import tez2.algorithm.jitai_selection.JsQLearning;
 import tez2.domain.DayTerminalFunction;
 import tez2.domain.js.JsDomainGenerator;
@@ -37,6 +38,7 @@ public class Experiment {
 
     private Environment environment;
 
+    public static String CLASSIFIER_MODE = "use";
     public static void main(String[] args) {
         Experiment exp = new Experiment();
         exp.runExperiment();
@@ -74,8 +76,10 @@ public class Experiment {
 
         LearningAgentFactory[] omiLearningCases = getOpportuneMomentIdentificationLearningAlternatives(domain);
 
-        SparkStateClassifier sparkClassifier = SparkStateClassifier.getInstance();
-        sparkClassifier.setDomain(domain);
+        SparkOmiStateClassifier sparkOmiClassifier = SparkOmiStateClassifier.getInstance();
+        sparkOmiClassifier.setDomain(domain);
+        SparkJsStateClassifier sparkJsStateClassifier = SparkJsStateClassifier.getInstance();
+        sparkJsStateClassifier.setDomain(jsDomain);
 
 
 //        exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
@@ -91,7 +95,7 @@ public class Experiment {
         for(int i=0; i<configs.size(); i++) {
             PersonaConfig config = configs.get(i);
             StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                    10, 100, omiLearningCases);
+                    5, 100, omiLearningCases);
             ((SimulatedWorld) environment).setConfig(config);
             exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                     RATIO_JITAIS_PER_STATE_PARAM,
@@ -132,7 +136,7 @@ public class Experiment {
 
             @Override
             public LearningAgent generateAgent() {
-                return new JsQLearning(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE);
+                return new JsQLearning(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, Experiment.CLASSIFIER_MODE);
             }
         };
         learningAlternatives.add(qLearningFactory);
@@ -167,7 +171,7 @@ public class Experiment {
                 return new SelfManagementSarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8);
             }
         };
-        learningAlternatives.add(qLearningFactory);
+        //learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             @Override
@@ -177,10 +181,10 @@ public class Experiment {
 
             @Override
             public LearningAgent generateAgent() {
-                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, false);
+                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, Experiment.CLASSIFIER_MODE);
             }
         };
-        //learningAlternatives.add(qLearningFactory);
+        learningAlternatives.add(qLearningFactory);
 
         qLearningFactory = new LearningAgentFactory() {
             @Override
@@ -190,7 +194,7 @@ public class Experiment {
 
             @Override
             public LearningAgent generateAgent() {
-                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, true);
+                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, Experiment.CLASSIFIER_MODE);
             }
         };
         //learningAlternatives.add(qLearningFactory);

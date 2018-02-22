@@ -474,9 +474,9 @@ public class JsEnvironment extends SelfManagementEnvironment {
         o.setValue(ATT_HABIT_STRENGTH, (int) (habitStrength * 10));
         o.setValue(ATT_BEHAVIOR_FREQUENCY, (int) (behaviorFrequency * 10));
         o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
-        o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
-        //o.setValue(ATT_PART_OF_DAY, simulatedWorldContext.getCurrentDayPart());
-        o.setValue(ATT_PART_OF_DAY, 0);
+        //o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
+        o.setValue(ATT_DAY_TYPE, 0);
+        o.setValue(ATT_PART_OF_DAY, simulatedWorldContext.getCurrentDayPart());
 
         return s;
     }

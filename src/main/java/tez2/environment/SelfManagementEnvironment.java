@@ -45,28 +45,35 @@ public abstract class SelfManagementEnvironment extends SimulatedEnvironment {
     }
 
     protected int getDayPart() {
-        return getDayPart(currentTime.toLocalTime());
+        return getDayPart(currentTime);
     }
 
-    protected int getDayPart(LocalTime time) {
+    protected int getDayPart(DateTime time) {
+        LocalTime localTime = time.toLocalTime();
+
+        // 6:00
         LocalTime morningStart = new LocalTime().withHourOfDay(6).withMinuteOfHour(0).withSecondOfMinute(0);
         LocalTime morningEnd = morningStart.plusHours(5).plusMinutes(30).minusSeconds(1);
+        // 11:30
         LocalTime noonStart = morningEnd.plusSeconds(1);
         LocalTime noonEnd = noonStart.plusHours(3).plusMinutes(30).minusSeconds(1);
+        // 14:30
         LocalTime afternoonStart = noonEnd.plusSeconds(1);
         LocalTime afternoonEnd =afternoonStart.plusHours(3).minusSeconds(1);
+        // 19:00
         LocalTime eveningStart = afternoonEnd.plusSeconds(1);
         LocalTime eveningEnd = eveningStart.plusHours(4).plusMinutes(30).minusSeconds(1);
+        // 23:30
         LocalTime nightStart = eveningEnd.plusSeconds(1);
         LocalTime nightEnd = morningStart.minusSeconds(1);
 
-        if(time.isAfter(nightEnd) && time.isBefore(noonStart)) {
+        if(localTime.isAfter(nightEnd) && localTime.isBefore(noonStart)) {
             return DayPart.MORNING.ordinal();
-        } else if(time.isAfter(morningEnd) && time.isBefore(afternoonStart)) {
+        } else if(localTime.isAfter(morningEnd) && localTime.isBefore(afternoonStart)) {
             return DayPart.NOON.ordinal();
-        } else if(time.isAfter(noonEnd) && time.isBefore(eveningStart)) {
+        } else if(localTime.isAfter(noonEnd) && localTime.isBefore(eveningStart)) {
             return DayPart.AFTERNOON.ordinal();
-        } else if(time.isAfter(afternoonEnd) && time.isBefore(nightStart)) {
+        } else if(localTime.isAfter(afternoonEnd) && localTime.isBefore(nightStart)) {
             return DayPart.EVENING.ordinal();
         } else {
             return DayPart.NIGHT.ordinal();

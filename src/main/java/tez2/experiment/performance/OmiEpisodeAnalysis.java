@@ -19,7 +19,7 @@ public class OmiEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
     public List<Boolean> userReactions;
     public int phoneCheckNumber;
     public int actionDeliveredDuringPhoneCheck;
-    public JsEpisodeAnalysis jsEpisodeAnalysis;
+    private JsEpisodeAnalysis jsEpisodeAnalysis;
 
     public OmiEpisodeAnalysis(State initialState) {
         super(initialState);
@@ -47,5 +47,13 @@ public class OmiEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
         }
 
         super.recordTransitionTo(usingAction, nextState, r);
+    }
+
+    public void setJsEpisodeAnalysis(JsEpisodeAnalysis jsEpisodeAnalysis) {
+        this.jsEpisodeAnalysis = jsEpisodeAnalysis;
+    }
+
+    public JsEpisodeAnalysis getJsEpisodeAnalysis() {
+        return this.jsEpisodeAnalysis;
     }
 }

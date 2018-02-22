@@ -4,6 +4,10 @@ import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
+import org.apache.spark.sql.SparkSession;
+import tez2.algorithm.collaborative_learning.DataItem;
 import tez2.domain.SelfManagementRewardFunction;
 import tez2.experiment.performance.OmiEpisodeAnalysis;
 import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
@@ -20,11 +24,34 @@ public abstract class StateClassifier {
 
     private SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
 
-    public abstract void updateLearningModel(List<OmiEpisodeAnalysis> ea);
+    private static SparkSession spark;
+
+    public abstract void updateLearningModel(List<SelfManagementEpisodeAnalysis> ea);
 
     public abstract Action guessAction(State state);
 
-    protected void updateStateActionCounts(List<OmiEpisodeAnalysis> eaList) {
+    public static SparkSession getSparkSession() {
+        if(spark == null) {
+            System.setProperty("hadoop.home.dir", "D:\\tools\\spark-2.1.1-bin-hadoop2.7\\hadoop");
+            //System.setProperty("SPARK_JAVA_OPTS", "-Xmx14g");
+            SparkConf conf = new SparkConf()
+                    .setMaster("local")
+                    .set("spark.executor.memory", "4g")
+                    .set("spark.driver.memory", "4g")
+                    .set("spark.driver.allowMultipleContexts", "true")
+                    .setAppName("SMSpark");
+            SparkContext context = new SparkContext(conf);
+            //context.setCheckpointDir("D:\\mine\\odtu\\6\\tez\\codes\\spark_checkpoint");
+            spark = SparkSession
+                    .builder()
+                    .config(conf)
+                    .sparkContext(context)
+                    .getOrCreate();
+        }
+        return spark;
+    }
+
+    protected void updateStateActionCounts(List<SelfManagementEpisodeAnalysis> eaList) {
         for (int t = 0; t < eaList.size(); t++) {
             SelfManagementEpisodeAnalysis ea = eaList.get(t);
             for (int i = 0; i < ea.actionSequence.size(); i++) {
@@ -32,13 +59,6 @@ public abstract class StateClassifier {
                 // i.e. keep only the states and actions where an intervention is delivered (as an indicator of preference)
                 double r = ea.rewardSequence.get(i);
                 String actionName = ea.actionSequence.get(i).actionName();
-
-                if (r == SelfManagementRewardFunction.getRewardNoIntervention()) {
-                    continue;
-                } else if (r == SelfManagementRewardFunction.getRewardNonReactionToIntervention()) {
-                    actionName = ACTION_NO_ACTION;
-                }
-
                 HashableState s = hashingFactory.hashState(ea.stateSequence.get(i));
                 Map<String, Integer> actionCounts = stateActionCounts.get(s);
                 if (actionCounts == null) {

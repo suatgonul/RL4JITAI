@@ -7,11 +7,15 @@ import burlap.behavior.singleagent.options.Option;
 import burlap.behavior.singleagent.options.support.EnvironmentOptionOutcome;
 import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.Domain;
+import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
+import tez2.algorithm.SelfManagementSimpleGroundedAction;
+import tez2.algorithm.collaborative_learning.js.SparkJsStateClassifier;
+import tez2.domain.SelfManagementAction;
 import tez2.domain.js.JsEnvironmentOutcome;
 import tez2.experiment.performance.js.JsEpisodeAnalysis;
 
@@ -23,17 +27,30 @@ import java.util.List;
  */
 public class JsQLearning extends QLearning {
     protected GroundedAction lastSelectedAction;
+    private SelfManagementAction.SelectedBy lastSelectedBy;
+    private String classifierMode;
 
     public JsQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory,
-                       double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize) {
+                       double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize, String classifierMode) {
         super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, maxEpisodeSize);
         if (learningPolicy instanceof SolverDerivedPolicy) {
             ((SolverDerivedPolicy) learningPolicy).setSolver(this);
         }
+        this.classifierMode = classifierMode;
     }
 
     public GroundedAction selectAction(HashableState curState) {
         lastSelectedAction = (GroundedAction) learningPolicy.getAction(curState.s);
+
+        SelfManagementAction.SelectedBy selectedBy = ((SelfManagementSimpleGroundedAction) lastSelectedAction).getSelectedBy();
+        if (classifierMode.equals("use") && selectedBy == SelfManagementAction.SelectedBy.RANDOM) {
+            //Action guessedAction = H2OStateClassifier.getInstance().guessAction(curState.s);
+            Action guessedAction = SparkJsStateClassifier.getInstance().guessAction(curState.s);
+            if (guessedAction != null) {
+                lastSelectedAction = guessedAction.getGroundedAction();
+                lastSelectedBy = SelfManagementAction.SelectedBy.STATE_CLASSIFIER;
+            }
+        }
         return lastSelectedAction;
     }
 
@@ -85,5 +102,9 @@ public class JsQLearning extends QLearning {
             copyList.add(new QValue(qv));
         }
         return copyList;
+    }
+
+    public String getClassifierMode() {
+        return classifierMode;
     }
 }

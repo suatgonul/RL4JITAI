@@ -260,7 +260,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             this.curTrial.stepIncrement(ea.rewardSequence.get(i), ea.actionSequence.get(i), ((OmiEpisodeAnalysis) ea).stateTimes.get(i), ((OmiEpisodeAnalysis) ea).userContexts.get(i), ((OmiEpisodeAnalysis) ea).userReactions.get(i));
         }
 
-        JsEpisodeAnalysis jsEa = ((OmiEpisodeAnalysis) ea).jsEpisodeAnalysis;
+        JsEpisodeAnalysis jsEa = ((OmiEpisodeAnalysis) ea).getJsEpisodeAnalysis();
         for (int i =0; i<jsEa.rewardSequence.size(); i++) {
             this.curTrial.jsStepIncrement(jsEa.actionSequence.get(i));
         }

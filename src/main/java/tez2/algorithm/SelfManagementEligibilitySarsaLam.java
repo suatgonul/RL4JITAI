@@ -14,13 +14,16 @@ import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.common.SimpleGroundedAction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
+import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
 import org.apache.log4j.Logger;
-import tez2.algorithm.collaborative_learning.SparkStateClassifier;
+import tez2.algorithm.collaborative_learning.omi.SparkOmiStateClassifier;
 import tez2.domain.omi.OmiEnvironmentOutcome;
 import tez2.domain.SelfManagementRewardFunction;
 import tez2.domain.SelfManagementAction;
+import tez2.environment.simulator.SimulatedWorld;
+import tez2.experiment.performance.OmiEpisodeAnalysis;
 import tez2.experiment.performance.SelfManagementEligibilityEpisodeAnalysis;
 
 import java.util.ArrayList;
@@ -36,15 +39,15 @@ import static tez2.util.LogUtil.log_generic;
 public class SelfManagementEligibilitySarsaLam extends SarsaLam {
     private static final Logger log = Logger.getLogger(SelfManagementEligibilitySarsaLam.class);
 
-    private boolean useStateClassifier = false;
+    private String classifierMode;
     private List<State> deliveredInterventions;
 
-    public SelfManagementEligibilitySarsaLam(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize, double lambda, boolean useStateClassifier) {
+    public SelfManagementEligibilitySarsaLam(Domain domain, double gamma, HashableStateFactory hashingFactory, double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize, double lambda, String classifierMode) {
         super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, maxEpisodeSize, lambda);
         if (learningPolicy instanceof SolverDerivedPolicy) {
             ((SolverDerivedPolicy) learningPolicy).setSolver(this);
         }
-        this.useStateClassifier = useStateClassifier;
+        this.classifierMode = classifierMode;
     }
 
     @Override
@@ -67,9 +70,9 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
             List<QValue> currentQVals = copyCurrentQVals(this.qIndex.get(curState).qEntry);
             SelfManagementAction.SelectedBy selectedBy = ((SelfManagementSimpleGroundedAction) action).getSelectedBy();
-            if (useStateClassifier && selectedBy == SelfManagementAction.SelectedBy.RANDOM) {
+            if (classifierMode.equals("use") && selectedBy == SelfManagementAction.SelectedBy.RANDOM) {
                 //Action guessedAction = H2OStateClassifier.getInstance().guessAction(curState.s);
-                Action guessedAction = SparkStateClassifier.getInstance().guessAction(curState.s);
+                Action guessedAction = SparkOmiStateClassifier.getInstance().guessAction(curState.s);
                 if (guessedAction != null) {
                     action = guessedAction.getGroundedAction();
                     selectedBy = SelfManagementAction.SelectedBy.STATE_CLASSIFIER;
@@ -112,7 +115,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
                         foundCurrentQTrace = true;
                         //et.eligibility = 1.; //replacing traces
                         et.eligibility = et.eligibility + 1;
-                        System.out.println("Encountered previous state: " + curState);
+                        //System.out.println("Encountered previous state: " + curState);
                     } else {
                         et.eligibility = 0.; //replacing traces
                     }
@@ -222,6 +225,9 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
         }
 
+        if(ea instanceof OmiEpisodeAnalysis) {
+            ea.setJsEpisodeAnalysis(((SimulatedWorld) ((EnvironmentServer) env).getEnvironmentDelegate()).getJsEpisodeAnalysis());
+        }
 
         if (episodeHistory.size() >= numEpisodesToStore) {
             episodeHistory.poll();

@@ -15,11 +15,13 @@ import burlap.oomdp.statehashing.HashableState;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
+import tez2.algorithm.collaborative_learning.js.SparkJsStateClassifier;
 import tez2.algorithm.jitai_selection.JsQLearning;
 import tez2.domain.omi.OmiEnvironmentOutcome;
 import tez2.domain.TerminalState;
 import tez2.environment.SelfManagementEnvironment;
 import tez2.environment.context.*;
+import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez2.experiment.performance.js.JsEpisodeAnalysis;
 import tez2.persona.ActionPlan;
 import tez2.persona.Activity;
@@ -36,6 +38,7 @@ import static tez2.domain.DomainConfig.*;
  * Created by suatgonul on 12/2/2016.
  */
 public class SimulatedWorld extends SelfManagementEnvironment {
+
     /*
      * dynamically updated values throughout the simulation of activities
      */
@@ -46,7 +49,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     private boolean reactedToJitai;
     private int suitableActivityCount;
     private int processedActivityCountForBehavior;
-
+    private int dayOfMonth;
     private int totalNumberOfSentJitais;
     private int numberOfSentJitaisForAction;
     private int numberOfReactedJitais;
@@ -57,7 +60,6 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     private Activity previousActivity;
     private LocalTime previousStateTime;
     private LocalTime previousJitaiDeliveryTime;
-
     private String personaFolder;
     private PersonaConfig config;
 
@@ -68,6 +70,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
     private LearningAgentFactory[] jsLearningAlternatives;
     private JsQLearning jitaiSelectionLearning;
     private JsEpisodeAnalysis jitaiSelectionEpisode;
+    private List<SelfManagementEpisodeAnalysis> jsEpisodes = new ArrayList<>();
     private int checkedActionPlanIndex;
     private ActionPlan actionPlan;
     private List<Integer> actionPlanRanges;
@@ -171,6 +174,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
             if (checkedActionPlanIndex == -1) {
                 jitaiSelectionEnvironment.initEpisode();
                 jitaiSelectionEpisode = new JsEpisodeAnalysis(jitaiSelectionEnvironment.getCurrentObservation());
+                jsEpisodes.add(jitaiSelectionEpisode);
                 jitaiSelectionEpisode.episodeNo = currentDay;
             }
 
@@ -385,6 +389,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         currentTime = currentTimePlan.getStart();
         // initialize activity
         currentActivity = currentTimePlan.getActivities().get(0);
+        dayOfMonth = currentTime.getDayOfMonth();
 
         // All activities are processed. Set lastActivity to false to set the initial state of the next episode properly
         lastActivity = false;
@@ -407,6 +412,11 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         this.currentDay = 1;
         jitaiSelectionEnvironment.endTrial();
         this.jitaiSelectionLearning = (JsQLearning) jsLearningAlternatives[0].generateAgent();
+
+        if (this.jitaiSelectionLearning.getClassifierMode().equals("generate")) {
+            SparkJsStateClassifier.getInstance().updateLearningModel(jsEpisodes);
+        }
+        this.jsEpisodes = new ArrayList<>();
     }
 
     private void initActionPlan() {
@@ -460,8 +470,14 @@ public class SimulatedWorld extends SelfManagementEnvironment {
             return context;
         }
 
-        LocalTime time = currentTimePlan.getStart().toLocalTime();
-        LocalTime timeRangeEnd = actionPlan.getJitaiTimeRanges().get(jitaiOffset).getEndTime();
+        DateTime time = currentTimePlan.getStart();
+        DateTime timeRangeEnd;
+        if (jitaiOffset < 5) {
+            timeRangeEnd = new DateTime().withTime(actionPlan.getJitaiTimeRanges().get(jitaiOffset).getEndTime()).withDayOfMonth(dayOfMonth);
+        } else {
+            timeRangeEnd = new DateTime().withTime(actionPlan.getJitaiTimeRanges().get(jitaiOffset).getEndTime()).withDayOfMonth(dayOfMonth + 1);
+        }
+
         for (int i = 0; i < currentTimePlan.getActivities().size(); i++) {
             time = time.plusMinutes(currentTimePlan.getActivities().get(i).getDuration());
             if (time.isEqual(timeRangeEnd) || time.isAfter(timeRangeEnd)) {

@@ -5,19 +5,13 @@ import burlap.behavior.singleagent.auxiliary.performance.ExperimentalEnvironment
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
-import burlap.debugtools.DPrint;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import org.apache.commons.io.FileUtils;
-import power2dm.reporting.visualization.VisualizationMetadata;
-import tez2.algorithm.collaborative_learning.SparkStateClassifier;
+import tez2.algorithm.collaborative_learning.omi.SparkOmiStateClassifier;
 import tez2.environment.simulator.SimulatedWorld;
 import tez2.experiment.debug.Reporter;
 import tez2.experiment.performance.*;
-import tez2.experiment.performance.visualization.ReactionHitRatioVisualizer;
-import tez2.experiment.performance.visualization.ReactionNumbersVisualizer;
-import tez2.experiment.performance.visualization.Visualizer;
-import tez2.persona.PersonaConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -231,7 +225,7 @@ public class StaticSelfManagementExperimenter {
 
         this.plotter.startNewTrial();
 
-        List<OmiEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
+        List<SelfManagementEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
         Reporter reporter = new Reporter("output/" + agentFactory.getAgentName() + ".txt");
         reporter.report("New Trial");
         StringBuilder sb;
@@ -247,11 +241,11 @@ public class StaticSelfManagementExperimenter {
             long episodeStarttime = System.currentTimeMillis();
             OmiEpisodeAnalysis ea = (OmiEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
             ea.setTrialNo(trialNo);
-            if(personaIndex == 1) {
-                if ((trialNo < 5 && i > 15 && i <= 25) || (trialNo == 40 && i < 50)) {
-                    ea.jsEpisodeAnalysis.printEpisodeAnalysis();
-                    System.out.println("Episode: " + (i + 1) + " completed in " + (System.currentTimeMillis() - episodeStarttime) + " milliseconds");
-                    System.out.println("Elapsed trial time: " + elapsedTrialTime + " milliseconds");
+            if(personaIndex == 0) {
+                if (i <= 25 || (trialNo == 40 && i < 50)) {
+                    //ea.getJsEpisodeAnalysis().printEpisodeAnalysis();
+                    //System.out.println("Episode: " + (i + 1) + " completed in " + (System.currentTimeMillis() - episodeStarttime) + " milliseconds");
+                    //System.out.println("Elapsed trial time: " + elapsedTrialTime + " milliseconds");
                 }
             }
 
@@ -275,7 +269,7 @@ public class StaticSelfManagementExperimenter {
 
         //long updateStartTime = System.currentTimeMillis();
         //H2OStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
-        //SparkStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
+        SparkOmiStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
         //System.out.println("Model update completed in " + (System.currentTimeMillis() - updateStartTime) + " milliseconds");
 
         reporter.finalizeReporting();

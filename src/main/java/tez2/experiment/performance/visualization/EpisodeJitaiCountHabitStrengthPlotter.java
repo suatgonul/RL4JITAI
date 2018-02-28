@@ -10,6 +10,7 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.DeviationRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYSeries;
@@ -77,7 +78,7 @@ public class EpisodeJitaiCountHabitStrengthPlotter extends JFrame {
         plot.setDataset(1, getHabitSeries());
 //
         //customize the plot with renderers and axis
-        plot.setRenderer(0, new XYLineAndShapeRenderer());//use default fill paint for first series
+        plot.setRenderer(0, new DeviationRenderer());//use default fill paint for first series
         plot.setRenderer(1, new XYLineAndShapeRenderer());
         plot.setRangeAxis(0, new NumberAxis("Series 1"));
         plot.setRangeAxis(1, new NumberAxis("Series 2"));

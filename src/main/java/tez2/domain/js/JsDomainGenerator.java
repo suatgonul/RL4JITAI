@@ -43,7 +43,8 @@ public class JsDomainGenerator implements DomainGenerator {
         stateClass.addAttribute(DomainConfig.getAtt(ATT_REMEMBER_BEHAVIOR, domain));
         stateClass.addAttribute(DomainConfig.getAtt(ATT_BEHAVIOR_FREQUENCY, domain));
         stateClass.addAttribute(DomainConfig.getAtt(ATT_HABIT_STRENGTH, domain));
-        stateClass.addAttribute(DomainConfig.getAtt(ATT_PART_OF_DAY, domain));
+        //stateClass.addAttribute(DomainConfig.getAtt(ATT_PART_OF_DAY, domain));
+        stateClass.addAttribute(DomainConfig.getAtt(ATT_HOUR_OF_DAY, domain));
         stateClass.addAttribute(DomainConfig.getAtt(ATT_DAY_TYPE, domain));
 
         new Jitai1Action(ACTION_JITAI_1, domain);

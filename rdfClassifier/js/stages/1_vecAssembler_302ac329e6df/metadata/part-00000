@@ -1,1 +1,0 @@
-{"class":"org.apache.spark.ml.feature.VectorAssembler","timestamp":1519289297019,"sparkVersion":"2.1.1","uid":"vecAssembler_302ac329e6df","paramMap":{"outputCol":"features","inputCols":["rememberBehavior","behaviorFrequency","habitStrength","partOfDay","dayType"]}}

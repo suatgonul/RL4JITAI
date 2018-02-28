@@ -11,6 +11,8 @@ import burlap.oomdp.singleagent.environment.EnvironmentObserver;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import power2dm.model.TaskDifficulty;
 import tez2.algorithm.ActionRestrictingState;
+import tez2.algorithm.collaborative_learning.StateClassifier;
+import tez2.algorithm.collaborative_learning.js.SparkJsStateClassifier;
 import tez2.domain.js.JsEnvironmentOutcome;
 import tez2.domain.TerminalState;
 import tez2.domain.js.Jitai1Action;
@@ -19,12 +21,11 @@ import tez2.domain.js.Jitai3Action;
 import tez2.environment.SelfManagementEnvironment;
 import tez2.environment.simulator.habit.HabitGainRatio;
 import tez2.environment.simulator.habit.visualization.AccessibilityThresholdChart;
+import tez2.environment.simulator.habit.visualization.h3.BehaviorJitaiChart;
 import tez2.persona.ActionPlan;
 import tez2.persona.PersonaConfig;
 
 import javax.swing.*;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.*;
 
 import static tez2.domain.DomainConfig.*;
@@ -159,6 +160,8 @@ public class JsEnvironment extends SelfManagementEnvironment {
 
         taskDifficulty = CI <= 0.5 ? TaskDifficulty.MEDIUM : TaskDifficulty.EASY;
         habitGainOffset = HabitGainRatio.getHabitGainOffset(taskDifficulty, habitStrength);
+
+        day = -1;
     }
 
     public void setSimulatedWorld(SimulatedWorld simulatedWorld) {
@@ -263,7 +266,7 @@ public class JsEnvironment extends SelfManagementEnvironment {
         }
         double accGainRem = 0;
         if (selectedJitaiType != 0) {
-            accGainRem = ((AGC_REM + (1.0 - AGC_REM) * WCI_REM * CI) * salienceReminders.get(selectedJitaiType) + (1 - behaviorFrequency) * CI) * reminderCount;
+            accGainRem = ((AGC_REM + (1.0 - AGC_REM) * WCI_REM * CI) * salienceReminders.get(selectedJitaiType) + (1 - behaviorFrequency) * normalizeCI()) * reminderCount;
         }
         accessibility = Math.max(0, Math.min(1, accessibility - accDecay + accGainEvent + accGainBeh + accGainRem));
 
@@ -334,12 +337,12 @@ public class JsEnvironment extends SelfManagementEnvironment {
 
     private void drawCharts() {
 //        SwingUtilities.invokeLater(() -> {
-//            BehaviorJitaiChart example = new BehaviorJitaiChart("Behaviour");
-//            example.showChart(behaviors, remembers);
-//            example.setSize(800, 400);
-//            example.setLocationRelativeTo(null);
-//            example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-//            example.setVisible(true);
+            BehaviorJitaiChart behChart = new BehaviorJitaiChart("Behaviour");
+            behChart.showChart(behaviors, remembers);
+            behChart.setSize(800, 400);
+            behChart.setLocationRelativeTo(null);
+            behChart.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            behChart.setVisible(true);
 //        });
         //SwingUtilities.invokeLater(() -> {
             AccessibilityThresholdChart example = new AccessibilityThresholdChart("Acc / Thresh");
@@ -426,7 +429,7 @@ public class JsEnvironment extends SelfManagementEnvironment {
         reactedToJitai = this.simulatedWorld.isReactedToJitaiForAction();
         State nextState;
 
-        if (action.action instanceof Jitai1Action || action.action instanceof Jitai3Action || action.action instanceof Jitai3Action) {
+        if (action.action instanceof Jitai1Action || action.action instanceof Jitai2Action || action.action instanceof Jitai3Action) {
             reminderCount++;
         }
 
@@ -442,7 +445,7 @@ public class JsEnvironment extends SelfManagementEnvironment {
             SimulatedWorld.DynamicSimulatedWorldContext simulatedWorldContext = this.simulatedWorld.getLastContextForJitai(stepCount);
             ActionPlan.JitaiNature expectedJitai = simulatedWorldContext.getExpectedJitaiNature();
 
-            nextState = new ActionRestrictingState(expectedJitai);
+            nextState = new ActionRestrictingState(stepCount % 2 == 0 ? ActionPlan.JitaiNature.REMINDER : ActionPlan.JitaiNature.MOTIVATION);
             nextState.addObject(new MutableObjectInstance(domain.getObjectClass(CLASS_STATE), CLASS_STATE));
             ObjectInstance o = nextState.getObjectsOfClass(CLASS_STATE).get(0);
             o.setValue(ATT_HABIT_STRENGTH, (int) (habitStrength * 10));
@@ -450,7 +453,8 @@ public class JsEnvironment extends SelfManagementEnvironment {
             o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
             //o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
             o.setValue(ATT_DAY_TYPE, 0);
-            o.setValue(ATT_PART_OF_DAY, simulatedWorldContext.getCurrentDayPart());
+            //o.setValue(ATT_PART_OF_DAY, simulatedWorldContext.getCurrentDayPart());
+            o.setValue(ATT_HOUR_OF_DAY, simulatedWorldContext.getCurrentHourOfDay());
 
         } else {
             nextState = new TerminalState();
@@ -476,7 +480,8 @@ public class JsEnvironment extends SelfManagementEnvironment {
         o.setValue(ATT_REMEMBER_BEHAVIOR, willRemember());
         //o.setValue(ATT_DAY_TYPE, simulatedWorldContext.getCurrentDayType());
         o.setValue(ATT_DAY_TYPE, 0);
-        o.setValue(ATT_PART_OF_DAY, simulatedWorldContext.getCurrentDayPart());
+        //o.setValue(ATT_PART_OF_DAY, simulatedWorldContext.getCurrentDayPart());
+        o.setValue(ATT_HOUR_OF_DAY, simulatedWorldContext.getCurrentHourOfDay());
 
         return s;
     }
@@ -490,11 +495,18 @@ public class JsEnvironment extends SelfManagementEnvironment {
     public void initEpisode() {
         State s = getStateFromCurrentContext();
         setCurStateTo(s);
+        day++;
     }
 
     public void endTrial() {
-        //drawCharts();
+        if(config.getCommitmentIntensity() <= 0.3) {
+            //drawCharts();
+        }
         setInitialValues();
+        day = -1;
+        if(StateClassifier.classifierModeIncludes("generate-js") || StateClassifier.classifierModeIncludes("generate")) {
+            SparkJsStateClassifier.endTrialForClassifier();
+        }
     }
 
     public GroundedAction getLastAction() {

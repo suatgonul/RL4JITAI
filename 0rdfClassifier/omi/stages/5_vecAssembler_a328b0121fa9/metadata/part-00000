@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.VectorAssembler","timestamp":1519636064618,"sparkVersion":"2.1.1","uid":"vecAssembler_a328b0121fa9","paramMap":{"outputCol":"features","inputCols":["time","numberOfJitaisSent","LocationIndex","ActivityIndex","PhoneUsageIndex","EmotionalStatusIndex"]}}

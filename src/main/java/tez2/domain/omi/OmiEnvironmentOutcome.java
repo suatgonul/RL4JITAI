@@ -15,6 +15,7 @@ public class OmiEnvironmentOutcome extends EnvironmentOutcome {
     private Context userContext;
     private LocalTime stateTime;
 
+
     public OmiEnvironmentOutcome(State o, GroundedAction a, State op, double r, boolean terminated, Context userContext, boolean userReaction, LocalTime stateTime) {
         super(o, a, op, r, terminated);
         this.userContext = userContext;

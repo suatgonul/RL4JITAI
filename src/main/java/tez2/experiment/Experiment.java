@@ -10,6 +10,7 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.statehashing.SimpleHashableStateFactory;
 import tez2.algorithm.*;
+import tez2.algorithm.collaborative_learning.StateClassifier;
 import tez2.algorithm.collaborative_learning.js.SparkJsStateClassifier;
 import tez2.algorithm.collaborative_learning.omi.SparkOmiStateClassifier;
 import tez2.algorithm.jitai_selection.JsQLearning;
@@ -38,7 +39,11 @@ public class Experiment {
 
     private Environment environment;
 
-    public static String CLASSIFIER_MODE = "use";
+    //public static String[] CLASSIFIER_MODE = {"generate-omi"};
+    //public static String[] CLASSIFIER_MODE = {"use-omi"};
+    public static String[] CLASSIFIER_MODE = {"generate-js", "use"};
+    public static long runId = 1;
+
     public static void main(String[] args) {
         Experiment exp = new Experiment();
         exp.runExperiment();
@@ -95,7 +100,7 @@ public class Experiment {
         for(int i=0; i<configs.size(); i++) {
             PersonaConfig config = configs.get(i);
             StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                    5, 100, omiLearningCases);
+                    2, 100, omiLearningCases);
             ((SimulatedWorld) environment).setConfig(config);
             exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                     RATIO_JITAIS_PER_STATE_PARAM,
@@ -113,6 +118,7 @@ public class Experiment {
         TimeOfDayJitaiCountPlotter todJitaCountPlotter = new TimeOfDayJitaiCountPlotter();
         TimeOfDayJitaiCountBehaviorPerformancePlotter bpJcPlotter = new TimeOfDayJitaiCountBehaviorPerformancePlotter();
         EpisodeJitaiTypeCountPlotter epJtcPlotter = new EpisodeJitaiTypeCountPlotter();
+        JsHabitStrengthPlotter jsHabitStrengthPlotter = new JsHabitStrengthPlotter();
 
         plotContainer.insertChart(plotter.getChart(experimentResultsForPersonas));
         plotContainer.insertChart(jitaiTypeCountPlotter.getChart(experimentResultsForPersonas));
@@ -121,6 +127,7 @@ public class Experiment {
         plotContainer.insertChart(bpJcPlotter.getChart(experimentResultsForPersonas.get(1)));
         plotContainer.insertChart(epJtcPlotter.getChart(experimentResultsForPersonas.get(0)));
         plotContainer.insertChart(epJtcPlotter.getChart(experimentResultsForPersonas.get(1)));
+        plotContainer.insertChart(jsHabitStrengthPlotter.getChart(experimentResultsForPersonas));
     }
 
     private LearningAgentFactory[] getJsLearningAlternatives(final Domain domain) {
@@ -136,7 +143,7 @@ public class Experiment {
 
             @Override
             public LearningAgent generateAgent() {
-                return new JsQLearning(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, Experiment.CLASSIFIER_MODE);
+                return new JsQLearning(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE);
             }
         };
         learningAlternatives.add(qLearningFactory);
@@ -181,7 +188,7 @@ public class Experiment {
 
             @Override
             public LearningAgent generateAgent() {
-                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, Experiment.CLASSIFIER_MODE);
+                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, StateClassifier.getOmiUsageMode());
             }
         };
         learningAlternatives.add(qLearningFactory);
@@ -194,7 +201,7 @@ public class Experiment {
 
             @Override
             public LearningAgent generateAgent() {
-                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, Experiment.CLASSIFIER_MODE);
+                return new SelfManagementEligibilitySarsaLam(domain, 0.1, hashingFactory, 0, 0.1, new SelfManagementGreedyQPolicy(), Integer.MAX_VALUE, 0.8, StateClassifier.getOmiUsageMode());
             }
         };
         //learningAlternatives.add(qLearningFactory);

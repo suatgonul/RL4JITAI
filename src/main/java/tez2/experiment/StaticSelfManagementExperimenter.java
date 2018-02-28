@@ -8,6 +8,8 @@ import burlap.behavior.singleagent.learning.LearningAgentFactory;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentServer;
 import org.apache.commons.io.FileUtils;
+import tez2.algorithm.collaborative_learning.StateClassifier;
+import tez2.algorithm.collaborative_learning.js.SparkJsStateClassifier;
 import tez2.algorithm.collaborative_learning.omi.SparkOmiStateClassifier;
 import tez2.environment.simulator.SimulatedWorld;
 import tez2.experiment.debug.Reporter;
@@ -226,7 +228,7 @@ public class StaticSelfManagementExperimenter {
         this.plotter.startNewTrial();
 
         List<SelfManagementEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
-        Reporter reporter = new Reporter("output/" + agentFactory.getAgentName() + ".txt");
+        Reporter reporter = new Reporter(Experiment.runId + "output/" + agentFactory.getAgentName() + ".txt");
         reporter.report("New Trial");
         StringBuilder sb;
 
@@ -241,13 +243,13 @@ public class StaticSelfManagementExperimenter {
             long episodeStarttime = System.currentTimeMillis();
             OmiEpisodeAnalysis ea = (OmiEpisodeAnalysis) agent.runLearningEpisode(this.environmentSever);
             ea.setTrialNo(trialNo);
-            if(personaIndex == 0) {
-                if (i <= 25 || (trialNo == 40 && i < 50)) {
-                    //ea.getJsEpisodeAnalysis().printEpisodeAnalysis();
-                    //System.out.println("Episode: " + (i + 1) + " completed in " + (System.currentTimeMillis() - episodeStarttime) + " milliseconds");
-                    //System.out.println("Elapsed trial time: " + elapsedTrialTime + " milliseconds");
+            //if(personaIndex == 0) {
+                if (i >= 0) {
+                    ea.getJsEpisodeAnalysis().printEpisodeAnalysis();
+                    System.out.println("Episode: " + (i + 1) + " completed in " + (System.currentTimeMillis() - episodeStarttime) + " milliseconds");
+                    System.out.println("Elapsed trial time: " + elapsedTrialTime + " milliseconds");
                 }
-            }
+            //}
 
 
             episodeAnalysisList.add(ea);
@@ -262,15 +264,17 @@ public class StaticSelfManagementExperimenter {
             this.environmentSever.resetEnvironment();
         }
         ((SimulatedWorld) this.environmentSever.getEnvironmentDelegate()).endTrial();
-        if(trialNo % 50 == 0) {
-            System.out.println("Trial completed in " + (System.currentTimeMillis() - trialStartTime) + " milliseconds");
-        }
+        //if(trialNo % 50 == 0) {
+            System.out.println("Trial " + trialNo + " completed in " + (System.currentTimeMillis() - trialStartTime) + " milliseconds");
+        //}
 
 
         //long updateStartTime = System.currentTimeMillis();
         //H2OStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
-        SparkOmiStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
-        //System.out.println("Model update completed in " + (System.currentTimeMillis() - updateStartTime) + " milliseconds");
+        if(StateClassifier.classifierModeIncludes("generate") || StateClassifier.classifierModeIncludes("generate-omi")) {
+            SparkOmiStateClassifier.getInstance().updateLearningModel(episodeAnalysisList);
+            //System.out.println("Model update completed in " + (System.currentTimeMillis() - updateStartTime) + " milliseconds");
+        }
 
         reporter.finalizeReporting();
 
@@ -303,7 +307,7 @@ public class StaticSelfManagementExperimenter {
 
     private void cleanOutputDirectory() {
         try {
-            FileUtils.cleanDirectory(new File("output"));
+            FileUtils.cleanDirectory(new File(Experiment.runId + "output"));
         } catch (IOException e) {
             e.printStackTrace();
         }

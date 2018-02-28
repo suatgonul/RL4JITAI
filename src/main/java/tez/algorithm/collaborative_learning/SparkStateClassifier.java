@@ -27,6 +27,7 @@ import tez.domain.SelfManagementDomain;
 import tez.domain.SelfManagementDomainGenerator;
 import tez.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez.util.LogUtil;
+import tez2.experiment.Experiment;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -278,7 +279,7 @@ public class SparkStateClassifier extends StateClassifier {
 
         rdfClassifier = pipeline.fit(stateActionData);
         try {
-            rdfClassifier.write().overwrite().save("rdfClassifier");
+            rdfClassifier.write().overwrite().save(Experiment.runId + "rdfClassifier");
         } catch (IOException e) {
             e.printStackTrace();
         }

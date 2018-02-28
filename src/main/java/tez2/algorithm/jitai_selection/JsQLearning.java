@@ -13,7 +13,10 @@ import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.environment.EnvironmentOutcome;
 import burlap.oomdp.statehashing.HashableState;
 import burlap.oomdp.statehashing.HashableStateFactory;
+import org.apache.hadoop.util.hash.Hash;
+import tez2.algorithm.ActionRestrictingState;
 import tez2.algorithm.SelfManagementSimpleGroundedAction;
+import tez2.algorithm.collaborative_learning.StateClassifier;
 import tez2.algorithm.collaborative_learning.js.SparkJsStateClassifier;
 import tez2.domain.SelfManagementAction;
 import tez2.domain.js.JsEnvironmentOutcome;
@@ -27,31 +30,41 @@ import java.util.List;
  */
 public class JsQLearning extends QLearning {
     protected GroundedAction lastSelectedAction;
-    private SelfManagementAction.SelectedBy lastSelectedBy;
-    private String classifierMode;
+    private GroundedAction lastSelectedActionCopy;
 
     public JsQLearning(Domain domain, double gamma, HashableStateFactory hashingFactory,
-                       double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize, String classifierMode) {
+                       double qInit, double learningRate, Policy learningPolicy, int maxEpisodeSize) {
         super(domain, gamma, hashingFactory, qInit, learningRate, learningPolicy, maxEpisodeSize);
         if (learningPolicy instanceof SolverDerivedPolicy) {
             ((SolverDerivedPolicy) learningPolicy).setSolver(this);
         }
-        this.classifierMode = classifierMode;
     }
 
     public GroundedAction selectAction(HashableState curState) {
-        lastSelectedAction = (GroundedAction) learningPolicy.getAction(curState.s);
+        lastSelectedAction = (SelfManagementSimpleGroundedAction) learningPolicy.getAction(curState.s);
+        lastSelectedActionCopy = lastSelectedAction.copy();
 
         SelfManagementAction.SelectedBy selectedBy = ((SelfManagementSimpleGroundedAction) lastSelectedAction).getSelectedBy();
-        if (classifierMode.equals("use") && selectedBy == SelfManagementAction.SelectedBy.RANDOM) {
+        if ((StateClassifier.classifierModeIncludes("use")  || StateClassifier.classifierModeIncludes("use-js")) && selectedBy == SelfManagementAction.SelectedBy.RANDOM) {
             //Action guessedAction = H2OStateClassifier.getInstance().guessAction(curState.s);
             Action guessedAction = SparkJsStateClassifier.getInstance().guessAction(curState.s);
             if (guessedAction != null) {
-                lastSelectedAction = guessedAction.getGroundedAction();
-                lastSelectedBy = SelfManagementAction.SelectedBy.STATE_CLASSIFIER;
+                if(this.getQ(curState, guessedAction.getGroundedAction()) != null && !guessedActionWithLessQValue(curState, guessedAction)) {
+                    lastSelectedAction = guessedAction.getGroundedAction();
+                    lastSelectedActionCopy = new SelfManagementSimpleGroundedAction(guessedAction);
+                    ((SelfManagementSimpleGroundedAction) lastSelectedActionCopy).setSelectedBy(SelfManagementAction.SelectedBy.STATE_CLASSIFIER);
+                }
             }
         }
+
         return lastSelectedAction;
+    }
+
+    private boolean guessedActionWithLessQValue(HashableState curState, Action guessedAction) {
+        if(this.getQ(curState, guessedAction.getGroundedAction()).q < this.getMaxQ(curState)) {
+            return true;
+        }
+        return false;
     }
 
     public void executeLearningStep(Environment env, HashableState curState, JsEpisodeAnalysis ea) {
@@ -76,7 +89,7 @@ public class JsQLearning extends QLearning {
 
         if (lastSelectedAction.action.isPrimitive() || !this.shouldAnnotateOptions) {
             JsEnvironmentOutcome eeo = (JsEnvironmentOutcome) eo;
-            ea.recordTransitionTo(lastSelectedAction, nextState.s, r, currentQVals, eeo);
+            ea.recordTransitionTo(lastSelectedActionCopy, nextState.s, r, currentQVals, eeo);
         } else {
             ea.appendAndMergeEpisodeAnalysis(((Option) lastSelectedAction.action).getLastExecutionResults());
         }
@@ -102,9 +115,5 @@ public class JsQLearning extends QLearning {
             copyList.add(new QValue(qv));
         }
         return copyList;
-    }
-
-    public String getClassifierMode() {
-        return classifierMode;
     }
 }

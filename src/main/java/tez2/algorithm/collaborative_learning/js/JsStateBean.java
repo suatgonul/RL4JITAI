@@ -19,7 +19,8 @@ public class JsStateBean implements Serializable {
     private int rememberBehavior;
     private int behaviorFrequency;
     private int habitStrength;
-    private int partOfDay;
+    //private int partOfDay;
+    private int hourOfDay;
     private int dayType;
 
 
@@ -28,7 +29,8 @@ public class JsStateBean implements Serializable {
         this.rememberBehavior = o.getIntValForAttribute(ATT_REMEMBER_BEHAVIOR);
         this.behaviorFrequency = o.getIntValForAttribute(ATT_BEHAVIOR_FREQUENCY);
         this.habitStrength = o.getIntValForAttribute(ATT_HABIT_STRENGTH);
-        this.partOfDay = o.getIntValForAttribute(ATT_PART_OF_DAY);
+        //this.partOfDay = o.getIntValForAttribute(ATT_PART_OF_DAY);
+        this.hourOfDay = o.getIntValForAttribute(ATT_HOUR_OF_DAY);
         this.dayType = o.getIntValForAttribute(ATT_DAY_TYPE);
     }
 
@@ -56,12 +58,21 @@ public class JsStateBean implements Serializable {
         this.habitStrength = habitStrength;
     }
 
-    public int getPartOfDay() {
-        return partOfDay;
+//    public int getPartOfDay() {
+//        return partOfDay;
+//    }
+//
+//    public void setPartOfDay(int partOfDay) {
+//        this.partOfDay = partOfDay;
+//    }
+
+
+    public int getHourOfDay() {
+        return hourOfDay;
     }
 
-    public void setPartOfDay(int partOfDay) {
-        this.partOfDay = partOfDay;
+    public void setHourOfDay(int hourOfDay) {
+        this.hourOfDay = hourOfDay;
     }
 
     public int getDayType() {

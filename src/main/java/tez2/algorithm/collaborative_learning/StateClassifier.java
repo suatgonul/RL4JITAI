@@ -8,7 +8,9 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SparkSession;
 import tez2.algorithm.collaborative_learning.DataItem;
+import tez2.domain.DomainConfig;
 import tez2.domain.SelfManagementRewardFunction;
+import tez2.experiment.Experiment;
 import tez2.experiment.performance.OmiEpisodeAnalysis;
 import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 
@@ -20,9 +22,9 @@ import static tez2.domain.DomainConfig.*;
  * Created by suat on 22-May-17.
  */
 public abstract class StateClassifier {
-    protected Map<HashableState, Map<String, Integer>> stateActionCounts = new HashMap<>();
+    public Map<HashableState, Map<String, Integer>> stateActionCounts = new HashMap<>();
 
-    private SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
+    protected SimpleHashableStateFactory hashingFactory = new SimpleHashableStateFactory();
 
     private static SparkSession spark;
 
@@ -51,31 +53,25 @@ public abstract class StateClassifier {
         return spark;
     }
 
-    protected void updateStateActionCounts(List<SelfManagementEpisodeAnalysis> eaList) {
-        for (int t = 0; t < eaList.size(); t++) {
-            SelfManagementEpisodeAnalysis ea = eaList.get(t);
-            for (int i = 0; i < ea.actionSequence.size(); i++) {
-                // do not keep the state as data item if no intervention is delivered
-                // i.e. keep only the states and actions where an intervention is delivered (as an indicator of preference)
-                double r = ea.rewardSequence.get(i);
-                String actionName = ea.actionSequence.get(i).actionName();
-                HashableState s = hashingFactory.hashState(ea.stateSequence.get(i));
-                Map<String, Integer> actionCounts = stateActionCounts.get(s);
-                if (actionCounts == null) {
-                    actionCounts = new HashMap<>();
-                    stateActionCounts.put(s, actionCounts);
-                }
-
-                Integer count = actionCounts.get(actionName);
-                if (count == null) {
-                    count = 0;
-                }
-                count++;
-                actionCounts.put(actionName, count);
+    public static boolean classifierModeIncludes(String requiredMode) {
+        for(String configuredMode : Experiment.CLASSIFIER_MODE) {
+            if(configuredMode.contentEquals(requiredMode)) {
+                return true;
             }
         }
-        System.out.println("Number of distinct states: " + stateActionCounts.keySet().size());
+        return false;
     }
+
+    public static String getOmiUsageMode() {
+        for(String configuredMode : Experiment.CLASSIFIER_MODE) {
+            if(configuredMode.contentEquals("use") || configuredMode.contentEquals("use-omi")) {
+                return configuredMode;
+            }
+        }
+        return "none";
+    }
+
+    protected abstract void updateStateActionCounts(List<SelfManagementEpisodeAnalysis> eaList);
 
     protected List<DataItem> generateDataSetFromDataItems() {
         List<DataItem> dataItems = new ArrayList<>();

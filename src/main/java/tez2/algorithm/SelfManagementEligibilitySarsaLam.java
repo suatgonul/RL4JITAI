@@ -70,7 +70,7 @@ public class SelfManagementEligibilitySarsaLam extends SarsaLam {
 
             List<QValue> currentQVals = copyCurrentQVals(this.qIndex.get(curState).qEntry);
             SelfManagementAction.SelectedBy selectedBy = ((SelfManagementSimpleGroundedAction) action).getSelectedBy();
-            if (classifierMode.equals("use") && selectedBy == SelfManagementAction.SelectedBy.RANDOM) {
+            if ((classifierMode.equals("use") || classifierMode.equals("use-omi")) && selectedBy == SelfManagementAction.SelectedBy.RANDOM) {
                 //Action guessedAction = H2OStateClassifier.getInstance().guessAction(curState.s);
                 Action guessedAction = SparkOmiStateClassifier.getInstance().guessAction(curState.s);
                 if (guessedAction != null) {

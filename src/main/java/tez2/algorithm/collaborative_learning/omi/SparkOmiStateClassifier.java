@@ -7,6 +7,7 @@ import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.Action;
+import burlap.oomdp.statehashing.HashableState;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -25,6 +26,7 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 import tez2.algorithm.collaborative_learning.DataItem;
 import tez2.algorithm.collaborative_learning.StateClassifier;
+import tez2.domain.DomainConfig;
 import tez2.domain.omi.OmiDomainGenerator;
 import tez2.experiment.Experiment;
 import tez2.experiment.performance.OmiEpisodeAnalysis;
@@ -32,9 +34,7 @@ import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
 import tez2.util.LogUtil;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static tez2.domain.DomainConfig.*;
 
@@ -46,14 +46,14 @@ public class SparkOmiStateClassifier extends StateClassifier {
 
     private static SparkOmiStateClassifier instance = null;
     private static final Logger log = Logger.getLogger(SparkOmiStateClassifier.class);
-    private static final String classifierPath = "rdfClassifier/omi";
+    private static final String classifierPath = Experiment.runId + "rdfClassifier/omi";
 
     private Domain domain;
     private Dataset<Row> stateActionData;
     private PipelineModel rdfClassifier;
 
     private SparkOmiStateClassifier() {
-        if(Experiment.CLASSIFIER_MODE.equals("use")) {
+        if(StateClassifier.classifierModeIncludes("use") || StateClassifier.classifierModeIncludes("use-omi")) {
             StateClassifier.getSparkSession();
             rdfClassifier = PipelineModel.load(classifierPath);
         }
@@ -258,6 +258,42 @@ public class SparkOmiStateClassifier extends StateClassifier {
             e.printStackTrace();
         }
     }
+
+    protected void updateStateActionCounts(List<SelfManagementEpisodeAnalysis> eaList) {
+        for (int t = 0; t < eaList.size(); t++) {
+            OmiEpisodeAnalysis ea = (OmiEpisodeAnalysis) eaList.get(t);
+            for (int i = 0; i < ea.actionSequence.size(); i++) {
+                // do not keep the state as data item if no intervention is delivered
+                // i.e. keep only the states and actions where an intervention is delivered (as an indicator of preference)
+                double r = ea.rewardSequence.get(i);
+                String actionName = ea.actionSequence.get(i).actionName();
+                if(actionName.contentEquals(DomainConfig.ACTION_NO_ACTION)) {
+                    continue;
+                }
+
+                // if the user does not react, train the classifier for not to send an intervention
+                if(!ea.userReactions.get(i)) {
+                    actionName = DomainConfig.ACTION_NO_ACTION;
+                }
+
+                HashableState s = hashingFactory.hashState(ea.stateSequence.get(i));
+                Map<String, Integer> actionCounts = stateActionCounts.get(s);
+                if (actionCounts == null) {
+                    actionCounts = new HashMap<>();
+                    stateActionCounts.put(s, actionCounts);
+                }
+
+                Integer count = actionCounts.get(actionName);
+                if (count == null) {
+                    count = 0;
+                }
+                count++;
+                actionCounts.put(actionName, count);
+            }
+        }
+        System.out.println("Number of distinct states: " + stateActionCounts.keySet().size());
+    }
+
 
     @Override
     public Action guessAction(State state) {

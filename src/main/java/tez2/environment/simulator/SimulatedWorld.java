@@ -15,8 +15,10 @@ import burlap.oomdp.statehashing.HashableState;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.joda.time.DateTime;
 import org.joda.time.LocalTime;
+import tez2.algorithm.collaborative_learning.StateClassifier;
 import tez2.algorithm.collaborative_learning.js.SparkJsStateClassifier;
 import tez2.algorithm.jitai_selection.JsQLearning;
+import tez2.domain.DomainConfig;
 import tez2.domain.omi.OmiEnvironmentOutcome;
 import tez2.domain.TerminalState;
 import tez2.environment.SelfManagementEnvironment;
@@ -43,13 +45,15 @@ public class SimulatedWorld extends SelfManagementEnvironment {
      * dynamically updated values throughout the simulation of activities
      */
     private int currentDay;
+    private int dayOfMonth;
     private TimePlan currentTimePlan;
     private Activity currentActivity;
     private boolean lastActivity;
+    private GroundedAction lastAction;
     private boolean reactedToJitai;
     private int suitableActivityCount;
-    private int processedActivityCountForBehavior;
-    private int dayOfMonth;
+    private int processedActivityCountForBehaviorPerformance;
+    private int processedActivityCountForJitaiReaction;
     private int totalNumberOfSentJitais;
     private int numberOfSentJitaisForAction;
     private int numberOfReactedJitais;
@@ -107,6 +111,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
      */
     @Override
     public EnvironmentOutcome executeAction(GroundedAction ga) {
+        lastAction = ga;
 
         GroundedAction simGA = (GroundedAction) ga.copy();
         simGA.action = this.domain.getAction(ga.actionName());
@@ -193,7 +198,8 @@ public class SimulatedWorld extends SelfManagementEnvironment {
                 behaviorPerformed = false;
                 reactedToJitaiForAction = false;
                 suitableActivityCount = 0;
-                processedActivityCountForBehavior = 0;
+                processedActivityCountForBehaviorPerformance = 0;
+                processedActivityCountForJitaiReaction = 0;
                 willRemember = jitaiSelectionEnvironment.willRemember();
 
                 ActionPlan.JitaiTimeRange timeRange = (ActionPlan.JitaiTimeRange) currentRange.get(1);
@@ -234,14 +240,8 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         }
 
         // simulate reaction to jitai and performance of behavior
-        if (!lastSelectedJitai.actionName().contentEquals(ACTION_NO_ACTION) && !reactedToJitaiForAction) {
-            if (checkedActionPlanIndex % 2 == 0) {
-                if (!behaviorPerformed) {
-                    reactedToJitai = simulateUserReactionToJitai();
-                }
-            } else {
-                reactedToJitai = simulateUserReactionToJitai();
-            }
+        if (!lastSelectedJitai.actionName().contentEquals(ACTION_NO_ACTION) && lastAction.actionName().contentEquals(ACTION_SEND_JITAI)) {
+            simulateUserReactionToJitai();
         }
 
         // simulate reaction to jitai and performance of behavior
@@ -279,16 +279,24 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         NormalDistribution nd = new NormalDistribution();
         double sample = nd.sample();
         double cumulativeProbability = nd.cumulativeProbability(sample);
-        processedActivityCountForBehavior++;
-        double probabilityOfPerformanceInCurrentStep = (double) processedActivityCountForBehavior / (double) suitableActivityCount;
+        processedActivityCountForBehaviorPerformance++;
+        double probabilityOfPerformanceInCurrentStep = (double) processedActivityCountForBehaviorPerformance / (double) suitableActivityCount;
 
         if (cumulativeProbability < (probabilityOfPerformanceInCurrentStep)) {
             updateBehaviorPerformanceTimeMean();
+            if(actionPlanRanges.get(0) == 2 && !lastSelectedJitai.actionName().equals(DomainConfig.ACTION_NO_ACTION)) {
+                //System.out.println("processed activity count: " + processedActivityCountForBehaviorPerformance + ", last jitai: " + lastSelectedJitai.actionName());
+            }
             behaviorPerformed = true;
         }
     }
 
     private boolean simulateUserReactionToJitai() {
+        processedActivityCountForJitaiReaction++;
+        if(reactedToJitaiForAction) {
+            return false;
+        }
+
         int dayType = getDayType(currentDay);
         Location location = currentActivity.getContext().getLocation();
         PhysicalActivity physicalActivity = currentActivity.getContext().getPhysicalActivity();
@@ -301,11 +309,6 @@ public class SimulatedWorld extends SelfManagementEnvironment {
             if (behaviorPerformed == true) {
                 return false;
             }
-        }
-
-        // check preferences on jitais
-        if (new Random().nextDouble() > jitaiPreferences.get(lastSelectedJitai.actionName())) {
-            return false;
         }
 
         // reduce the reaction ratio based on the total number of reacted interventions
@@ -333,6 +336,13 @@ public class SimulatedWorld extends SelfManagementEnvironment {
 //                    lastInterventionCheckTime = time;
 //                    return true;
 //                }
+
+                // check preferences on jitais
+                double rand = new Random().nextDouble();
+                if (rand > jitaiPreferences.get(lastSelectedJitai.actionName()) / (double) processedActivityCountForJitaiReaction) {
+                    return false;
+                }
+
                 numberOfReactedJitais++;
                 reactedToJitaiForAction = true;
                 return true;
@@ -403,6 +413,14 @@ public class SimulatedWorld extends SelfManagementEnvironment {
 
     @Override
     public void resetEnvironment() {
+        if (StateClassifier.classifierModeIncludes("generate") || StateClassifier.classifierModeIncludes("generate-js")) {
+            try {
+                SparkJsStateClassifier.getInstance().updateLearningModel(jsEpisodes);
+                jsEpisodes.clear();
+            } catch (Exception e) {
+                System.out.println("Failed to update learning model. Map size: " + SparkJsStateClassifier.getInstance().stateActionCounts.keySet().size());
+            }
+         }
         currentDay++;
         initEpisode();
         super.resetEnvironment();
@@ -413,9 +431,6 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         jitaiSelectionEnvironment.endTrial();
         this.jitaiSelectionLearning = (JsQLearning) jsLearningAlternatives[0].generateAgent();
 
-        if (this.jitaiSelectionLearning.getClassifierMode().equals("generate")) {
-            SparkJsStateClassifier.getInstance().updateLearningModel(jsEpisodes);
-        }
         this.jsEpisodes = new ArrayList<>();
     }
 
@@ -440,7 +455,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
             DateTime controlStart = tr.getStartTime().toDateTimeToday();
             DateTime controlEnd = controlStart.plusHours(actionPlanRanges.get(i));
 
-            if (currentTime.equals(controlStart) || currentTime.isAfter(controlStart) && currentTime.isBefore(controlEnd)) {
+            if (currentTime.equals(controlStart) || (currentTime.isAfter(controlStart) && currentTime.isBefore(controlEnd))) {
                 List<Object> result = new ArrayList<>();
                 result.add(i);
                 result.add(tr);
@@ -456,6 +471,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         context.setCurrentDayType(getDayType(currentDay));
         context.setCurrentDayPart(getDayPart());
         context.setExpectedJitaiNature(((ActionPlan.JitaiTimeRange) getTimeRange().get(1)).getJitaiNature());
+        context.setCurrentHourOfDay(currentTime.getHourOfDay());
         return context;
     }
 
@@ -483,6 +499,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
             if (time.isEqual(timeRangeEnd) || time.isAfter(timeRangeEnd)) {
                 context.setActivity(currentTimePlan.getActivities().get(i));
                 context.setCurrentDayPart(getDayPart(time));
+                context.setCurrentHourOfDay(time.getHourOfDay());
                 break;
             }
         }
@@ -550,6 +567,7 @@ public class SimulatedWorld extends SelfManagementEnvironment {
         private int currentDayPart;
         private int currentDayType;
         private ActionPlan.JitaiNature expectedJitaiNature;
+        private int currentHourOfDay;
 
         public Activity getActivity() {
             return activity;
@@ -581,6 +599,14 @@ public class SimulatedWorld extends SelfManagementEnvironment {
 
         public void setExpectedJitaiNature(ActionPlan.JitaiNature expectedJitaiNature) {
             this.expectedJitaiNature = expectedJitaiNature;
+        }
+
+        public int getCurrentHourOfDay() {
+            return currentHourOfDay;
+        }
+
+        public void setCurrentHourOfDay(int currentHourOfDay) {
+            this.currentHourOfDay = currentHourOfDay;
         }
     }
 }

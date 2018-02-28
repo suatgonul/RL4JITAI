@@ -248,7 +248,7 @@ public class SelfManagementExperimenter {
         this.plotter.startNewTrial();
 
         List<OmiEpisodeAnalysis> episodeAnalysisList = new ArrayList<>();
-        Reporter reporter = new Reporter("output/" + agentFactory.getAgentName() + ".txt");
+        Reporter reporter = new Reporter(Experiment.runId + "output/" + agentFactory.getAgentName() + ".txt");
         reporter.report("New Trial");
         StringBuilder sb;
 

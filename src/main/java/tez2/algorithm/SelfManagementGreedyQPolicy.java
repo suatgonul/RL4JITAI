@@ -35,6 +35,13 @@ public class SelfManagementGreedyQPolicy extends GreedyQPolicy {
                 selectedBy = SelfManagementAction.SelectedBy.QLEARNING;
             }
         }
+
+//        if(selectedBy == SelfManagementAction.SelectedBy.RANDOM) {
+//            if (maxQ != 0) {
+//                selectedBy = SelfManagementAction.SelectedBy.QLEARNING;
+//            }
+//        }
+
         int selected = rand.nextInt(maxActions.size());
         //return translated action parameters if the action is parameterized with objects in a object identifier independent domain
         SelfManagementSimpleGroundedAction a = (SelfManagementSimpleGroundedAction) maxActions.get(selected).a;

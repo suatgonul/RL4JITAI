@@ -14,11 +14,20 @@ public class SelfManagementSimpleGroundedAction extends SimpleGroundedAction {
         super(action);
     }
 
+    public SelfManagementSimpleGroundedAction(SelfManagementSimpleGroundedAction action) {
+        super(action.action);
+        this.selectedBy = action.selectedBy;
+    }
+
     public SelfManagementAction.SelectedBy getSelectedBy() {
         return selectedBy;
     }
 
     public void setSelectedBy(SelfManagementAction.SelectedBy selectedBy) {
         this.selectedBy = selectedBy;
+    }
+
+    public SelfManagementSimpleGroundedAction copy() {
+        return new SelfManagementSimpleGroundedAction(this);
     }
 }

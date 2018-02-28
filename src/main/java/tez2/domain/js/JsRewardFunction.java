@@ -32,12 +32,16 @@ public class JsRewardFunction extends SelfManagementRewardFunction {
                 if (reactedToJitai) {
                     return 10;
                 } else {
-                    return -1;
+                    return -5;
                 }
             }
 
         } else {
-            return -0.2;
+            if(rememberedBehavior == 0) {
+                return -50;
+            } else {
+                return -0.2;
+            }
         }
     }
 }

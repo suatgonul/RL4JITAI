@@ -22,20 +22,21 @@ public class OmiRewardFunction extends SelfManagementRewardFunction {
             LocalTime currentLocalTime = simulatedWorld.currentTime.toLocalTime();
             int checkedActionPlanIndex = simulatedWorld.getCheckedActionPlanIndex();
 
+            double reward;
             if(userReacted) {
-                return REWARD_REACTION_TO_INTERVENTION;
+                reward = REWARD_REACTION_TO_INTERVENTION;
+
             } else {
-                double reward = 0;
                 if(simulatedWorld.getNumberOfSentJitaisForAction() > 2) {
                     reward = simulatedWorld.getNumberOfSentJitaisForAction() * -2;
                 } else {
                     reward = -1;
                 }
-
-                reward += getRewardByDistanceToMean(behaviorPerformanceTimeMean, currentLocalTime, checkedActionPlanIndex);
-                return reward;
-
             }
+
+            reward += getRewardByDistanceToMean(behaviorPerformanceTimeMean, currentLocalTime, checkedActionPlanIndex);
+            return reward;
+
         } else {
             return REWARD_NO_INTERVENTION;
         }

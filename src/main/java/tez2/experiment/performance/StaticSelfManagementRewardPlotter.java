@@ -2,6 +2,7 @@ package tez2.experiment.performance;
 
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
+import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -24,6 +25,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+
+import static tez2.domain.DomainConfig.ATT_HABIT_STRENGTH;
+import static tez2.domain.DomainConfig.CLASS_STATE;
 
 /**
  * Created by suatgonul on 4/27/2017.
@@ -106,6 +110,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
     public XYSeriesCollection allAgents_ratioOfJitaisPhoneUsage;
     public XYSeriesCollection allAgents_ratioOfJitaisLocation;
     public XYSeriesCollection allAgents_ratioOfJitaisEmotionalStatus;
+    public YIntervalSeriesCollection allAgents_avgHabitStrengthPerEpisode;
 
 
     /**
@@ -182,6 +187,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         allAgents_ratioOfJitaisPhoneUsage = new XYSeriesCollection();
         allAgents_ratioOfJitaisLocation = new XYSeriesCollection();
         allAgents_ratioOfJitaisEmotionalStatus = new XYSeriesCollection();
+        allAgents_avgHabitStrengthPerEpisode = new YIntervalSeriesCollection();
 
         this.curTrial = new Trial();
         this.curAgentDatasets = new AgentDatasets(curAgentName);
@@ -261,8 +267,10 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         }
 
         JsEpisodeAnalysis jsEa = ((OmiEpisodeAnalysis) ea).getJsEpisodeAnalysis();
+        State initialState = jsEa.stateSequence.get(0);
+        this.curTrial.episodeHabitStrength = initialState.getObjectsOfClass(CLASS_STATE).get(0).getIntValForAttribute(ATT_HABIT_STRENGTH);
         for (int i =0; i<jsEa.rewardSequence.size(); i++) {
-            this.curTrial.jsStepIncrement(jsEa.actionSequence.get(i));
+            this.curTrial.jsStepIncrement(jsEa.actionSequence.get(i), jsEa.stateSequence.get(i));
         }
     }
 
@@ -518,6 +526,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         // MI Paper-related additions
         if (this.metricsSet.contains(SelfManagementPerformanceMetric.AVG_TOTAL_JITAIS_PER_EPISODE)) {
             for (int i = 0; i < n[1]; i++) {
+                // total jitai counts per episode
                 DescriptiveStatistics avgi = new DescriptiveStatistics();
                 for (Trial t : trials) {
                     avgi.addValue(t.trialRawData_jitaiCountEachEpisode.get(i));
@@ -525,6 +534,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
                 double[] ci = getCI(avgi, this.significance);
                 curAgentDatasets.agentDataset_jitaiCountEachEpisodeSeries.add(i, ci[0], ci[1], ci[2]);
 
+                // jitai type counts
                 List<Integer> jitaiTypeCountTotal = new ArrayList<>();
                 jitaiTypeCountTotal.add(0);
                 jitaiTypeCountTotal.add(0);
@@ -538,6 +548,14 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
                 for(int a=0; a<3; a++) {
                     curAgentDatasets.agentDataset_totalCountOfJitaiTypesPerEpisode.get(a).add(i, jitaiTypeCountTotal.get(a));
                 }
+
+                // js habit strengths
+                avgi = new DescriptiveStatistics();
+                for (Trial t : trials) {
+                    avgi.addValue(t.trialRawData_habitStrengthPerEpisode.get(i));
+                }
+                ci = getCI(avgi, this.significance);
+                curAgentDatasets.agentDataset_avgHabitStrengthPerEpisode.add(i, ci[0], ci[1], ci[2]);
             }
         }
         if (this.metricsSet.contains(SelfManagementPerformanceMetric.TOTAL_NUMBER_OF_JITAI_TYPES)) {
@@ -717,6 +735,8 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         public List<Integer> trialRawData_jitaiCountPerPhoneUsageInTrial = new ArrayList<>();
         public List<Integer> trialRawData_jitaiCountPerEmotionalStatusInTrial = new ArrayList<>();
 
+        public List<Integer> trialRawData_habitStrengthPerEpisode = new ArrayList<>();
+
 
         /**
          * The cumulative reward of the episode so far
@@ -750,6 +770,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
          * MI-related
          */
         public LinkedHashMap<String, Integer> curEpisodeJitais = new LinkedHashMap<>();
+        public int episodeHabitStrength;
 
 
         public Trial() {
@@ -821,7 +842,8 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             }
         }
 
-        public void jsStepIncrement(GroundedAction action) {
+        public void jsStepIncrement(GroundedAction action, State state) {
+
             // MI-related
             if(!action.actionName().equals(DomainConfig.ACTION_NO_ACTION)) {
 
@@ -863,6 +885,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
                 this.trialRawData_jitaiTypeCountsPerEpisode.get(a).add(curEpisodeJitais.get("JITAI_" + (a+1)));
             }
             this.trialRawData_jitaiCountEachEpisode.add(totalJitaiCount);
+            this.trialRawData_habitStrengthPerEpisode.add(this.episodeHabitStrength);
 
             Collections.sort(this.curEpisodeRewards);
             double med = 0.;
@@ -892,6 +915,7 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             curEpisodeJitais.put(DomainConfig.ACTION_JITAI_1, 0);
             curEpisodeJitais.put(DomainConfig.ACTION_JITAI_2, 0);
             curEpisodeJitais.put(DomainConfig.ACTION_JITAI_3, 0);
+            this.episodeHabitStrength = 0;
         }
 
     }
@@ -955,6 +979,8 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
         public XYSeries agentDataset_totalCountOfJitaisPerPhoneUsage;
         public XYSeries agentDataset_totalCountOfJitaisPerLocation;
         public XYSeries agentDataset_totalCountOfJitaisPerEmotionalStatus;
+
+        public YIntervalSeries agentDataset_avgHabitStrengthPerEpisode;
 
 
         /**
@@ -1039,6 +1065,10 @@ public class StaticSelfManagementRewardPlotter extends JFrame {
             this.agentDataset_totalCountOfBehaviorPerformancePerTimeOfDay = new XYSeries(agentName);
             this.agentDataset_totalCountOfBehaviorPerformancePerTimeOfDay.setNotify(false);
             allAgents_totalNumberOfBehaviorPerformancePerTimeOfDay.addSeries(this.agentDataset_totalCountOfBehaviorPerformancePerTimeOfDay);
+
+            this.agentDataset_avgHabitStrengthPerEpisode = new YIntervalSeries(agentName);
+            this.agentDataset_avgHabitStrengthPerEpisode.setNotify(false);
+            allAgents_avgHabitStrengthPerEpisode.addSeries(this.agentDataset_avgHabitStrengthPerEpisode);
         }
 
 

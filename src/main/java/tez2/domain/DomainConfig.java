@@ -17,6 +17,7 @@ public class DomainConfig {
     public static final String ATT_HABIT_STRENGTH = "HabitStrength";
     public static final String ATT_BEHAVIOR_FREQUENCY = "BehaviorFrequency";
     public static final String ATT_REMEMBER_BEHAVIOR = "BehaviorRemembered";
+    public static final String ATT_HOUR_OF_DAY = "HourOfDay";
 
     public static final String ATT_ACTIVITY_TIME = "Time";
     public static final String ATT_STATE_OF_MIND = "StateOfMind";
@@ -57,6 +58,9 @@ public class DomainConfig {
             case ATT_PART_OF_DAY:
                 att = new Attribute(domain, ATT_PART_OF_DAY, Attribute.AttributeType.INT);
                 att.setDiscValuesForRange(0, 4, 1);
+                break;
+            case ATT_HOUR_OF_DAY:
+                att = new Attribute(domain, ATT_HOUR_OF_DAY, Attribute.AttributeType.INT);
                 break;
             case ATT_DAY_TYPE:
                 att = new Attribute(domain, ATT_DAY_TYPE, Attribute.AttributeType.INT);

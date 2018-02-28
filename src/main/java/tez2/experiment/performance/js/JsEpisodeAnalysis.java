@@ -4,6 +4,7 @@ import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.objects.ObjectInstance;
 import burlap.oomdp.core.states.State;
 import burlap.oomdp.singleagent.GroundedAction;
+import tez2.algorithm.SelfManagementSimpleGroundedAction;
 import tez2.domain.TerminalState;
 import tez2.domain.js.JsEnvironmentOutcome;
 import tez2.environment.context.DayPart;
@@ -42,7 +43,7 @@ public class JsEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
         }
     }
 
-    private void printState(State state, int index) {
+    public static void printState(State state, int index) {
         StringBuilder sb = new StringBuilder("STATE-").append(index).append("\n");
         if (state instanceof TerminalState) {
             sb.append("Terminal\n");
@@ -52,17 +53,23 @@ public class JsEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
 
         ObjectInstance o = state.getObjectsOfClass(CLASS_STATE).get(0);
         int habitStrength = o.getIntValForAttribute(ATT_HABIT_STRENGTH);
-        sb.append("Habit strength: ").append(habitStrength).append(", ");
-        int behaviorFrequency = o.getIntValForAttribute(ATT_BEHAVIOR_FREQUENCY);
-        sb.append("Behavior frequency: ").append(behaviorFrequency).append(", ");
+//        sb.append("Habit strength: ").append(habitStrength).append(", ");
+//        int behaviorFrequency = o.getIntValForAttribute(ATT_BEHAVIOR_FREQUENCY);
+//        sb.append("Behavior frequency: ").append(behaviorFrequency).append(", ");
         int behaviorRemembered = o.getIntValForAttribute(ATT_REMEMBER_BEHAVIOR);
         sb.append("Behavior Rem: ").append(behaviorRemembered).append(", ");
-        DayType dayType = DayType.values()[o.getIntValForAttribute(ATT_DAY_TYPE)];
-        sb.append("Day type: ").append(dayType).append(", ");
-        DayPart dayPart = DayPart.values()[o.getIntValForAttribute(ATT_PART_OF_DAY)];
-        sb.append("Day part: ").append(dayPart).append("\n");
+//        DayType dayType = DayType.values()[o.getIntValForAttribute(ATT_DAY_TYPE)];
+//        sb.append("Day type: ").append(dayType).append(", ");
+        //DayPart dayPart = DayPart.values()[o.getIntValForAttribute(ATT_PART_OF_DAY)];
+        //sb.append("Day part: ").append(dayPart).append("\n");
+//        int hourOfDay = o.getIntValForAttribute(ATT_HOUR_OF_DAY);
+//        sb.append("Hour of day: ").append(hourOfDay).append("\n");
 
         System.out.println(sb.toString());
+    }
+
+    public static void printState(State state) {
+        printState(state, -1);
     }
 
     private void printQValues(List<QValue> qValues) {
@@ -77,7 +84,7 @@ public class JsEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
 
     private void printActionAndReward(double reward, GroundedAction action) {
         StringBuilder sb = new StringBuilder("ACTION, REWARD\n");
-        sb.append("Action: ").append(action.actionName()).append(", Reward: ").append(reward);
+        sb.append("Action: ").append(action.actionName()).append(", SelectedBy: ").append(((SelfManagementSimpleGroundedAction) action).getSelectedBy()).append(", Reward: ").append(reward);
         sb.append("\n");
         System.out.println(sb.toString());
     }

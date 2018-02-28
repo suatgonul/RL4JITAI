@@ -17,6 +17,8 @@ public class OmiEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
     public List<Context> userContexts;
     public List<LocalTime> stateTimes;
     public List<Boolean> userReactions;
+    public List<Boolean> labels;
+
     public int phoneCheckNumber;
     public int actionDeliveredDuringPhoneCheck;
     private JsEpisodeAnalysis jsEpisodeAnalysis;

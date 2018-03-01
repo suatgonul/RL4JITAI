@@ -5,11 +5,14 @@ import burlap.behavior.valuefunction.QValue;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.AbstractObjectParameterizedGroundedAction;
 import burlap.oomdp.core.states.State;
+import tez2.algorithm.collaborative_learning.StateClassifier;
+import tez2.algorithm.collaborative_learning.js.SparkJsStateClassifier;
+import tez2.domain.DomainConfig;
 import tez2.domain.SelfManagementAction;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by suat on 18-May-17.
@@ -43,6 +46,22 @@ public class SelfManagementGreedyQPolicy extends GreedyQPolicy {
 //        }
 
         int selected = rand.nextInt(maxActions.size());
+
+        if(StateClassifier.classifierModeIncludes("use") || StateClassifier.classifierModeIncludes("use-js")) {
+            if(qValues.size() == 3) {
+                while(true) {
+                    if(!maxActions.get(selected).a.actionName().contentEquals(DomainConfig.ACTION_NO_ACTION)) {
+                        double ratio = SparkJsStateClassifier.getJitaiRatio(maxActions.get(selected).a.actionName());
+                        if (new Random().nextDouble() < ratio) {
+                            break;
+                        } else {
+                            selected = rand.nextInt(maxActions.size());
+                        }
+                    }
+                }
+            }
+        }
+
         //return translated action parameters if the action is parameterized with objects in a object identifier independent domain
         SelfManagementSimpleGroundedAction a = (SelfManagementSimpleGroundedAction) maxActions.get(selected).a;
         a.setSelectedBy(selectedBy);

@@ -6,8 +6,6 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.statehashing.HashableState;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.PipelineStage;
@@ -18,13 +16,11 @@ import org.apache.spark.ml.feature.StringIndexerModel;
 import org.apache.spark.ml.feature.VectorAssembler;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
 import tez2.algorithm.collaborative_learning.DataItem;
 import tez2.algorithm.collaborative_learning.StateClassifier;
 import tez2.domain.DomainConfig;
 import tez2.experiment.Experiment;
 import tez2.experiment.performance.SelfManagementEpisodeAnalysis;
-import tez2.experiment.performance.js.JsEpisodeAnalysis;
 import tez2.util.LogUtil;
 
 import java.io.File;
@@ -43,7 +39,8 @@ public class SparkJsStateClassifier extends StateClassifier {
     private Domain domain;
     private Dataset<Row> stateActionData;
     private PipelineModel rdfClassifier;
-    private Map<String, Integer> totalReactionCounts = new HashMap<>();
+    public static Map<String, Integer> totalReactionCounts = new HashMap<>();
+    public static Map<String, Integer> totalNonReactionCounts = new HashMap<>();
 
     private SparkJsStateClassifier() {
         StateClassifier.getSparkSession();
@@ -65,6 +62,9 @@ public class SparkJsStateClassifier extends StateClassifier {
             instance.totalReactionCounts.put(DomainConfig.ACTION_JITAI_1, 0);
             instance.totalReactionCounts.put(DomainConfig.ACTION_JITAI_2, 0);
             instance.totalReactionCounts.put(DomainConfig.ACTION_JITAI_3, 0);
+            instance.totalNonReactionCounts.put(DomainConfig.ACTION_JITAI_1, 0);
+            instance.totalNonReactionCounts.put(DomainConfig.ACTION_JITAI_2, 0);
+            instance.totalNonReactionCounts.put(DomainConfig.ACTION_JITAI_3, 0);
         } catch (IOException e) {
             throw new RuntimeException("Failed to clean the js classifier directory", e);
         }
@@ -122,6 +122,31 @@ public class SparkJsStateClassifier extends StateClassifier {
         }
     }
 
+    public static double getJitai1VsJitai2Ratio() {
+        Integer jitai1Count = totalReactionCounts.get(DomainConfig.ACTION_JITAI_1);
+        Integer jitai2Count = totalReactionCounts.get(DomainConfig.ACTION_JITAI_2);
+        int total = jitai1Count + jitai2Count;
+
+        double ratio;
+        if (total == 0) {
+            ratio = 0.5;
+        } else {
+            ratio = (double) jitai1Count / (double) total;
+        }
+        return ratio;
+    }
+
+    public static double getJitaiRatio(String actionName) {
+        Integer reactionCount = totalReactionCounts.get(actionName);
+        Integer nonReactionCount = totalNonReactionCounts.get(actionName);
+        int total = reactionCount + nonReactionCount;
+        if(total == 0) {
+            return 0;
+        } else {
+            return (double) reactionCount / (double) total;
+        }
+    }
+
     protected void updateStateActionCounts(List<SelfManagementEpisodeAnalysis> eaList) {
         for (int t = 0; t < eaList.size(); t++) {
             SelfManagementEpisodeAnalysis ea = eaList.get(t);
@@ -135,18 +160,9 @@ public class SparkJsStateClassifier extends StateClassifier {
 
                 // action
                 if (actionName.contentEquals(DomainConfig.ACTION_NO_ACTION)) {
-                    if(r == -50) {
-                        if(i % 2 == 0) {
-                            Integer jitai1Count = totalReactionCounts.get(DomainConfig.ACTION_JITAI_1);
-                            Integer jitai2Count = totalReactionCounts.get(DomainConfig.ACTION_JITAI_2);
-                            int total = jitai1Count + jitai2Count;
-
-                            double ratio;
-                            if(total == 0) {
-                                ratio = 0.5;
-                            } else {
-                                ratio = (double) jitai1Count / (double) total;
-                            }
+                    if (r == -50) {
+                        if (i % 2 == 0) {
+                            double ratio = getJitai1VsJitai2Ratio();
 
                             if (new Random().nextDouble() < ratio) {
                                 actionName = DomainConfig.ACTION_JITAI_1;
@@ -161,6 +177,8 @@ public class SparkJsStateClassifier extends StateClassifier {
 
                 } else {
                     if (!(r == -3 || r == 10)) {
+                        Integer currentCount = totalReactionCounts.get(actionName);
+                        totalNonReactionCounts.put(actionName, currentCount + 1);
                         if (i % 2 == 0) {
                             if (actionName.contentEquals(DomainConfig.ACTION_JITAI_1)) {
                                 actionName = DomainConfig.ACTION_JITAI_2;

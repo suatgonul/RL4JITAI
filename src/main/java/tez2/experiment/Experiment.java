@@ -42,7 +42,7 @@ public class Experiment {
     //public static String[] CLASSIFIER_MODE = {"generate-omi"};
     //public static String[] CLASSIFIER_MODE = {"use-omi"};
     public static String[] CLASSIFIER_MODE = {"generate-js", "use"};
-    public static long runId = 1;
+    public static long runId = 2;
 
     public static void main(String[] args) {
         Experiment exp = new Experiment();
@@ -54,8 +54,8 @@ public class Experiment {
     }
 
     private void runExperiment() {
-        String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
-        //String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        //String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
 
         List<PersonaConfig> configs = PersonaConfig.getConfigs(personaFolder);
 

@@ -53,17 +53,17 @@ public class JsEpisodeAnalysis extends SelfManagementEpisodeAnalysis {
 
         ObjectInstance o = state.getObjectsOfClass(CLASS_STATE).get(0);
         int habitStrength = o.getIntValForAttribute(ATT_HABIT_STRENGTH);
-//        sb.append("Habit strength: ").append(habitStrength).append(", ");
-//        int behaviorFrequency = o.getIntValForAttribute(ATT_BEHAVIOR_FREQUENCY);
-//        sb.append("Behavior frequency: ").append(behaviorFrequency).append(", ");
+        sb.append("Habit strength: ").append(habitStrength).append(", ");
+        int behaviorFrequency = o.getIntValForAttribute(ATT_BEHAVIOR_FREQUENCY);
+        sb.append("Behavior frequency: ").append(behaviorFrequency).append(", ");
         int behaviorRemembered = o.getIntValForAttribute(ATT_REMEMBER_BEHAVIOR);
         sb.append("Behavior Rem: ").append(behaviorRemembered).append(", ");
-//        DayType dayType = DayType.values()[o.getIntValForAttribute(ATT_DAY_TYPE)];
-//        sb.append("Day type: ").append(dayType).append(", ");
+        DayType dayType = DayType.values()[o.getIntValForAttribute(ATT_DAY_TYPE)];
+        sb.append("Day type: ").append(dayType).append(", ");
         //DayPart dayPart = DayPart.values()[o.getIntValForAttribute(ATT_PART_OF_DAY)];
         //sb.append("Day part: ").append(dayPart).append("\n");
-//        int hourOfDay = o.getIntValForAttribute(ATT_HOUR_OF_DAY);
-//        sb.append("Hour of day: ").append(hourOfDay).append("\n");
+        int hourOfDay = o.getIntValForAttribute(ATT_HOUR_OF_DAY);
+        sb.append("Hour of day: ").append(hourOfDay).append("\n");
 
         System.out.println(sb.toString());
     }

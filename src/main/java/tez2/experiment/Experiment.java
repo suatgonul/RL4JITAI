@@ -42,7 +42,7 @@ public class Experiment {
     //public static String[] CLASSIFIER_MODE = {"generate-omi"};
     //public static String[] CLASSIFIER_MODE = {"use-omi"};
     public static String[] CLASSIFIER_MODE = {"generate-js", "use"};
-    public static long runId = 2;
+    public static long runId = 1;
 
     public static void main(String[] args) {
         Experiment exp = new Experiment();
@@ -54,8 +54,8 @@ public class Experiment {
     }
 
     private void runExperiment() {
-        //String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
-        String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        String personaFolder = "D:\\mine\\odtu\\6\\tez\\codes\\RLTrials\\src\\main\\resources\\persona\\officejob";
+        //String personaFolder = "D:\\personalCodes\\tez\\RLTrials\\src\\main\\resources\\persona\\officejob";
 
         List<PersonaConfig> configs = PersonaConfig.getConfigs(personaFolder);
 
@@ -100,7 +100,7 @@ public class Experiment {
         for(int i=0; i<configs.size(); i++) {
             PersonaConfig config = configs.get(i);
             StaticSelfManagementExperimenter exp = new StaticSelfManagementExperimenter(environment,
-                    2, 100, omiLearningCases);
+                    40, 100, omiLearningCases);
             ((SimulatedWorld) environment).setConfig(config);
             exp.setUpPlottingConfiguration(750, 500, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE,
                     RATIO_JITAIS_PER_STATE_PARAM,

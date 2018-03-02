@@ -117,7 +117,8 @@ public class JsEnvironment extends SelfManagementEnvironment {
         CAT = 0.749;
         DP = 0.886;
         DRH_AT = 0.975;
-        HDP = 0.08;
+        //HDP = 0.08;
+        HDP = 0.04;
         SDP_REM = 0.094;
         SS = 18.484;
         TS = 0.214;
@@ -281,11 +282,11 @@ public class JsEnvironment extends SelfManagementEnvironment {
 
     public void updateHabitStrength() {
         double habitDecay;
-        if (!behaviorPerformed) {
+//        if (!behaviorPerformed) {
             habitDecay = habitStrength * HDP;
-        } else {
-            habitDecay = 0;
-        }
+//        } else {
+//            habitDecay = 0;
+//        }
 
         double habitGainBF;
         if (behaviorPerformed) {

@@ -54,6 +54,6 @@ public abstract class SelfManagementAction extends SimpleAction implements FullA
     }
 
     public enum SelectedBy {
-        QLEARNING, STATE_CLASSIFIER, RANDOM
+        QLEARNING, STATE_CLASSIFIER, GUESSED_RANDOM, RANDOM
     }
 }

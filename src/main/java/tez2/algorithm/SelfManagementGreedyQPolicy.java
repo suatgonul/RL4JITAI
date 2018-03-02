@@ -47,18 +47,35 @@ public class SelfManagementGreedyQPolicy extends GreedyQPolicy {
 
         int selected = rand.nextInt(maxActions.size());
 
-        if(StateClassifier.classifierModeIncludes("use") || StateClassifier.classifierModeIncludes("use-js")) {
-            if(qValues.size() == 3) {
-                while(true) {
-                    if(!maxActions.get(selected).a.actionName().contentEquals(DomainConfig.ACTION_NO_ACTION)) {
-                        double ratio = SparkJsStateClassifier.getJitaiRatio(maxActions.get(selected).a.actionName());
-                        if (new Random().nextDouble() < ratio) {
-                            break;
-                        } else {
-                            selected = rand.nextInt(maxActions.size());
-                        }
+        if (StateClassifier.classifierModeIncludes("use") || StateClassifier.classifierModeIncludes("use-js")) {
+            if (qValues.size() == 3 && maxActions.size() >= 2) {
+                boolean jitai1Checked = false;
+                boolean jitai2Checked = false;
+
+                String actionName = maxActions.get(selected).a.actionName();
+                while (!actionName.contentEquals(DomainConfig.ACTION_NO_ACTION)) {
+                    actionName = maxActions.get(selected).a.actionName();
+
+                    double ratio = SparkJsStateClassifier.getJitaiRatio(actionName);
+                    if (new Random().nextDouble() < ratio) {
+                        break;
                     }
-                }
+
+                    if (actionName.equals(DomainConfig.ACTION_JITAI_1)) {
+                        jitai1Checked = true;
+                    } else if (actionName.equals(DomainConfig.ACTION_JITAI_2)) {
+                        jitai2Checked = true;
+                    }
+
+                    if (jitai1Checked && jitai2Checked) {
+                        break;
+                    }
+
+                    selected = new Random().nextInt(maxActions.size());
+                    actionName = maxActions.get(selected).a.actionName();
+               }
+
+                selectedBy = SelfManagementAction.SelectedBy.GUESSED_RANDOM;
             }
         }
 

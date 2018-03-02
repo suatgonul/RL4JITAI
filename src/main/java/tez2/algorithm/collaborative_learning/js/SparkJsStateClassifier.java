@@ -35,18 +35,21 @@ public class SparkJsStateClassifier extends StateClassifier {
 
     private static final Logger log = Logger.getLogger(SparkJsStateClassifier.class);
     private static final String classifierPath = Experiment.runId + "rdfClassifier/js";
+    public static Map<String, Integer> totalReactionCounts = new HashMap<>();
+    public static Map<String, Integer> totalNonReactionCounts = new HashMap<>();
     private static SparkJsStateClassifier instance = null;
     private Domain domain;
     private Dataset<Row> stateActionData;
     private PipelineModel rdfClassifier;
-    public static Map<String, Integer> totalReactionCounts = new HashMap<>();
-    public static Map<String, Integer> totalNonReactionCounts = new HashMap<>();
 
     private SparkJsStateClassifier() {
         StateClassifier.getSparkSession();
         totalReactionCounts.put(DomainConfig.ACTION_JITAI_1, 0);
         totalReactionCounts.put(DomainConfig.ACTION_JITAI_2, 0);
         totalReactionCounts.put(DomainConfig.ACTION_JITAI_3, 0);
+        totalNonReactionCounts.put(DomainConfig.ACTION_JITAI_1, 0);
+        totalNonReactionCounts.put(DomainConfig.ACTION_JITAI_2, 0);
+        totalNonReactionCounts.put(DomainConfig.ACTION_JITAI_3, 0);
     }
 
     public static SparkJsStateClassifier getInstance() {
@@ -70,6 +73,31 @@ public class SparkJsStateClassifier extends StateClassifier {
         }
 
         instance.stateActionCounts = new HashMap<>();
+    }
+
+    public static double getJitai1VsJitai2Ratio() {
+        Integer jitai1Count = totalReactionCounts.get(DomainConfig.ACTION_JITAI_1);
+        Integer jitai2Count = totalReactionCounts.get(DomainConfig.ACTION_JITAI_2);
+        int total = jitai1Count + jitai2Count;
+
+        double ratio;
+        if (total == 0) {
+            ratio = 0.5;
+        } else {
+            ratio = (double) jitai1Count / (double) total;
+        }
+        return ratio;
+    }
+
+    public static double getJitaiRatio(String actionName) {
+        Integer reactionCount = totalReactionCounts.get(actionName);
+        Integer nonReactionCount = totalNonReactionCounts.get(actionName);
+        int total = reactionCount + nonReactionCount;
+        if (total == 0) {
+            return 0;
+        } else {
+            return (double) reactionCount / (double) total;
+        }
     }
 
     public void loadRandomForestClassifier(String path) {
@@ -122,31 +150,6 @@ public class SparkJsStateClassifier extends StateClassifier {
         }
     }
 
-    public static double getJitai1VsJitai2Ratio() {
-        Integer jitai1Count = totalReactionCounts.get(DomainConfig.ACTION_JITAI_1);
-        Integer jitai2Count = totalReactionCounts.get(DomainConfig.ACTION_JITAI_2);
-        int total = jitai1Count + jitai2Count;
-
-        double ratio;
-        if (total == 0) {
-            ratio = 0.5;
-        } else {
-            ratio = (double) jitai1Count / (double) total;
-        }
-        return ratio;
-    }
-
-    public static double getJitaiRatio(String actionName) {
-        Integer reactionCount = totalReactionCounts.get(actionName);
-        Integer nonReactionCount = totalNonReactionCounts.get(actionName);
-        int total = reactionCount + nonReactionCount;
-        if(total == 0) {
-            return 0;
-        } else {
-            return (double) reactionCount / (double) total;
-        }
-    }
-
     protected void updateStateActionCounts(List<SelfManagementEpisodeAnalysis> eaList) {
         for (int t = 0; t < eaList.size(); t++) {
             SelfManagementEpisodeAnalysis ea = eaList.get(t);
@@ -160,19 +163,17 @@ public class SparkJsStateClassifier extends StateClassifier {
 
                 // action
                 if (actionName.contentEquals(DomainConfig.ACTION_NO_ACTION)) {
-                    if (r == -50) {
-                        if (i % 2 == 0) {
-                            double ratio = getJitai1VsJitai2Ratio();
+                    if (i % 2 == 0) {
+                        double ratio = getJitai1VsJitai2Ratio();
 
-                            if (new Random().nextDouble() < ratio) {
-                                actionName = DomainConfig.ACTION_JITAI_1;
-                            } else {
-                                actionName = DomainConfig.ACTION_JITAI_2;
-                            }
-                            //System.out.println("trained action: " + actionName);
+                        if (new Random().nextDouble() < ratio) {
+                            actionName = DomainConfig.ACTION_JITAI_1;
                         } else {
-                            actionName = DomainConfig.ACTION_JITAI_3;
+                            actionName = DomainConfig.ACTION_JITAI_2;
                         }
+                        //System.out.println("trained action: " + actionName);
+                    } else {
+                        actionName = DomainConfig.ACTION_JITAI_3;
                     }
 
                 } else {
